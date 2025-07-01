@@ -10,7 +10,8 @@ def main():
     """
     epilog_text = """Common options for 'make' and 'exec':
   --fresh-env         When creating a worktree, use .env.example as the base instead of .env.
-  --no-env-overrides  When creating a worktree, do not add port overrides to the .env file."""
+  --no-env-overrides  When creating a worktree, do not add port overrides to the .env file.
+  --no-all-extras     Do not install all extra dependencies when running 'uv sync'."""
 
     parser = argparse.ArgumentParser(
         description="A script to manage git worktrees for agent-based development.",
@@ -33,6 +34,11 @@ def main():
         action="store_true",
         help="When creating a worktree, do not add port overrides to the .env file.",
     )
+    common_parser.add_argument(
+        "--no-all-extras",
+        action="store_true",
+        help="Do not install all extra dependencies when running 'uv sync'.",
+    )
 
     # --- make command ---
     parser_make = subparsers.add_parser(
@@ -43,7 +49,7 @@ def main():
     parser_make.add_argument("index", type=int, help="Index for the new worktree.")
     parser_make.set_defaults(
         func=lambda args: core.make_new_tree(
-            args.index, args.fresh_env, args.no_env_overrides
+            args.index, args.fresh_env, args.no_env_overrides, args.no_all_extras
         )
     )
 
@@ -77,6 +83,7 @@ def main():
             args.index,
             args.fresh_env,
             args.no_env_overrides,
+            args.no_all_extras,
             args.taskfile,
             args.agent_args,
         )

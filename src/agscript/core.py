@@ -34,7 +34,7 @@ def _run_command(command, cwd=None, check=True, capture_output=False):
         raise
 
 
-def make_new_tree(index, fresh_env, no_overrides):
+def make_new_tree(index, fresh_env, no_overrides, no_all_extras):
     """Creates a new git worktree with a dedicated environment."""
     tree_name = f"t{index}"
     branch_name = f"{config.WORKTREE_BRANCH_PREFIX}{index}"
@@ -89,7 +89,11 @@ def make_new_tree(index, fresh_env, no_overrides):
 
     print(f"Setting up Python environment in {worktree_path}...")
     _run_command(["uv", "venv"], cwd=str(worktree_path), capture_output=True)
-    _run_command(["uv", "sync", "--quiet"], cwd=str(worktree_path))
+
+    uv_sync_command = ["uv", "sync", "--quiet"]
+    if not no_all_extras:
+        uv_sync_command.append("--all-extras")
+    _run_command(uv_sync_command, cwd=str(worktree_path))
 
     print("\n" + "🌴 New worktree created successfully.")
     print(f"   Worktree: {worktree_path}")
@@ -127,7 +131,7 @@ def delete_tree(index):
     print(f"♻️  Cleanup for index {index} complete.")
 
 
-def exec_agent(index, fresh_env, no_overrides, task_file, agent_args):
+def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_args):
     """Deletes, recreates, and runs a detached agent process in a worktree."""
     print(f"Attempting to remove existing worktree for index {index} (if any)...")
     try:
@@ -136,7 +140,7 @@ def exec_agent(index, fresh_env, no_overrides, task_file, agent_args):
         print(f"Could not delete tree for index {index}: {e}. Continuing...", file=sys.stderr)
 
     print(f"\nCreating new worktree for index {index}...")
-    make_new_tree(index, fresh_env, no_overrides)
+    make_new_tree(index, fresh_env, no_overrides, no_all_extras)
 
     worktree_path = Path(config.WORKTREE_DIR) / f"t{index}"
     task_fn_stem = Path(task_file).stem
