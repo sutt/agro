@@ -8,9 +8,15 @@ def main():
     """
     Main entry point for the agscript command-line interface.
     """
+    epilog_text = """Common options for 'make' and 'exec':
+  --fresh-env         When creating a worktree, use .env.example as the base instead of .env.
+  --no-env-overrides  When creating a worktree, do not add port overrides to the .env file."""
+
     parser = argparse.ArgumentParser(
         description="A script to manage git worktrees for agent-based development.",
         prog="agscript",
+        epilog=epilog_text,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
     subparsers.required = True
