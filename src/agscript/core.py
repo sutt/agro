@@ -163,7 +163,7 @@ def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_a
     print(f"🌱 Working on new branch: {new_branch_name}")
     print("")
 
-    pid_dir = Path(".ag_docs/swap")
+    pid_dir = Path(".agdocs/swap")
     pid_dir.mkdir(parents=True, exist_ok=True)
     pid_file = pid_dir / f"t{index}.pid"
 
