@@ -16,3 +16,7 @@ src/*.egg-info
 .pytest_cache
 .mypy_cache
 .ruff_cache
+
+# app specific
+trees
+misc
