@@ -1,7 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "agscript"
 version = "0.1.0"
-description = "Add your description here"
+description = "A simple command-line example package."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[project.scripts]
+agscript = "agscript.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

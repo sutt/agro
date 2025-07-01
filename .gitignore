@@ -5,6 +5,14 @@ build/
 dist/
 wheels/
 *.egg-info
+src/*.egg-info
 
 # Virtual environments
 .venv
+.aider*
+
+# Other generated files
+.coverage
+.pytest_cache
+.mypy_cache
+.ruff_cache
