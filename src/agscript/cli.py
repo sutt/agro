@@ -12,6 +12,7 @@ def main():
   make <index>                  Create a new worktree.
   delete <index>                Delete the worktree with the given index.
   exec <index> <taskfile> ...   Run an agent in a new worktree.
+  muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
   help                          Show this help message.
 
 Common options for 'make' and 'exec':
@@ -93,6 +94,21 @@ Common options for 'make' and 'exec':
             args.taskfile,
             args.agent_args,
         )
+    )
+
+    # --- muster command ---
+    parser_muster = subparsers.add_parser(
+        "muster", help="Run a command in specified worktrees."
+    )
+    parser_muster.add_argument(
+        "command_str",
+        help="The command to execute in each worktree (e.g., 'uv run pytest').",
+    )
+    parser_muster.add_argument(
+        "indices", help="Comma-separated list of worktree indices (e.g., '1,2')."
+    )
+    parser_muster.set_defaults(
+        func=lambda args: core.muster_command(args.command_str, args.indices)
     )
 
     # --- help command ---

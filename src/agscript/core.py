@@ -1,4 +1,5 @@
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -193,3 +194,33 @@ def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_a
     print(f"   Start time: {current_time}")
     print(f"   PID: {process.pid} (saved to {pid_file.resolve()})")
     print(f"   Log file: {log_file_path.resolve()}")
+
+
+def muster_command(command_str, indices_str):
+    """Runs a command in multiple worktrees."""
+    try:
+        indices = [int(i.strip()) for i in indices_str.split(',') if i.strip()]
+    except ValueError:
+        print(f"Error: Invalid indices list '{indices_str}'. Please provide a comma-separated list of numbers.", file=sys.stderr)
+        raise
+
+    command = shlex.split(command_str)
+    if not command:
+        raise ValueError("Empty command provided.")
+
+    for index in indices:
+        tree_name = f"t{index}"
+        worktree_path = Path(config.WORKTREE_DIR) / tree_name
+
+        if not worktree_path.is_dir():
+            print(f"Warning: Worktree t{index} at '{worktree_path}' not found. Skipping.", file=sys.stderr)
+            continue
+
+        print(f"\n--- Running command in t{index} ({worktree_path}) ---")
+        print(f"$ {command_str}")
+        try:
+            _run_command(command, cwd=str(worktree_path))
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            # _run_command already prints details.
+            print(f"--- Command failed in t{index}. Continuing... ---", file=sys.stderr)
+            continue
