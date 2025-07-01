@@ -8,7 +8,13 @@ def main():
     """
     Main entry point for the agscript command-line interface.
     """
-    epilog_text = """Common options for 'make' and 'exec':
+    epilog_text = """Available commands:
+  make <index>                  Create a new worktree.
+  delete <index>                Delete the worktree with the given index.
+  exec <index> <taskfile> ...   Run an agent in a new worktree.
+  help                          Show this help message.
+
+Common options for 'make' and 'exec':
   --fresh-env         When creating a worktree, use .env.example as the base instead of .env.
   --no-env-overrides  When creating a worktree, do not add port overrides to the .env file.
   --no-all-extras     Do not install all extra dependencies when running 'uv sync'."""
@@ -19,7 +25,7 @@ def main():
         epilog=epilog_text,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+    subparsers = parser.add_subparsers(dest="command", help=argparse.SUPPRESS)
     subparsers.required = True
 
     # --- Common arguments for make and exec ---
