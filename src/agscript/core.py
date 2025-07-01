@@ -146,17 +146,16 @@ def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_a
     worktree_path = Path(config.WORKTREE_DIR) / f"t{index}"
     task_fn_stem = Path(task_file).stem
     base_branch_name = f"{config.WORKTREE_OUTPUT_BRANCH_PREFIX}{task_fn_stem}"
-    new_branch_name = base_branch_name
     counter = 1
 
     while True:
+        new_branch_name = f"{base_branch_name}.{counter}"
         result = _run_command(
             ["git", "rev-parse", "--verify", "--quiet", f"refs/heads/{new_branch_name}"],
             check=False,
         )
         if result.returncode != 0:
             break
-        new_branch_name = f"{base_branch_name}.{counter}"
         counter += 1
 
     print("")
