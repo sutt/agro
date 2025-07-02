@@ -9,7 +9,7 @@ from pathlib import Path
 from . import config
 
 
-def _run_command(command, cwd=None, check=True, capture_output=False):
+def _run_command(command, cwd=None, check=True, capture_output=False, shell=False):
     """Helper to run a shell command."""
     try:
         result = subprocess.run(
@@ -18,18 +18,21 @@ def _run_command(command, cwd=None, check=True, capture_output=False):
             check=check,
             text=True,
             capture_output=capture_output,
+            shell=shell,
         )
         return result
     except subprocess.CalledProcessError as e:
-        print(f"Error executing command: {' '.join(command)}", file=sys.stderr)
+        cmd_str = command if isinstance(command, str) else " ".join(command)
+        print(f"Error executing command: {cmd_str}", file=sys.stderr)
         if e.stdout:
             print(e.stdout, file=sys.stderr)
         if e.stderr:
             print(e.stderr, file=sys.stderr)
         raise
     except FileNotFoundError:
+        cmd_name = command if isinstance(command, str) else command[0]
         print(
-            f"Error: Command '{command[0]}' not found. Is it in your PATH?",
+            f"Error: Command '{cmd_name}' not found. Is it in your PATH?",
             file=sys.stderr,
         )
         raise
@@ -195,17 +198,35 @@ def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_a
     print(f"   Log file: {log_file_path.resolve()}")
 
 
-def muster_command(command_str, indices_str):
+def muster_command(command_str, indices_str, server=False, kill_server=False):
     """Runs a command in multiple worktrees."""
+    if server and kill_server:
+        raise ValueError("--server and --kill-server cannot be used together.")
+
     try:
         indices = [int(i.strip()) for i in indices_str.split(',') if i.strip()]
     except ValueError:
         print(f"Error: Invalid indices list '{indices_str}'. Please provide a comma-separated list of numbers.", file=sys.stderr)
         raise
 
-    command = shlex.split(command_str)
-    if not command:
-        raise ValueError("Empty command provided.")
+    use_shell = False
+    final_command_str = command_str
+
+    if kill_server:
+        final_command_str = "kill $(cat server.pid) && rm -f server.pid server.log"
+        use_shell = True
+    elif server:
+        if not command_str.strip():
+            raise ValueError("Empty command provided for --server.")
+        final_command_str = f"{command_str} > server.log 2>&1 & echo $! > server.pid"
+        use_shell = True
+
+    if use_shell:
+        command = final_command_str
+    else:
+        command = shlex.split(final_command_str)
+        if not command:
+            raise ValueError("Empty command provided.")
 
     for index in indices:
         tree_name = f"t{index}"
@@ -216,9 +237,9 @@ def muster_command(command_str, indices_str):
             continue
 
         print(f"\n--- Running command in t{index} ({worktree_path}) ---")
-        print(f"$ {command_str}")
+        print(f"$ {final_command_str}")
         try:
-            _run_command(command, cwd=str(worktree_path))
+            _run_command(command, cwd=str(worktree_path), shell=use_shell)
         except (subprocess.CalledProcessError, FileNotFoundError):
             # _run_command already prints details.
             print(f"--- Command failed in t{index}. Continuing... ---", file=sys.stderr)

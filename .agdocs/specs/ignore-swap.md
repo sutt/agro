@@ -1,0 +1,1 @@
+currently we write some files to .agdocs/swap, but we don't want git to track this, add a .gitignore with the contents of "*" in it when you create this directory.

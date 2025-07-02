@@ -102,13 +102,25 @@ Common options for 'make' and 'exec':
     )
     parser_muster.add_argument(
         "command_str",
-        help="The command to execute in each worktree (e.g., 'uv run pytest').",
+        help="The command to execute. A dummy value can be used with --kill-server.",
     )
     parser_muster.add_argument(
         "indices", help="Comma-separated list of worktree indices (e.g., '1,2')."
     )
+    parser_muster.add_argument(
+        "--server",
+        action="store_true",
+        help="Run command as a background server, redirecting output and saving PID.",
+    )
+    parser_muster.add_argument(
+        "--kill-server",
+        action="store_true",
+        help="Kill the background server and clean up pid/log files.",
+    )
     parser_muster.set_defaults(
-        func=lambda args: core.muster_command(args.command_str, args.indices)
+        func=lambda args: core.muster_command(
+            args.command_str, args.indices, server=args.server, kill_server=args.kill_server
+        )
     )
 
     # --- help command ---
