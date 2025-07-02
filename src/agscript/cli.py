@@ -13,6 +13,7 @@ def main():
   delete <index>                Delete the worktree with the given index.
   exec <index> <taskfile> ...   Run an agent in a new worktree.
   muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
+  grab <branch-name>            Checkout a branch, creating a copy if it's in use.
   help                          Show this help message.
 
 Common options for 'make' and 'exec':
@@ -122,6 +123,13 @@ Common options for 'make' and 'exec':
             args.command_str, args.indices, server=args.server, kill_server=args.kill_server
         )
     )
+
+    # --- grab command ---
+    parser_grab = subparsers.add_parser(
+        "grab", help="Checkout a branch, creating a copy if it's in use by another worktree."
+    )
+    parser_grab.add_argument("branch_name", help="The branch to grab.")
+    parser_grab.set_defaults(func=lambda args: core.grab_branch(args.branch_name))
 
     # --- help command ---
     parser_help = subparsers.add_parser("help", help="Show this help message.")

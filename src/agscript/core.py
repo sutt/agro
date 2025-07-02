@@ -244,3 +244,25 @@ def muster_command(command_str, indices_str, server=False, kill_server=False):
             # _run_command already prints details.
             print(f"--- Command failed in t{index}. Continuing... ---", file=sys.stderr)
             continue
+
+
+def grab_branch(branch_name):
+    """
+    Checks out a branch. If the branch is checked out in another worktree,
+    creates a copy of it and checks out the copy.
+    """
+    print(f"Attempting to checkout branch '{branch_name}'...")
+    try:
+        _run_command(["git", "checkout", branch_name])
+        print(f"Successfully checked out branch '{branch_name}'.")
+    except subprocess.CalledProcessError as e:
+        if "is already checked out at" in e.stderr:
+            copy_branch_name = f"{branch_name}.copy"
+            print(f"Branch '{branch_name}' is in use by another worktree.")
+            print(f"Creating/updating copy '{copy_branch_name}' and checking it out.")
+            _run_command(["git", "branch", "-f", copy_branch_name, branch_name])
+            _run_command(["git", "checkout", copy_branch_name])
+            print(f"Successfully checked out branch '{copy_branch_name}'.")
+        else:
+            # Re-raise if it's a different error
+            raise
