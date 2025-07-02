@@ -29,7 +29,11 @@ def main():
 Common options for 'make' and 'exec':
   --fresh-env         When creating a worktree, use .env.example as the base instead of .env.
   --no-env-overrides  When creating a worktree, do not add port overrides to the .env file.
-  --no-all-extras     Do not install all extra dependencies when running 'uv sync'."""
+  --no-all-extras     Do not install all extra dependencies when running 'uv sync'.
+
+Options for 'muster':
+  -s, --server        Run command as a background server, redirecting output and saving PID.
+  -k, --kill-server   Kill the background server and clean up pid/log files."""
 
     parser = argparse.ArgumentParser(
         description="A script to manage git worktrees for agent-based development.",
@@ -119,11 +123,13 @@ Common options for 'make' and 'exec':
         "indices", help="Comma-separated list of worktree indices (e.g., '1,2')."
     )
     parser_muster.add_argument(
+        "-s",
         "--server",
         action="store_true",
         help="Run command as a background server, redirecting output and saving PID.",
     )
     parser_muster.add_argument(
+        "-k",
         "--kill-server",
         action="store_true",
         help="Kill the background server and clean up pid/log files.",
