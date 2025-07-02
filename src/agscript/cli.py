@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 
 from . import core
@@ -8,6 +9,13 @@ def main():
     """
     Main entry point for the agscript command-line interface.
     """
+    swap_dir = ".agdocs/swap"
+    os.makedirs(swap_dir, exist_ok=True)
+    gitignore_path = os.path.join(swap_dir, ".gitignore")
+    if not os.path.exists(gitignore_path):
+        with open(gitignore_path, "w") as f:
+            f.write("*\n")
+
     epilog_text = """Available commands:
   make <index>                  Create a new worktree.
   delete <index>                Delete the worktree with the given index.
