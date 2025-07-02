@@ -253,10 +253,11 @@ def grab_branch(branch_name):
     """
     print(f"Attempting to checkout branch '{branch_name}'...")
     try:
-        _run_command(["git", "checkout", branch_name])
+        # We capture output here to inspect stderr on failure
+        _run_command(["git", "checkout", branch_name], capture_output=True)
         print(f"Successfully checked out branch '{branch_name}'.")
     except subprocess.CalledProcessError as e:
-        if "is already checked out at" in e.stderr:
+        if e.stderr and "is already checked out at" in e.stderr:
             copy_branch_name = f"{branch_name}.copy"
             print(f"Branch '{branch_name}' is in use by another worktree.")
             print(f"Creating/updating copy '{copy_branch_name}' and checking it out.")
