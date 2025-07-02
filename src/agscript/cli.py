@@ -14,6 +14,7 @@ def main():
   exec <index> <taskfile> ...   Run an agent in a new worktree.
   muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
+  fade <pattern>                Delete local branches matching a regex pattern.
   help                          Show this help message.
 
 Common options for 'make' and 'exec':
@@ -130,6 +131,13 @@ Common options for 'make' and 'exec':
     )
     parser_grab.add_argument("branch_name", help="The branch to grab.")
     parser_grab.set_defaults(func=lambda args: core.grab_branch(args.branch_name))
+
+    # --- fade command ---
+    parser_fade = subparsers.add_parser(
+        "fade", help="Delete local branches matching a regex pattern after confirmation."
+    )
+    parser_fade.add_argument("pattern", help="The regex pattern to match branch names against.")
+    parser_fade.set_defaults(func=lambda args: core.fade_branches(args.pattern))
 
     # --- help command ---
     parser_help = subparsers.add_parser("help", help="Show this help message.")

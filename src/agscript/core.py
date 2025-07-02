@@ -1,4 +1,5 @@
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -267,3 +268,56 @@ def grab_branch(branch_name):
         else:
             # Re-raise if it's a different error
             raise
+
+
+def fade_branches(pattern):
+    """Deletes local git branches matching a pattern after user confirmation."""
+    print(f"Searching for branches matching pattern: '{pattern}'")
+
+    result = _run_command(["git", "branch"], capture_output=True, check=True)
+    all_branches_raw = result.stdout.strip().split('\n')
+
+    branches_to_delete = []
+    for line in all_branches_raw:
+        branch_name = line.lstrip(' *+')
+        if re.search(pattern, branch_name):
+            if line.startswith('* '):
+                print(f"Warning: Skipping currently checked out branch '{branch_name}'", file=sys.stderr)
+                continue
+            branches_to_delete.append(branch_name)
+
+    if not branches_to_delete:
+        print("No branches found matching the pattern to delete.")
+        return
+
+    print("\n--- Dry Run ---")
+    print("The following branches would be deleted:")
+    for branch in branches_to_delete:
+        print(f"  {branch}")
+    print("--- End Dry Run ---\n")
+
+    try:
+        confirm = input(f"Delete these {len(branches_to_delete)} branches? (Y/n): ")
+    except (EOFError, KeyboardInterrupt):
+        print("\nOperation cancelled.")
+        return
+
+    if confirm.lower() != 'y':
+        print("Operation cancelled by user.")
+        return
+
+    print("\nDeleting branches...")
+    deleted_count = 0
+    failed_count = 0
+    for branch in branches_to_delete:
+        result = _run_command(["git", "branch", "-D", branch], capture_output=True, check=False)
+        if result.returncode == 0:
+            print(f"Deleted branch '{branch}'.")
+            deleted_count += 1
+        else:
+            print(f"Failed to delete branch '{branch}':", file=sys.stderr)
+            if result.stderr:
+                print(result.stderr.strip(), file=sys.stderr)
+            failed_count += 1
+
+    print(f"\nFade complete. Deleted {deleted_count} branches, {failed_count} failed.")
