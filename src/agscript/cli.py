@@ -23,6 +23,7 @@ def main():
   muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
   fade <pattern>                Delete local branches matching a regex pattern.
+  surrender [indices]           Kill running agent processes (default: all).
   help                          Show this help message.
 
 Common options for 'make' and 'exec':
@@ -146,6 +147,18 @@ Common options for 'make' and 'exec':
     )
     parser_fade.add_argument("pattern", help="The regex pattern to match branch names against.")
     parser_fade.set_defaults(func=lambda args: core.fade_branches(args.pattern))
+
+    # --- surrender command ---
+    parser_surrender = subparsers.add_parser(
+        "surrender", help="Kill running agent processes."
+    )
+    parser_surrender.add_argument(
+        "indices",
+        nargs="?",
+        default="all",
+        help="Comma-separated list of worktree indices (e.g., '1,2'). Defaults to all.",
+    )
+    parser_surrender.set_defaults(func=lambda args: core.surrender(args.indices))
 
     # --- help command ---
     parser_help = subparsers.add_parser("help", help="Show this help message.")

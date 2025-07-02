@@ -321,3 +321,99 @@ def fade_branches(pattern):
             failed_count += 1
 
     print(f"\nFade complete. Deleted {deleted_count} branches, {failed_count} failed.")
+
+
+def surrender(indices_str=None):
+    """Kills running agent processes associated with worktrees."""
+    pid_dir = Path(".agdocs/swap")
+    if not pid_dir.is_dir():
+        print("No agent processes seem to be running (PID directory not found).")
+        return
+
+    target_indices = []
+    if not indices_str or indices_str.lower() == 'all':
+        for pid_file in sorted(pid_dir.glob("t*.pid")):
+            match = re.match(r"t(\d+)\.pid", pid_file.name)
+            if match:
+                target_indices.append(int(match.group(1)))
+        if not target_indices:
+            print("No PID files found in .agdocs/swap.")
+            return
+    else:
+        try:
+            target_indices = [int(i.strip()) for i in indices_str.split(',') if i.strip()]
+        except ValueError:
+            print(f"Error: Invalid indices list '{indices_str}'. Please provide a comma-separated list of numbers.", file=sys.stderr)
+            raise
+
+    procs_to_kill = []
+    print("--- Dry Run ---")
+    print("Checking for running agent processes...")
+    for index in sorted(target_indices):
+        pid_file = pid_dir / f"t{index}.pid"
+        if not pid_file.exists():
+            continue
+
+        try:
+            pid_str = pid_file.read_text().strip()
+            if not pid_str:
+                continue
+            pid = int(pid_str)
+        except (ValueError, IOError) as e:
+            print(f"Warning: Could not read PID for index {index} from {pid_file}: {e}", file=sys.stderr)
+            continue
+
+        # Check if process is running
+        result = _run_command(["ps", "-p", str(pid)], check=False, capture_output=True)
+        if result.returncode == 0:
+            procs_to_kill.append({'index': index, 'pid': pid, 'pid_file': pid_file})
+            print(f"  - Found running process for t{index}: PID {pid}")
+
+    if not procs_to_kill:
+        print("\nNo active agent processes found to surrender.")
+        return
+
+    print("--- End Dry Run ---\n")
+
+    try:
+        confirm = input(f"Surrender and kill these {len(procs_to_kill)} processes? (Y/n): ")
+    except (EOFError, KeyboardInterrupt):
+        print("\nOperation cancelled.")
+        return
+
+    if confirm.lower() != 'y':
+        print("Operation cancelled by user.")
+        return
+
+    print("\nProceeding with termination...")
+    killed_count = 0
+    failed_count = 0
+    for proc in procs_to_kill:
+        index = proc['index']
+        pid = proc['pid']
+        pid_file = proc['pid_file']
+        print(f"Killing process for t{index} (PID {pid})...")
+        try:
+            # Using kill command to be safe and simple. It sends SIGTERM by default.
+            _run_command(["kill", str(pid)], check=True, capture_output=True)
+            print(f"  - Process {pid} terminated.")
+            killed_count += 1
+        except subprocess.CalledProcessError:
+            # Check if it failed because the process was already gone
+            result = _run_command(["ps", "-p", str(pid)], check=False, capture_output=True)
+            if result.returncode != 0:
+                print(f"  - Process {pid} was already gone.")
+                killed_count += 1 # Count it as a success for cleanup purposes
+            else:
+                print(f"  - Failed to kill process {pid}.", file=sys.stderr)
+                failed_count += 1
+                continue # Don't remove PID file if kill failed and process is running
+
+        # Clean up pid file
+        try:
+            pid_file.unlink()
+            print(f"  - Removed PID file {pid_file}.")
+        except OSError as e:
+            print(f"  - Warning: Could not remove PID file {pid_file}: {e}", file=sys.stderr)
+
+    print(f"\nSurrender complete. Terminated {killed_count} processes, {failed_count} failed.")
