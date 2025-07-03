@@ -89,17 +89,20 @@ argo muster '' 1,2 --kill-server
 ## Commands
 
 ### Worktree / Agent Dispatch
-- exec
-- muster
-- surrender
+
+- `exec <index> <taskfile> ...`: Run an agent in a new worktree. This command first cleans up any existing worktree for the given index, creates a fresh one, and then launches a detached agent process with the specified task file.
+- `muster <command> <indices>`: Run a command in one or more specified worktrees. This is useful for running tests, starting servers, or executing any shell command across multiple environments.
+- `surrender [indices]`: Kill running agent processes. If no indices are specified, it targets all running agents.
 
 ### Git Helpers
-- grab
-- fade
+
+- `grab <branch-name>`: Checkout a branch. If the branch is already in use by another worktree, it creates a copy (e.g., `branch.copy`) and checks out the copy.
+- `fade <pattern>`: Delete local branches that match a given regex pattern, after a confirmation prompt.
 
 ### Worktree Utility
-- make
-- delete
+
+- `make <index>`: Create a new worktree with a specified index. This sets up the directory, git branch, and environment.
+- `delete <index>`: Delete the worktree and the associated git branch for a given index.
 
 
 ### Full Help
