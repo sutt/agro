@@ -7,7 +7,7 @@ from . import core
 
 def main():
     """
-    Main entry point for the agscript command-line interface.
+    Main entry point for the agro command-line interface.
     """
     swap_dir = ".agdocs/swap"
     os.makedirs(swap_dir, exist_ok=True)
@@ -37,7 +37,7 @@ Options for 'muster':
 
     parser = argparse.ArgumentParser(
         description="A script to manage git worktrees for agent-based development.",
-        prog="agscript",
+        prog="agro",
         epilog=epilog_text,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

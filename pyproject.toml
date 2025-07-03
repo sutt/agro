@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agscript"
+name = "agro"
 version = "0.1.0"
-description = "A simple command-line example package."
+description = "CLI wrapper for CLI-agents"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-agscript = "agscript.cli:main"
+agro = "agro.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
