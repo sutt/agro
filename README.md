@@ -4,6 +4,172 @@ A script to manage git worktrees for agent-based development. This tool simplifi
 
 ## Quickstart
 
+Check out a thorough hello world here: https://github.com/sutt/agro-demo?tab=readme-ov-file#agro-walk-through
+
+### Installation
+
+You can install this tool and its dependencies from the local project directory using `uv`: `uv tool install . --no-cache`
+
+For local devm from the root of the project directory, run the script to reinstall with `uv tool`:
+
+```
+./redeploy
+```
+
+### At a Glance - Hello, World!
+
+**0. Clone the Demo Repo**
+
+
+```bash
+git clone git@github.com:sutt/agro-demo.git
+cd agro-demo
+
+uv sync
+```
+
+Use the pre-built app + built in task in `.agdocs/specs`.
+
+**1. Launch two agents in parallel**
+- target worktrees 1 and 2.
+
+```bash
+$ agro exec 1 .agdocs/specs/add-about.md 
+$ agro exec 2 .agdocs/specs/add-about.md 
+```
+
+**Basic Output**
+- notice the git worktree / branch management + launch of aider
+
+```bash
+♻️  Cleanup for index 1 complete.
+🌴 New worktree created successfully.
+   Worktree: trees/t1
+   API Port: 8001
+🌱 Working on new branch: output/add-about.1
+🏃 Agent for index 1 started successfully.
+   Worktree: /home/user/tools_dev/demo_fastapi/trees/t1
+   Task file: /home/user/tools_dev/demo_fastapi/.agdocs/specs/add-about.md
+
+   ...
+
+♻️  Cleanup for index 2 complete.
+🌴 New worktree created successfully.
+   Worktree: trees/t2
+   API Port: 8002
+🌱 Working on new branch: output/add-about.2
+🏃 Agent for index 2 started successfully.
+   Worktree: /home/user/tools_dev/demo_fastapi/trees/t2
+   Task file: /home/user/tools_dev/demo_fastapi/.agdocs/specs/add-about.md
+
+
+```
+
+##### full output
+<details>
+    <summary>
+    expand full output
+    </summary>
+
+```bash
+♻️  Cleanup for index 1 complete.
+
+Creating new worktree for index 1...
+Creating new worktree 't1' at 'trees/t1' on branch 'tree/t1'...
+Preparing worktree (new branch 'tree/t1')
+HEAD is now at f0b97b1 refactor: .agdocs structure
+Copying .env to trees/t1/.env
+Warning: Source env file '.env' not found. Creating an empty .env file.
+Adding worktree overrides to trees/t1/.env
+Setting up Python environment in trees/t1...
+
+🌴 New worktree created successfully.
+   Worktree: trees/t1
+   Branch: tree/t1
+   API Port: 8001
+   DB Port:  5433
+
+🌱 Working on new branch: output/add-about.1
+
+Launching agent in detached mode from within trees/t1...
+
+🏃 Agent for index 1 started successfully.
+   Worktree: /home/user/tools_dev/demo_fastapi/trees/t1
+   Task file: /home/user/tools_dev/demo_fastapi/.agdocs/specs/add-about.md
+   Branch: output/add-about.1
+   Start time: 2025-07-03 17:13:58
+   PID: 579494 (saved to /home/user/tools_dev/demo_fastapi/.agdocs/swap/t1.pid)
+   Log file: /home/user/tools_dev/demo_fastapi/trees/t1/maider.log
+```
+**2. Launch a second agent on same task**
+
+**Run command:**
+```bash
+$ agro exec 2 .agdocs/specs/add-about.md 
+```
+
+- notice how work tree is incremented
+- notice how API_PORT is incremented
+
+```bash
+♻️  Cleanup for index 2 complete.
+
+🌴 New worktree created successfully.
+   Worktree: trees/t2
+   Branch: tree/t2
+   API Port: 8002
+
+🌱 Working on new branch: output/add-about.2
+
+Launching agent in detached mode from within trees/t2...
+
+🏃 Agent for index 2 started successfully.
+   Worktree: /home/user/tools_dev/demo_fastapi/trees/t2
+   Task file: /home/user/tools_dev/demo_fastapi/.agdocs/specs/add-about.md
+   Branch: output/add-about.2
+
+```
+</details>
+
+**2. Launch Server on each worktree**
+
+```bash
+agro muster 'python app/main.py' 1,2 --server
+```
+- The argument `--server` allows detach mode to run multiple servers out of one shell.
+
+**Output**
+
+```bash
+--- Running command in t1 (trees/t1) ---
+$ python app/main.py > server.log 2>&1 & echo $! > server.pid
+
+--- Running command in t2 (trees/t2) ---
+$ python app/main.py > server.log 2>&1 & echo $! > server.pid
+```
+
+**Check About Page Contents**
+_You could do this in browser as well_
+
+```bash
+# check worktree app, here the /about route hasn't been created
+curl http://127.0.0.1:8000/about
+# {"detail":"Not Found"}
+
+# check worktree t1
+curl http://127.0.0.1:8001/about
+{"message":"Keep up the great work!"}
+
+# check worktree t2
+curl http://127.0.0.1:8002/about
+{"message":"This is an about page. Keep up the great work!"}
+
+```
+
+### Or add your own spec to a project
+
+For example:
+
 **Create and commit a spec file and pass to an agent**
 ```bash
 mkdir .agdocs
@@ -16,74 +182,6 @@ git commit -m "spec: hello-world"
 agro exec 1 .agdocs/hello-world.md
 
 ```
-
-**Output**
-
-```bash
-Attempting to remove existing worktree for index 1 (if any)...
-♻️  Cleanup for index 1 complete.
-
-Creating new worktree for index 1...
-HEAD is now at caa7ed1 refactor: name package agro
-Copying .env to trees/t1/.env
-Adding worktree overrides to trees/t1/.env
-Setting up Python environment in trees/t1...
-
-🌴 New worktree created successfully.
-   Worktree: trees/t1
-   Branch: tree/t1
-   API Port: 8001
-   DB Port:  5433
-
-🌱 Working on new branch: output/ignore-swap.1
-
-🏃 Agent for index 1 started successfully.
-   Worktree: /home/user/tools_dev/agscript/trees/t1
-   Task file: /home/user/tools_dev/agscript/.agdocs/specs/ignore-swap.md
-   Branch: output/ignore-swap.1
-   Start time: 2025-07-03 14:27:36
-   PID: 519708 (saved to /home/user/tools_dev/agscript/.agdocs/swap/t1.pid)
-   Log file: /home/user/tools_dev/agscript/trees/t1/maider.log
-
-```
-
-Now let's a second agent (on the same task)
-
-```bash
-🌴 New worktree created successfully.
-   Worktree: trees/t2
-   Branch: tree/t2
-   API Port: 8002
-   DB Port:  5434
-
-🏃 Agent for index 2 started successfully.
-   Worktree: /home/user/tools_dev/agscript/trees/t2
-```
-
-
-Now wait for the both agents to finish and examine the results
-
-```bash
-agro exec 1 .agdocs/hello-world.md
-```
-
-```bash
-# execute pytest in both worktrees
-agro muster 'uv run pytest' 1,2
-
-# start the local server on both worktrees
-# start your browser on localhost:8000, localhost:8001
-# the --server flag allows the dispatch to be non-blocking 
-# across each worktree
-agro muster 'uv run app/main.py' 1,2 --server
-
-# use --kill-server to destroy the worktree servers running
-# in the background
-argo muster '' 1,2 --kill-server
-
-```
-
-
 
 
 ## Commands
@@ -138,15 +236,6 @@ Options for 'muster':
 ```
 
 
-## Installation
-
-You can install this tool and its dependencies from the local project directory using `uv`: `uv tool install . --no-cache`
-
-From the root of the project directory, run:
-
-```
-./redeploy
-```
 
 
 ## Layout
@@ -180,7 +269,7 @@ The script creates two directories in the code repo:
 
 #### Worktree Configuration
 
-agro will port `.env` files into the worktrees and override particular settings for parallel execution environments. And clone the environment (currently only supported for `uv`) from the main workspace into the 
+agro will port `.env` files into the worktrees and override particular settings for parallel execution environments. And clone the env  ironment (currently only supported for `uv`) from the main workspace into the 
 
 ```agro muster 'uv run which python' 1,2```
 
