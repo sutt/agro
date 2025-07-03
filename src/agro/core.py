@@ -297,12 +297,12 @@ def fade_branches(pattern):
     print("--- End Dry Run ---\n")
 
     try:
-        confirm = input(f"Delete these {len(branches_to_delete)} branches? (Y/n): ")
+        confirm = input(f"Delete these {len(branches_to_delete)} branches? [Y/n]: ")
     except (EOFError, KeyboardInterrupt):
         print("\nOperation cancelled.")
         return
 
-    if confirm.lower() != 'y':
+    if confirm.lower() not in ('y', ''):
         print("Operation cancelled by user.")
         return
 
@@ -376,12 +376,12 @@ def surrender(indices_str=None):
     print("--- End Dry Run ---\n")
 
     try:
-        confirm = input(f"Surrender and kill these {len(procs_to_kill)} processes? (Y/n): ")
+        confirm = input(f"Surrender and kill these {len(procs_to_kill)} processes? [Y/n]: ")
     except (EOFError, KeyboardInterrupt):
         print("\nOperation cancelled.")
         return
 
-    if confirm.lower() != 'y':
+    if confirm.lower() not in ('y', ''):
         print("Operation cancelled by user.")
         return
 
