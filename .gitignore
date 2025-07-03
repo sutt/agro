@@ -20,3 +20,4 @@ src/*.egg-info
 # app specific
 trees
 misc
+.env
