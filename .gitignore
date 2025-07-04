@@ -18,5 +18,5 @@ src/*.egg-info
 .ruff_cache
 
 # app specific
-trees
 misc
+.env

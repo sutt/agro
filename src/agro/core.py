@@ -56,6 +56,22 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras):
 
     worktree_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # Ensure the worktree directory is in .gitignore
+    worktree_root_dir_str = config.WORKTREE_DIR
+    result = _run_command(
+        ["git", "check-ignore", "-q", worktree_root_dir_str], check=False
+    )
+    if result.returncode == 1:  # Not ignored
+        gitignore_path = Path(".gitignore")
+        # Ensure we add a clean path with a trailing slash
+        entry = worktree_root_dir_str.lstrip("./")
+        if not entry.endswith("/"):
+            entry += "/"
+
+        print(f"Adding '{entry}' to {gitignore_path}...")
+        with gitignore_path.open("a") as f:
+            f.write(f"\n# Agro worktrees\n{entry}\n")
+
     if worktree_path.exists():
         raise FileExistsError(f"Worktree path '{worktree_path}' already exists.")
 
