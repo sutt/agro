@@ -243,77 +243,103 @@ def delete_tree(indices_str=None, all_flag=False):
         print(f"♻️  Cleanup for index {i} complete.")
 
 
-def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_args):
-    """Deletes, recreates, and runs a detached agent process in a worktree."""
-    print(f"Attempting to remove existing worktree for index {index} (if any)...")
-    try:
-        delete_tree(str(index))
-    except Exception as e:
-        print(f"Could not delete tree for index {index}: {e}. Continuing...", file=sys.stderr)
+def exec_agent(task_file, indices_str, fresh_env, no_overrides, no_all_extras, agent_args):
+    """Deletes, recreates, and runs detached agent processes in worktrees."""
+    indices_to_process = []
+    if indices_str:
+        try:
+            indices_to_process = [int(i.strip()) for i in indices_str.split(',') if i.strip()]
+        except ValueError:
+            print(f"Error: Invalid indices list '{indices_str}'. Please provide a comma-separated list of numbers.", file=sys.stderr)
+            raise
+    else:
+        worktree_dir = Path(config.WORKTREE_DIR)
+        existing_indices = set()
+        if worktree_dir.is_dir():
+            for p in worktree_dir.iterdir():
+                if p.is_dir() and re.match(r"^t\d+$", p.name):
+                    try:
+                        existing_indices.add(int(p.name[1:]))
+                    except ValueError:
+                        continue
+        
+        next_index = 1
+        while next_index in existing_indices:
+            next_index += 1
+        indices_to_process = [next_index]
+        print(f"No indices provided. Using next available index: {next_index}")
 
-    print(f"\nCreating new worktree for index {index}...")
-    initial_sha = make_new_tree(index, fresh_env, no_overrides, no_all_extras)
+    for index in indices_to_process:
+        print(f"\n--- Processing worktree for index {index} ---")
+        print(f"Attempting to remove existing worktree for index {index} (if any)...")
+        try:
+            delete_tree(str(index))
+        except Exception as e:
+            print(f"Could not delete tree for index {index}: {e}. Continuing...", file=sys.stderr)
 
-    worktree_path = Path(config.WORKTREE_DIR) / f"t{index}"
-    task_fn_stem = Path(task_file).stem
-    base_branch_name = f"{config.WORKTREE_OUTPUT_BRANCH_PREFIX}{task_fn_stem}"
-    counter = 1
+        print(f"\nCreating new worktree for index {index}...")
+        initial_sha = make_new_tree(index, fresh_env, no_overrides, no_all_extras)
 
-    while True:
-        new_branch_name = f"{base_branch_name}.{counter}"
-        result = _run_command(
-            ["git", "rev-parse", "--verify", "--quiet", f"refs/heads/{new_branch_name}"],
-            check=False,
-        )
-        if result.returncode != 0:
-            break
-        counter += 1
+        worktree_path = Path(config.WORKTREE_DIR) / f"t{index}"
+        task_fn_stem = Path(task_file).stem
+        base_branch_name = f"{config.WORKTREE_OUTPUT_BRANCH_PREFIX}{task_fn_stem}"
+        counter = 1
 
-    print("")
-    _run_command(["git", "checkout", "-b", new_branch_name], cwd=str(worktree_path))
-    print(f"🌱 Working on new branch: {new_branch_name}")
-    print("")
+        while True:
+            new_branch_name = f"{base_branch_name}.{counter}"
+            result = _run_command(
+                ["git", "rev-parse", "--verify", "--quiet", f"refs/heads/{new_branch_name}"],
+                check=False,
+            )
+            if result.returncode != 0:
+                break
+            counter += 1
 
-    pid_dir = Path(".agdocs/swap")
-    pid_dir.mkdir(parents=True, exist_ok=True)
-    pid_file = pid_dir / f"t{index}.pid"
+        print("")
+        _run_command(["git", "checkout", "-b", new_branch_name], cwd=str(worktree_path))
+        print(f"🌱 Working on new branch: {new_branch_name}")
+        print("")
 
-    print(f"Launching agent in detached mode from within {worktree_path}...")
+        pid_dir = Path(".agdocs/swap")
+        pid_dir.mkdir(parents=True, exist_ok=True)
+        pid_file = pid_dir / f"t{index}.pid"
 
-    log_file_path = worktree_path / "maider.log"
-    abs_task_file = os.path.abspath(task_file)
-    command = [
-        "maider.sh",
-        "--yes",
-        "-f",
-        abs_task_file,
-        "--no-check-update",
-        "--no-attribute-author",
-        "--no-attribute-committer",
-        "--no-attribute-co-authored-by",
-    ] + agent_args
+        print(f"Launching agent in detached mode from within {worktree_path}...")
 
-    with open(log_file_path, "wb") as log_file:
-        process = subprocess.Popen(
-            command,
-            cwd=str(worktree_path),
-            stdout=log_file,
-            stderr=subprocess.STDOUT,
-            start_new_session=True,  # Detach from parent
-        )
+        log_file_path = worktree_path / "maider.log"
+        abs_task_file = os.path.abspath(task_file)
+        command = [
+            "maider.sh",
+            "--yes",
+            "-f",
+            abs_task_file,
+            "--no-check-update",
+            "--no-attribute-author",
+            "--no-attribute-committer",
+            "--no-attribute-co-authored-by",
+        ] + agent_args
 
-    pid_file.write_text(str(process.pid))
+        with open(log_file_path, "wb") as log_file:
+            process = subprocess.Popen(
+                command,
+                cwd=str(worktree_path),
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,  # Detach from parent
+            )
 
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print("")
-    print(f"🏃 Agent for index {index} started successfully.")
-    print(f"   Worktree: {worktree_path.resolve()}")
-    print(f"   Task file: {abs_task_file}")
-    print(f"   Branch: {new_branch_name}")
-    print(f"   Initial SHA: {initial_sha}")
-    print(f"   Start time: {current_time}")
-    print(f"   PID: {process.pid} (saved to {pid_file.resolve()})")
-    print(f"   Log file: {log_file_path.resolve()}")
+        pid_file.write_text(str(process.pid))
+
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print("")
+        print(f"🏃 Agent for index {index} started successfully.")
+        print(f"   Worktree: {worktree_path.resolve()}")
+        print(f"   Task file: {abs_task_file}")
+        print(f"   Branch: {new_branch_name}")
+        print(f"   Initial SHA: {initial_sha}")
+        print(f"   Start time: {current_time}")
+        print(f"   PID: {process.pid} (saved to {pid_file.resolve()})")
+        print(f"   Log file: {log_file_path.resolve()}")
 
 
 def muster_command(command_str, indices_str, server=False, kill_server=False):

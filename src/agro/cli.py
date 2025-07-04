@@ -5,6 +5,40 @@ import sys
 from . import core
 
 
+def _is_indices_list(s):
+    """Check if a string is a comma-separated list of digits."""
+    if not s:
+        return False
+    parts = s.split(',')
+    if not any(p.strip() for p in parts):  # handles ',' or ',,'
+        return False
+    return all(p.strip().isdigit() for p in parts if p.strip())
+
+
+def _dispatch_exec(args):
+    """Helper to dispatch exec command with complex argument parsing."""
+    taskfile = args.taskfile
+    remaining_args = args.agent_args
+
+    indices_str = None
+    agent_args = []
+
+    if remaining_args and _is_indices_list(remaining_args[0]):
+        indices_str = remaining_args[0]
+        agent_args = remaining_args[1:]
+    else:
+        agent_args = remaining_args
+
+    core.exec_agent(
+        taskfile,
+        indices_str,
+        args.fresh_env,
+        args.no_env_overrides,
+        args.no_all_extras,
+        agent_args,
+    )
+
+
 def main():
     """
     Main entry point for the agro command-line interface.
@@ -19,7 +53,7 @@ def main():
     epilog_text = """Available commands:
   make <index>                  Create a new worktree.
   delete <indices>|--all        Delete one, multiple, or all worktrees.
-  exec <index> <taskfile> ...   Run an agent in a new worktree.
+  exec <taskfile> [indices] ...   Run an agent in new worktree(s).
   muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
   fade <pattern>                Delete local branches matching a regex pattern.
@@ -95,28 +129,18 @@ Options for 'muster':
     parser_exec = subparsers.add_parser(
         "exec",
         parents=[common_parser],
-        help="Re-creates a worktree and executes a detached agent process. "
-        "All arguments after the taskfile are passed to the agent.",
+        help="Re-creates worktree(s) and executes detached agent processes. "
+        "All arguments after the taskfile and optional indices are passed to the agent.",
     )
-    parser_exec.add_argument("index", type=int, help="Index for the worktree.")
     parser_exec.add_argument(
         "taskfile", help="The taskfile for the agent (e.g., tasks/my-task.md)."
     )
     parser_exec.add_argument(
         "agent_args",
         nargs=argparse.REMAINDER,
-        help="Additional arguments to pass to the maider.sh script.",
+        help="Optional indices (e.g. '1,2') followed by arguments for maider.sh.",
     )
-    parser_exec.set_defaults(
-        func=lambda args: core.exec_agent(
-            args.index,
-            args.fresh_env,
-            args.no_env_overrides,
-            args.no_all_extras,
-            args.taskfile,
-            args.agent_args,
-        )
-    )
+    parser_exec.set_defaults(func=_dispatch_exec)
 
     # --- muster command ---
     parser_muster = subparsers.add_parser(
