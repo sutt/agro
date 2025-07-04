@@ -56,6 +56,10 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras):
 
     worktree_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # Get the current commit SHA before creating the worktree
+    sha_result = _run_command(["git", "rev-parse", "HEAD"], capture_output=True)
+    initial_sha = sha_result.stdout.strip()
+
     # Ensure the worktree directory is in .gitignore
     worktree_root_dir_str = config.WORKTREE_DIR
     result = _run_command(
@@ -132,6 +136,8 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras):
         print(f"   API Port: {api_port}")
         print(f"   DB Port:  {db_port}")
     print(f"To start working, run: cd {worktree_path} && source .venv/bin/activate")
+
+    return initial_sha
 
 
 def delete_tree(indices_str=None, all_flag=False):
@@ -246,7 +252,7 @@ def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_a
         print(f"Could not delete tree for index {index}: {e}. Continuing...", file=sys.stderr)
 
     print(f"\nCreating new worktree for index {index}...")
-    make_new_tree(index, fresh_env, no_overrides, no_all_extras)
+    initial_sha = make_new_tree(index, fresh_env, no_overrides, no_all_extras)
 
     worktree_path = Path(config.WORKTREE_DIR) / f"t{index}"
     task_fn_stem = Path(task_file).stem
@@ -304,6 +310,7 @@ def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_a
     print(f"   Worktree: {worktree_path.resolve()}")
     print(f"   Task file: {abs_task_file}")
     print(f"   Branch: {new_branch_name}")
+    print(f"   Initial SHA: {initial_sha}")
     print(f"   Start time: {current_time}")
     print(f"   PID: {process.pid} (saved to {pid_file.resolve()})")
     print(f"   Log file: {log_file_path.resolve()}")
