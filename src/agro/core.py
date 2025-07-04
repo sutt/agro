@@ -82,17 +82,26 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras):
 
     env_source_path = Path(".env.example" if fresh_env else ".env")
     env_dest_path = worktree_path / ".env"
-    print(f"Copying {env_source_path} to {env_dest_path}")
-    if not env_source_path.exists():
+
+    env_file_created = False
+    if env_source_path.exists():
+        print(f"Copying {env_source_path} to {env_dest_path}")
+        shutil.copy(env_source_path, env_dest_path)
+        env_file_created = True
+    elif Path(".env").exists() or Path(".env.example").exists():
         print(
             f"Warning: Source env file '{env_source_path}' not found. Creating an empty .env file.",
             file=sys.stderr,
         )
         env_dest_path.touch()
+        env_file_created = True
     else:
-        shutil.copy(env_source_path, env_dest_path)
+        print(
+            "Warning: Neither .env nor .env.example found in root. No .env file will be created.",
+            file=sys.stderr,
+        )
 
-    if not no_overrides:
+    if not no_overrides and env_file_created:
         print(f"Adding worktree overrides to {env_dest_path}")
         with env_dest_path.open("a") as f:
             f.write("\n")
