@@ -239,7 +239,16 @@ def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_a
 
     log_file_path = worktree_path / "maider.log"
     abs_task_file = os.path.abspath(task_file)
-    command = ["maider.sh", "--yes", "-f", abs_task_file] + agent_args
+    command = [
+        "maider.sh",
+        "--yes",
+        "-f",
+        abs_task_file,
+        "--no-check-update",
+        "--no-attribute-author",
+        "--no-attribute-committer",
+        "--no-attribute-co-authored-by",
+    ] + agent_args
 
     with open(log_file_path, "wb") as log_file:
         process = subprocess.Popen(
