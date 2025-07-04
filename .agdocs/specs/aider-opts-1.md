@@ -533,3 +533,5 @@ Again modify this script to add the nec args to maider.sh to pass to aider that 
 The goals I want are:
 1. don't prompt user for any updates in the aider package
 2. don't leave attribution to aider anywhere in the git author or commit message. (this could be multiple flags?)
+
+Don't worry about modifying maider.sh just pass arguments to it which it will pass to aider.

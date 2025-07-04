@@ -125,31 +125,79 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras):
     print(f"To start working, run: cd {worktree_path} && source .venv/bin/activate")
 
 
-def delete_tree(index):
-    """Removes a worktree and its associated git branch."""
-    tree_name = f"t{index}"
-    branch_name = f"{config.WORKTREE_BRANCH_PREFIX}{index}"
-    worktree_path = Path(config.WORKTREE_DIR) / tree_name
+def delete_tree(index=None, all_flag=False):
+    """Removes one or all worktrees and their associated git branches."""
+    indices_to_process = []
 
-    if worktree_path.is_dir() and (worktree_path / ".git").is_file():
-        print(f"Removing worktree '{tree_name}' at {worktree_path}...")
-        _run_command(["git", "worktree", "remove", "--force", str(worktree_path)])
+    if all_flag:
+        worktree_dir = Path(config.WORKTREE_DIR)
+        if not worktree_dir.is_dir():
+            print(f"Worktree directory '{worktree_dir}' not found.")
+            return
+
+        indices_to_delete = []
+        for p in worktree_dir.iterdir():
+            if p.is_dir() and re.match(r"^t\d+$", p.name):
+                try:
+                    index_str = p.name[1:]
+                    indices_to_delete.append(int(index_str))
+                except ValueError:
+                    continue
+
+        if not indices_to_delete:
+            print("No worktrees found to delete.")
+            return
+
+        print("The following worktrees will be deleted:")
+        for i in sorted(indices_to_delete):
+            print(f"  - t{i}")
+        print("")
+
+        try:
+            confirm = input(
+                f"Delete these {len(indices_to_delete)} worktrees? [Y/n]: "
+            )
+        except (EOFError, KeyboardInterrupt):
+            print("\nOperation cancelled.")
+            return
+
+        if confirm.lower() not in ('y', ''):
+            print("Operation cancelled by user.")
+            return
+
+        print("\nDeleting worktrees...")
+        indices_to_process = sorted(indices_to_delete)
+    elif index is not None:
+        indices_to_process = [index]
     else:
-        print(
-            f"Info: Worktree '{worktree_path}' not found or not a valid worktree. Skipping removal."
+        # This case should be prevented by the CLI argument parsing
+        print("Error: No index specified for deletion.", file=sys.stderr)
+        return
+
+    for i in indices_to_process:
+        tree_name = f"t{i}"
+        branch_name = f"{config.WORKTREE_BRANCH_PREFIX}{i}"
+        worktree_path = Path(config.WORKTREE_DIR) / tree_name
+
+        if worktree_path.is_dir() and (worktree_path / ".git").is_file():
+            print(f"Removing worktree '{tree_name}' at {worktree_path}...")
+            _run_command(["git", "worktree", "remove", "--force", str(worktree_path)])
+        else:
+            print(
+                f"Info: Worktree '{worktree_path}' not found or not a valid worktree. Skipping removal."
+            )
+
+        result = _run_command(
+            ["git", "show-ref", "--verify", "--quiet", f"refs/heads/{branch_name}"],
+            check=False,
         )
+        if result.returncode == 0:
+            print(f"Deleting branch '{branch_name}'...")
+            _run_command(["git", "branch", "-D", branch_name])
+        else:
+            print(f"Info: Branch '{branch_name}' not found. Skipping deletion.")
 
-    result = _run_command(
-        ["git", "show-ref", "--verify", "--quiet", f"refs/heads/{branch_name}"],
-        check=False,
-    )
-    if result.returncode == 0:
-        print(f"Deleting branch '{branch_name}'...")
-        _run_command(["git", "branch", "-D", branch_name])
-    else:
-        print(f"Info: Branch '{branch_name}' not found. Skipping deletion.")
-
-    print(f"♻️  Cleanup for index {index} complete.")
+        print(f"♻️  Cleanup for index {i} complete.")
 
 
 def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_args):

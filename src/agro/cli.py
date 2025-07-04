@@ -18,7 +18,7 @@ def main():
 
     epilog_text = """Available commands:
   make <index>                  Create a new worktree.
-  delete <index>                Delete the worktree with the given index.
+  delete <index>|--all            Delete one or all worktrees.
   exec <index> <taskfile> ...   Run an agent in a new worktree.
   muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
@@ -76,13 +76,17 @@ Options for 'muster':
     )
 
     # --- delete command ---
-    parser_delete = subparsers.add_parser(
-        "delete", help="Delete the worktree with the given index."
+    parser_delete = subparsers.add_parser("delete", help="Delete one or all worktrees.")
+    delete_group = parser_delete.add_mutually_exclusive_group(required=True)
+    delete_group.add_argument(
+        "index", nargs="?", type=int, help="Index of the worktree to delete."
     )
-    parser_delete.add_argument(
-        "index", type=int, help="Index of the worktree to delete."
+    delete_group.add_argument(
+        "--all", action="store_true", help="Delete all existing worktrees."
     )
-    parser_delete.set_defaults(func=lambda args: core.delete_tree(args.index))
+    parser_delete.set_defaults(
+        func=lambda args: core.delete_tree(index=args.index, all_flag=args.all)
+    )
 
     # --- exec command ---
     parser_exec = subparsers.add_parser(
