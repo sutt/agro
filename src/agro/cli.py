@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import sys
 
@@ -36,6 +37,7 @@ def _dispatch_exec(args):
         args.no_env_overrides,
         args.no_all_extras,
         agent_args,
+        show_cmd_output=(args.verbose >= 2),
     )
 
 
@@ -75,6 +77,19 @@ Options for 'muster':
         epilog=epilog_text,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Increase verbosity. -v for debug, -vv for command output.",
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Suppress all output except warnings and errors.",
+    )
     subparsers = parser.add_subparsers(dest="command", help=argparse.SUPPRESS)
     subparsers.required = True
 
@@ -105,7 +120,11 @@ Options for 'muster':
     parser_make.add_argument("index", type=int, help="Index for the new worktree.")
     parser_make.set_defaults(
         func=lambda args: core.make_new_tree(
-            args.index, args.fresh_env, args.no_env_overrides, args.no_all_extras
+            args.index,
+            args.fresh_env,
+            args.no_env_overrides,
+            args.no_all_extras,
+            show_cmd_output=(args.verbose >= 2),
         )
     )
 
@@ -122,7 +141,11 @@ Options for 'muster':
         "--all", action="store_true", help="Delete all existing worktrees."
     )
     parser_delete.set_defaults(
-        func=lambda args: core.delete_tree(indices_str=args.indices, all_flag=args.all)
+        func=lambda args: core.delete_tree(
+            indices_str=args.indices,
+            all_flag=args.all,
+            show_cmd_output=(args.verbose >= 2),
+        )
     )
 
     # --- exec command ---
@@ -167,7 +190,11 @@ Options for 'muster':
     )
     parser_muster.set_defaults(
         func=lambda args: core.muster_command(
-            args.command_str, args.indices, server=args.server, kill_server=args.kill_server
+            args.command_str,
+            args.indices,
+            server=args.server,
+            kill_server=args.kill_server,
+            show_cmd_output=(args.verbose >= 2),
         )
     )
 
@@ -176,14 +203,22 @@ Options for 'muster':
         "grab", help="Checkout a branch, creating a copy if it's in use by another worktree."
     )
     parser_grab.add_argument("branch_name", help="The branch to grab.")
-    parser_grab.set_defaults(func=lambda args: core.grab_branch(args.branch_name))
+    parser_grab.set_defaults(
+        func=lambda args: core.grab_branch(
+            args.branch_name, show_cmd_output=(args.verbose >= 2)
+        )
+    )
 
     # --- fade command ---
     parser_fade = subparsers.add_parser(
         "fade", help="Delete local branches matching a regex pattern after confirmation."
     )
     parser_fade.add_argument("pattern", help="The regex pattern to match branch names against.")
-    parser_fade.set_defaults(func=lambda args: core.fade_branches(args.pattern))
+    parser_fade.set_defaults(
+        func=lambda args: core.fade_branches(
+            args.pattern, show_cmd_output=(args.verbose >= 2)
+        )
+    )
 
     # --- surrender command ---
     parser_surrender = subparsers.add_parser(
@@ -195,7 +230,11 @@ Options for 'muster':
         default="all",
         help="Comma-separated list of worktree indices (e.g., '1,2'). Defaults to all.",
     )
-    parser_surrender.set_defaults(func=lambda args: core.surrender(args.indices))
+    parser_surrender.set_defaults(
+        func=lambda args: core.surrender(
+            args.indices, show_cmd_output=(args.verbose >= 2)
+        )
+    )
 
     # --- help command ---
     parser_help = subparsers.add_parser("help", help="Show this help message.")
@@ -203,9 +242,36 @@ Options for 'muster':
 
     try:
         args = parser.parse_args()
+
+        # Setup logging
+        if args.quiet:
+            log_level = logging.WARNING
+        elif args.verbose >= 1:
+            log_level = logging.DEBUG
+        else:  # verbose == 0
+            log_level = logging.INFO
+
+        logger = logging.getLogger("agro")
+        logger.setLevel(log_level)
+
+        # Handler for stdout (INFO, DEBUG)
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler.setLevel(logging.DEBUG)
+        stdout_handler.addFilter(lambda record: record.levelno < logging.WARNING)
+        stdout_handler.setFormatter(logging.Formatter("%(message)s"))
+        logger.addHandler(stdout_handler)
+
+        # Handler for stderr (WARNING, ERROR, CRITICAL)
+        stderr_handler = logging.StreamHandler(sys.stderr)
+        stderr_handler.setLevel(logging.WARNING)
+        stderr_handler.setFormatter(logging.Formatter("%(message)s"))
+        logger.addHandler(stderr_handler)
+
+        logger.propagate = False
+
         args.func(args)
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logging.getLogger("agro").error(f"Error: {e}")
         sys.exit(1)
 
 
