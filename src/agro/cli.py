@@ -51,13 +51,13 @@ def main():
             f.write("*\n")
 
     epilog_text = """Available commands:
-  make <index>                  Create a new worktree.
-  delete <indices>|--all        Delete one, multiple, or all worktrees.
-  exec <taskfile> [indices] ...   Run an agent in new worktree(s).
+  exec <taskfile> [indices]     Run an agent in new worktree(s).
+  surrender [indices]           Kill running agent processes (default: all).
   muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
   fade <pattern>                Delete local branches matching a regex pattern.
-  surrender [indices]           Kill running agent processes (default: all).
+  make <index>                  Create a new worktree.
+  delete <indices>|--all        Delete one, multiple, or all worktrees.
   help                          Show this help message.
 
 Common options for 'make' and 'exec':
