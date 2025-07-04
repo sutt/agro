@@ -125,7 +125,7 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras):
     print(f"To start working, run: cd {worktree_path} && source .venv/bin/activate")
 
 
-def delete_tree(index=None, all_flag=False):
+def delete_tree(indices_str=None, all_flag=False):
     """Removes one or all worktrees and their associated git branches."""
     indices_to_process = []
 
@@ -167,8 +167,36 @@ def delete_tree(index=None, all_flag=False):
 
         print("\nDeleting worktrees...")
         indices_to_process = sorted(indices_to_delete)
-    elif index is not None:
-        indices_to_process = [index]
+    elif indices_str is not None:
+        try:
+            indices_to_process = [int(i.strip()) for i in indices_str.split(',') if i.strip()]
+        except ValueError:
+            print(f"Error: Invalid indices list '{indices_str}'. Please provide a comma-separated list of numbers.", file=sys.stderr)
+            raise
+
+        if not indices_to_process:
+            print("No worktrees to delete.")
+            return
+
+        if len(indices_to_process) > 1:
+            print("The following worktrees will be deleted:")
+            for i in sorted(indices_to_process):
+                print(f"  - t{i}")
+            print("")
+
+            try:
+                confirm = input(
+                    f"Delete these {len(indices_to_process)} worktrees? [Y/n]: "
+                )
+            except (EOFError, KeyboardInterrupt):
+                print("\nOperation cancelled.")
+                return
+
+            if confirm.lower() not in ('y', ''):
+                print("Operation cancelled by user.")
+                return
+
+            print("\nDeleting worktrees...")
     else:
         # This case should be prevented by the CLI argument parsing
         print("Error: No index specified for deletion.", file=sys.stderr)
@@ -204,7 +232,7 @@ def exec_agent(index, fresh_env, no_overrides, no_all_extras, task_file, agent_a
     """Deletes, recreates, and runs a detached agent process in a worktree."""
     print(f"Attempting to remove existing worktree for index {index} (if any)...")
     try:
-        delete_tree(index)
+        delete_tree(str(index))
     except Exception as e:
         print(f"Could not delete tree for index {index}: {e}. Continuing...", file=sys.stderr)
 
