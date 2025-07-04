@@ -128,7 +128,7 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras):
     print("\n" + "🌴 New worktree created successfully.")
     print(f"   Worktree: {worktree_path}")
     print(f"   Branch: {branch_name}")
-    if not no_overrides:
+    if not no_overrides and env_file_created:
         print(f"   API Port: {api_port}")
         print(f"   DB Port:  {db_port}")
     print(f"To start working, run: cd {worktree_path} && source .venv/bin/activate")
