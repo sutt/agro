@@ -1,0 +1,1 @@
+add versioning at the package level and cli level (e.g. --version). Currently looks like pyproject.toml has version 0.1.0 but provide documentation how this should be updated for distribution, publishing to pypi, etc
