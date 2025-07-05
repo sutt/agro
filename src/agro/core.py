@@ -99,7 +99,7 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras, show_cmd_output
     if worktree_path.exists():
         raise FileExistsError(f"Worktree path '{worktree_path}' already exists.")
 
-    logger.info(
+    logger.debug(
         f"Creating new worktree '{tree_name}' at '{worktree_path}' on branch '{branch_name}'..."
     )
     _run_command(
@@ -112,7 +112,7 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras, show_cmd_output
 
     env_file_created = False
     if env_source_path.exists():
-        logger.info(f"Copying {env_source_path} to {env_dest_path}")
+        logger.debug(f"Copying {env_source_path} to {env_dest_path}")
         shutil.copy(env_source_path, env_dest_path)
         env_file_created = True
     elif Path(".env").exists() or Path(".env.example").exists():
@@ -127,7 +127,7 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras, show_cmd_output
         )
 
     if not no_overrides and env_file_created:
-        logger.info(f"Adding worktree overrides to {env_dest_path}")
+        logger.debug(f"Adding worktree overrides to {env_dest_path}")
         with env_dest_path.open("a") as f:
             f.write("\n")
             f.write("### Worktree Overrides ---\n")
@@ -142,7 +142,7 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras, show_cmd_output
             f.write(f"NETWORK_GATEWAY={network_gateway}\n")
             f.write(f"FORWARDED_ALLOW_IPS={network_gateway}\n")
 
-    logger.info(f"Setting up Python environment in {worktree_path}...")
+    logger.debug(f"Setting up Python environment in {worktree_path}...")
     _run_command(
         ["uv", "venv"],
         cwd=str(worktree_path),
@@ -155,13 +155,12 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras, show_cmd_output
         uv_sync_command.append("--all-extras")
     _run_command(uv_sync_command, cwd=str(worktree_path), show_cmd_output=show_cmd_output)
 
-    logger.info("\n" + "🌴 New worktree created successfully.")
-    logger.info(f"   Worktree: {worktree_path}")
-    logger.info(f"   Branch: {branch_name}")
+    logger.debug("\n" + "🌴 New worktree created successfully.")
+    logger.debug(f"   Worktree: {worktree_path}")
+    logger.debug(f"   Branch: {branch_name}")
     if not no_overrides and env_file_created:
-        logger.info(f"   API Port: {api_port}")
-        logger.info(f"   DB Port:  {db_port}")
-    logger.info(f"To start working, run: cd {worktree_path} && source .venv/bin/activate")
+        logger.debug(f"   API Port: {api_port}")
+        logger.debug(f"   DB Port:  {db_port}")
 
     return initial_sha
 
@@ -186,7 +185,7 @@ def delete_tree(indices_str=None, all_flag=False, show_cmd_output=False):
                     continue
 
         if not indices_to_delete:
-            logger.info("No worktrees found to delete.")
+            logger.warning("No worktrees found to delete.")
             return
 
         logger.info("The following worktrees will be deleted:")
@@ -253,13 +252,13 @@ def delete_tree(indices_str=None, all_flag=False, show_cmd_output=False):
         worktree_path = Path(config.WORKTREE_DIR) / tree_name
 
         if worktree_path.is_dir() and (worktree_path / ".git").is_file():
-            logger.info(f"Removing worktree '{tree_name}' at {worktree_path}...")
+            logger.debug(f"Removing worktree '{tree_name}' at {worktree_path}...")
             _run_command(
                 ["git", "worktree", "remove", "--force", str(worktree_path)],
                 show_cmd_output=show_cmd_output,
             )
         else:
-            logger.info(
+            logger.warning(
                 f"Worktree '{worktree_path}' not found or not a valid worktree. Skipping removal."
             )
 
@@ -269,12 +268,12 @@ def delete_tree(indices_str=None, all_flag=False, show_cmd_output=False):
             show_cmd_output=show_cmd_output,
         )
         if result.returncode == 0:
-            logger.info(f"Deleting branch '{branch_name}'...")
+            logger.debug(f"Deleting branch '{branch_name}'...")
             _run_command(
                 ["git", "branch", "-D", branch_name], show_cmd_output=show_cmd_output
             )
         else:
-            logger.info(f"Branch '{branch_name}' not found. Skipping deletion.")
+            logger.warning(f"Branch '{branch_name}' not found. Skipping deletion.")
 
         logger.info(f"♻️  Cleanup for index {i} complete.")
 
@@ -332,20 +331,20 @@ def exec_agent(
         indices_to_process = new_indices
 
         if not indices_to_process and num_trees is not None:
-            logger.info("Number of trees is 0, no worktrees will be created.")
+            logger.debug("Number of trees is 0, no worktrees will be created.")
         elif num_trees is None:
             if not indices_to_process:
                 logger.warning("Could not determine next available index.")
             else:
-                logger.info(f"No indices provided. Using next available index: {indices_to_process[0]}")
+                logger.debug(f"No indices provided. Using next available index: {indices_to_process[0]}")
         elif num_trees is not None:
-            logger.info(
+            logger.debug(
                 f"Using next {num_trees} available indices: {', '.join(map(str, indices_to_process))}"
             )
 
     for index in indices_to_process:
-        logger.info(f"\n--- Processing worktree for index {index} ---")
-        logger.info(
+        logger.debug(f"\n--- Processing worktree for index {index} ---")
+        logger.debug(
             f"Attempting to remove existing worktree for index {index} (if any)..."
         )
         try:
@@ -355,7 +354,7 @@ def exec_agent(
                 f"Could not delete tree for index {index}: {e}. Continuing..."
             )
 
-        logger.info(f"\nCreating new worktree for index {index}...")
+        logger.debug(f"\nCreating new worktree for index {index}...")
         initial_sha = make_new_tree(
             index, fresh_env, no_overrides, no_all_extras, show_cmd_output
         )
@@ -382,20 +381,18 @@ def exec_agent(
                 break
             counter += 1
 
-        logger.info("")
         _run_command(
             ["git", "checkout", "-b", new_branch_name],
             cwd=str(worktree_path),
             show_cmd_output=show_cmd_output,
         )
-        logger.info(f"🌱 Working on new branch: {new_branch_name}")
-        logger.info("")
+        logger.debug(f"🌱 Working on new branch: {new_branch_name}")
 
         pid_dir = Path(".agdocs/swap")
         pid_dir.mkdir(parents=True, exist_ok=True)
         pid_file = pid_dir / f"t{index}.pid"
 
-        logger.info(f"Launching agent in detached mode from within {worktree_path}...")
+        logger.debug(f"Launching agent in detached mode from within {worktree_path}...")
 
         log_file_path = worktree_path / "maider.log"
         abs_task_file = os.path.abspath(task_file)
@@ -510,7 +507,7 @@ def grab_branch(branch_name, show_cmd_output=False):
         if e.stderr and "is already checked out at" in e.stderr:
             copy_branch_name = f"{branch_name}.copy"
             logger.warning(f"Branch '{branch_name}' is in use by another worktree.")
-            logger.info(
+            logger.debug(
                 f"Creating/updating copy '{copy_branch_name}' and checking it out."
             )
             _run_command(
