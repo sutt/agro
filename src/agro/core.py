@@ -289,6 +289,15 @@ def exec_agent(
     show_cmd_output=False,
 ):
     """Deletes, recreates, and runs detached agent processes in worktrees."""
+    task_path = Path(task_file)
+    if not task_path.is_file():
+        logger.error(f"Task file not found: {task_file}")
+        raise FileNotFoundError(f"Task file not found: {task_file}")
+
+    if task_path.stat().st_size == 0:
+        logger.error(f"Task file is empty: {task_file}")
+        raise ValueError(f"Task file is empty: {task_file}")
+
     indices_to_process = []
     if indices_str:
         try:
