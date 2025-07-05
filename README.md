@@ -2,19 +2,28 @@
 
 A script to manage git worktrees for agent-based development. This tool simplifies creating, managing, and running processes within isolated worktrees, each with its own environment configuration.
 
+[![PyPI version](https://badge.fury.io/py/agro.svg)](https://pypi.org/project/agro/)
+
+
 ## Quickstart
 
-Check out a thorough hello world here: https://github.com/sutt/agro-demo?tab=readme-ov-file#agro-walk-through
+Install with `pip` or `uv tool`:
 
-### Installation
-
-You can install this tool and its dependencies from the local project directory using `uv`: `uv tool install . --no-cache`
-
-For local devm from the root of the project directory, run the script to reinstall with `uv tool`:
-
+```bash
+pip install agro
+uv tool install agro
 ```
-./redeploy
+
+#### Local Development Install
+You can install this tool and its dependencies from the local clone of the project directory using `uv`: 
+
+```bash
+git clone git@github.com:sutt/agro.git"
+cd agro
+uv tool install . --no-cache
 ```
+
+For local dev updates run the `./redeploy` script to reinstall the local repo as `agro`.
 
 ### At a Glance - Hello, World!
 
@@ -182,6 +191,10 @@ git commit -m "spec: hello-world"
 agro exec 1 .agdocs/hello-world.md
 
 ```
+
+### Full Walk-Through
+
+5-minute Wwlk-through here: https://github.com/sutt/agro-demo#agro-walk-through
 
 
 ## Commands
