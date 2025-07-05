@@ -281,11 +281,12 @@ def delete_tree(indices_str=None, all_flag=False, show_cmd_output=False):
 
 def exec_agent(
     task_file,
-    indices_str,
     fresh_env,
     no_overrides,
     no_all_extras,
     agent_args,
+    indices_str=None,
+    num_trees=None,
     show_cmd_output=False,
 ):
     """Deletes, recreates, and runs detached agent processes in worktrees."""
@@ -310,6 +311,8 @@ def exec_agent(
             )
             raise
     else:
+        num_to_create = num_trees if num_trees is not None else 1
+
         worktree_dir = Path(config.WORKTREE_DIR)
         existing_indices = set()
         if worktree_dir.is_dir():
@@ -319,12 +322,26 @@ def exec_agent(
                         existing_indices.add(int(p.name[1:]))
                     except ValueError:
                         continue
-        
+
+        new_indices = []
         next_index = 1
-        while next_index in existing_indices:
+        while len(new_indices) < num_to_create:
+            if next_index not in existing_indices:
+                new_indices.append(next_index)
             next_index += 1
-        indices_to_process = [next_index]
-        logger.info(f"No indices provided. Using next available index: {next_index}")
+        indices_to_process = new_indices
+
+        if not indices_to_process and num_trees is not None:
+            logger.info("Number of trees is 0, no worktrees will be created.")
+        elif num_trees is None:
+            if not indices_to_process:
+                logger.warning("Could not determine next available index.")
+            else:
+                logger.info(f"No indices provided. Using next available index: {indices_to_process[0]}")
+        elif num_trees is not None:
+            logger.info(
+                f"Using next {num_trees} available indices: {', '.join(map(str, indices_to_process))}"
+            )
 
     for index in indices_to_process:
         logger.info(f"\n--- Processing worktree for index {index} ---")

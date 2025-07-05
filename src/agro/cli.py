@@ -19,24 +19,18 @@ def _is_indices_list(s):
 def _dispatch_exec(args):
     """Helper to dispatch exec command with complex argument parsing."""
     taskfile = args.taskfile
-    remaining_args = args.agent_args
+    agent_args = args.agent_args
 
-    indices_str = None
-    agent_args = []
-
-    if remaining_args and _is_indices_list(remaining_args[0]):
-        indices_str = remaining_args[0]
-        agent_args = remaining_args[1:]
-    else:
-        agent_args = remaining_args
+    num_trees = args.num_trees_pos or args.num_trees_opt
 
     core.exec_agent(
-        taskfile,
-        indices_str,
-        args.fresh_env,
-        args.no_env_overrides,
-        args.no_all_extras,
-        agent_args,
+        task_file=taskfile,
+        fresh_env=args.fresh_env,
+        no_overrides=args.no_env_overrides,
+        no_all_extras=args.no_all_extras,
+        agent_args=agent_args,
+        indices_str=args.tree_indices,
+        num_trees=num_trees,
         show_cmd_output=(args.verbose >= 2),
     )
 
@@ -153,15 +147,38 @@ Options for 'muster':
         "exec",
         parents=[common_parser],
         help="Re-creates worktree(s) and executes detached agent processes. "
-        "All arguments after the taskfile and optional indices are passed to the agent.",
+        "All arguments after the taskfile and exec options are passed to the agent.",
     )
     parser_exec.add_argument(
         "taskfile", help="The taskfile for the agent (e.g., tasks/my-task.md)."
     )
+
+    exec_group = parser_exec.add_mutually_exclusive_group()
+    exec_group.add_argument(
+        "num_trees_pos",
+        nargs="?",
+        type=int,
+        default=None,
+        metavar="num-trees",
+        help="Number of new worktrees to create.",
+    )
+    exec_group.add_argument(
+        "-n",
+        "--num-trees",
+        type=int,
+        dest="num_trees_opt",
+        help="Number of new worktrees to create.",
+    )
+    exec_group.add_argument(
+        "-t",
+        "--tree-indices",
+        help="Comma-separated list of worktree indices to use (e.g., '1,2').",
+    )
+
     parser_exec.add_argument(
         "agent_args",
         nargs=argparse.REMAINDER,
-        help="Optional indices (e.g. '1,2') followed by arguments for maider.sh.",
+        help="Arguments to pass to maider.sh.",
     )
     parser_exec.set_defaults(func=_dispatch_exec)
 
