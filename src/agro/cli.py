@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 
-from . import core
+from . import core, __version__
 
 
 def _is_indices_list(s):
@@ -70,6 +70,12 @@ Options for 'muster':
         prog="agro",
         epilog=epilog_text,
         formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+        help="Show program's version number and exit.",
     )
     parser.add_argument(
         "-v",
