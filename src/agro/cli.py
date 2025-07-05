@@ -47,7 +47,7 @@ def main():
             f.write("*\n")
 
     epilog_text = """Available commands:
-  exec <taskfile> [indices]     Run an agent in new worktree(s).
+  exec <taskfile> [num-trees]   Run an agent in new worktree(s), see also -n and -t.
   surrender [indices]           Kill running agent processes (default: all).
   muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
@@ -178,7 +178,7 @@ Options for 'muster':
     parser_exec.add_argument(
         "agent_args",
         nargs=argparse.REMAINDER,
-        help="Arguments to pass to maider.sh.",
+        help="Arguments to pass to cli-coder (Not Implemented)",
     )
     parser_exec.set_defaults(func=_dispatch_exec)
 
