@@ -2,7 +2,7 @@
 
 A script to manage git worktrees for agent-based development. This tool simplifies creating, managing, and running processes within isolated worktrees, each with its own environment configuration.
 
-[![PyPI version](https://badge.fury.io/py/agro.svg)](https://pypi.org/project/agro/)
+[![PyPI version](https://img.shields.io/pypi/v/agro)](https://pypi.org/project/agro/)
 
 
 ## Quickstart
