@@ -20,24 +20,22 @@ def init_project():
         logger.warning(f"'{agdocs_dir}' directory already exists. Skipping initialization.")
         return
 
-    logger.info(f"Initializing agro project structure in '{agdocs_dir}'...")
+    logger.debug(f"Initializing agro project structure in '{agdocs_dir}'...")
 
-    # Create directories
     agdocs_dir.mkdir()
     (agdocs_dir / "specs").mkdir()
     (agdocs_dir / "swap").mkdir()
     (agdocs_dir / "conf").mkdir()
 
-    # Create .gitignore inside .agdocs
     gitignore_path = agdocs_dir / ".gitignore"
     gitignore_path.write_text("swap/\n")
 
-    logger.info("✅ Project initialized successfully.")
-    logger.info(f"Created: {agdocs_dir}/")
-    logger.info(f"Created: {agdocs_dir}/specs/")
-    logger.info(f"Created: {agdocs_dir}/swap/")
-    logger.info(f"Created: {agdocs_dir}/conf/")
-    logger.info(f"Created: {agdocs_dir}/.gitignore")
+    logger.info("✅ Project initialized successfully in: {agdocs_dir}")
+    logger.debug(f"Created: {agdocs_dir}/")
+    logger.debug(f"Created: {agdocs_dir}/specs/")
+    logger.debug(f"Created: {agdocs_dir}/swap/")
+    logger.debug(f"Created: {agdocs_dir}/conf/")
+    logger.debug(f"Created: {agdocs_dir}/.gitignore")
 
 
 def _run_command(
