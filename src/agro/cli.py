@@ -39,13 +39,6 @@ def main():
     """
     Main entry point for the agro command-line interface.
     """
-    swap_dir = ".agdocs/swap"
-    os.makedirs(swap_dir, exist_ok=True)
-    gitignore_path = os.path.join(swap_dir, ".gitignore")
-    if not os.path.exists(gitignore_path):
-        with open(gitignore_path, "w") as f:
-            f.write("*\n")
-
     epilog_text = """Available commands:
   exec <taskfile> [num-trees]   Run an agent in new worktree(s), see also -n and -t.
   surrender [indices]           Kill running agent processes (default: all).
@@ -54,6 +47,7 @@ def main():
   fade <pattern>                Delete local branches matching a regex pattern.
   make <index>                  Create a new worktree.
   delete <indices>|--all        Delete one, multiple, or all worktrees.
+  init                          Initialize agro project structure.
   help                          Show this help message.
 
 Common options for 'make' and 'exec':
@@ -92,6 +86,13 @@ Options for 'muster':
     )
     subparsers = parser.add_subparsers(dest="command", help=argparse.SUPPRESS)
     subparsers.required = True
+
+    # --- init command ---
+    parser_init = subparsers.add_parser(
+        "init",
+        help="Initialize the .agdocs directory structure for the project.",
+    )
+    parser_init.set_defaults(func=lambda args: core.init_project())
 
     # --- Common arguments for make and exec ---
     common_parser = argparse.ArgumentParser(add_help=False)
