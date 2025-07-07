@@ -1,1 +1,0 @@
-when running exec, caputre the git sha of the latest commit when you first create the worktree, log this out at the end of the exec run

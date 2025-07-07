@@ -1,1 +1,0 @@
-allow agro delete command to take multiple indices (in comma separated form)

@@ -1,1 +1,0 @@
-When creating a worktree, check if the WORKTREE_DIR is gitignored in the main workspace, if so add the directory (e.g. trees/) to the gitignore file for the project the script is working on.

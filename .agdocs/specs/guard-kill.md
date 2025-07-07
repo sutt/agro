@@ -1,1 +1,0 @@
-when the surrender command or the muster --kill-server grep a -1 for not found pid dont attempt to kill the process.

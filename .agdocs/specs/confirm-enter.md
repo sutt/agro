@@ -1,1 +1,0 @@
-when prompting the user for Y/n in the scripts allow Enter to count as Yes and update the user hint for this fact.

@@ -1,1 +1,0 @@
-add an all or --all option to agro delete to delete all existing working trees as denoted by `t${N}` directory in the WORKTREES_DIR

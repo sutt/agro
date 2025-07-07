@@ -1,1 +1,0 @@
-add a subcommand to agscript called "muster" which will dispatch a command to be run to a select number of worktrees, e.g. dispatch the command "uv run pytest" or "uv run python app/main.py" to worktrees t1 and t2, via command: agscript muster 'uv run pytest' 1,2

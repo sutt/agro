@@ -21,3 +21,4 @@ src/*.egg-info
 trees
 misc
 .env
+.agdocs
