@@ -93,7 +93,12 @@ Options for 'muster':
         "init",
         help="Initialize the .agdocs directory structure for the project.",
     )
-    parser_init.set_defaults(func=lambda args: core.init_project())
+    parser_init.add_argument(
+        "--conf",
+        action="store_true",
+        help="Only generate a blank config file. Fails if the file already exists.",
+    )
+    parser_init.set_defaults(func=lambda args: core.init_project(conf_only=args.conf))
 
     # --- mirror command ---
     parser_mirror = subparsers.add_parser(

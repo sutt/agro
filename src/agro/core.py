@@ -60,9 +60,37 @@ def _get_config_template():
 """
 
 
-def init_project():
+def init_project(conf_only=False):
     """Initializes the .agdocs directory structure."""
     agdocs_dir = Path(config.AGDOCS_DIR)
+
+    def ensure_agdocs_in_gitignore():
+        # Add .agdocs to root .gitignore if not already present
+        result = _run_command(
+            ["git", "check-ignore", "-q", str(agdocs_dir)],
+            check=False,
+        )
+        if result.returncode == 1:  # Not ignored
+            root_gitignore_path = Path(".gitignore")
+            entry = f"{agdocs_dir}/"
+            logger.info(f"Adding '{entry}' to {root_gitignore_path}...")
+            with root_gitignore_path.open("a") as f:
+                f.write(f"\n# Agro project directory\n{entry}\n")
+
+    conf_dir = agdocs_dir / "conf"
+    config_file_path = conf_dir / "agro.conf.yml"
+
+    if conf_only:
+        if config_file_path.exists():
+            raise FileExistsError(f"Config file already exists at '{config_file_path}'.")
+
+        logger.debug(f"Generating config file at '{config_file_path}'...")
+        conf_dir.mkdir(parents=True, exist_ok=True)
+        config_file_path.write_text(_get_config_template())
+        ensure_agdocs_in_gitignore()
+        logger.info(f"✅ Config file created successfully: {config_file_path}")
+        return
+
     if agdocs_dir.exists():
         logger.warning(f"'{agdocs_dir}' directory already exists. Skipping initialization.")
         return
@@ -72,26 +100,14 @@ def init_project():
     agdocs_dir.mkdir()
     (agdocs_dir / "specs").mkdir()
     (agdocs_dir / "swap").mkdir()
-    conf_dir = agdocs_dir / "conf"
     conf_dir.mkdir()
 
-    config_file_path = conf_dir / "agro.conf.yml"
     config_file_path.write_text(_get_config_template())
 
     gitignore_path = agdocs_dir / ".gitignore"
     gitignore_path.write_text("swap/\n")
 
-    # Add .agdocs to root .gitignore if not already present
-    result = _run_command(
-        ["git", "check-ignore", "-q", str(agdocs_dir)],
-        check=False,
-    )
-    if result.returncode == 1:  # Not ignored
-        root_gitignore_path = Path(".gitignore")
-        entry = f"{agdocs_dir}/"
-        logger.info(f"Adding '{entry}' to {root_gitignore_path}...")
-        with root_gitignore_path.open("a") as f:
-            f.write(f"\n# Agro project directory\n{entry}\n")
+    ensure_agdocs_in_gitignore()
 
     logger.info(f"✅ Project initialized successfully in: {str(agdocs_dir)}")
     logger.debug(f"Created: {agdocs_dir}/")
