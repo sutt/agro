@@ -494,7 +494,7 @@ def exec_agent(
 
         logger.debug(f"Launching agent in detached mode from within {worktree_path}...")
 
-        log_file_path = agswap_dir / "maider.log"
+        log_file_path = agswap_dir / "agro-exec.log"
         command = [
             "maider.sh",
             "--yes",
