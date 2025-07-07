@@ -469,7 +469,7 @@ def exec_agent(
         logger.info("")
         logger.info(f"🏃 Agent for index {index} started successfully.")
         logger.info(f"   Worktree: {worktree_path.resolve()}")
-        logger.info(f"   Task file: {abs_task_file}")
+        logger.info(f"   Task file: {task_path.resolve()}")
         logger.info(f"   Branch: {new_branch_name}")
         logger.info(f"   Initial SHA: {initial_sha}")
         logger.info(f"   Start time: {current_time}")
