@@ -4,14 +4,16 @@ from dotenv import load_dotenv
 # Load .env file if it exists to override defaults
 load_dotenv()
 
-# Default configuration, can be overridden in .env
+# Agro-Specific Configs
 WORKTREE_DIR = os.getenv('WORKTREE_DIR', './trees')
+AGDOCS_DIR = os.getenv('AGDOCS_DIR', '.agdocs')
+PUBLIC_AGDOCS_DIR = os.getenv('PUBLIC_AGDOCS_DIR', '.public-agdocs')
 WORKTREE_BRANCH_PREFIX = os.getenv('WORKTREE_BRANCH_PREFIX', 'tree/t')
 WORKTREE_OUTPUT_BRANCH_PREFIX = os.getenv('WORKTREE_OUTPUT_BRANCH_PREFIX', 'output/')
+
+# App Env Replication for Configs
 BASE_API_PORT = int(os.getenv('BASE_API_PORT', 8000))
 DB_BASE_PORT = int(os.getenv('DB_BASE_PORT', 5432))
 DB_CONTAINER_NAME_PREFIX = os.getenv('DB_CONTAINER_NAME_PREFIX', 'tf-db')
 API_CONTAINER_NAME_PREFIX = os.getenv('API_CONTAINER_NAME_PREFIX', 'tf-api')
 DB_VOLUME_NAME_PREFIX = os.getenv('DB_VOLUME_NAME_PREFIX', 'tf-db-data')
-AGDOCS_DIR = os.getenv('AGDOCS_DIR', '.agdocs')
-PUBLIC_AGDOCS_DIR = os.getenv('PUBLIC_AGDOCS_DIR', '.public-agdocs')
