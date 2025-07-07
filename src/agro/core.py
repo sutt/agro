@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 def init_project():
     """Initializes the .agdocs directory structure."""
-    agdocs_dir = Path(".agdocs")
+    agdocs_dir = Path(config.AGDOCS_DIR)
     if agdocs_dir.exists():
         logger.warning(f"'{agdocs_dir}' directory already exists. Skipping initialization.")
         return
@@ -436,7 +436,7 @@ def exec_agent(
         )
         logger.debug(f"🌱 Working on new branch: {new_branch_name}")
 
-        pid_dir = Path(".agdocs/swap")
+        pid_dir = Path(config.AGDOCS_DIR) / "swap"
         pid_dir.mkdir(parents=True, exist_ok=True)
         pid_file = pid_dir / f"t{index}.pid"
 
@@ -638,9 +638,34 @@ def fade_branches(pattern, show_cmd_output=False):
     )
 
 
+def mirror_docs(show_cmd_output=False):
+    """Mirrors the documentation directory to its public counterpart."""
+    source_dir_str = config.AGDOCS_DIR
+    dest_dir_str = config.PUBLIC_AGDOCS_DIR
+
+    source_dir = Path(source_dir_str)
+    dest_dir = Path(dest_dir_str)
+
+    if not source_dir.is_dir():
+        logger.error(f"Source directory '{source_dir}' not found.")
+        raise FileNotFoundError(f"Source directory '{source_dir}' not found.")
+
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    # Ensure source and dest paths have a trailing slash for rsync
+    source_path = source_dir_str if source_dir_str.endswith('/') else f"{source_dir_str}/"
+    dest_path = dest_dir_str if dest_dir_str.endswith('/') else f"{dest_dir_str}/"
+
+    command = ["rsync", "-av", "--delete", source_path, dest_path]
+
+    logger.info(f"Mirroring '{source_path}' to '{dest_path}'...")
+    _run_command(command, show_cmd_output=show_cmd_output)
+    logger.info("✅ Mirroring complete.")
+
+
 def surrender(indices_str=None, show_cmd_output=False):
     """Kills running agent processes associated with worktrees."""
-    pid_dir = Path(".agdocs/swap")
+    pid_dir = Path(config.AGDOCS_DIR) / "swap"
     if not pid_dir.is_dir():
         logger.info("No agent processes seem to be running (PID directory not found).")
         return
@@ -652,7 +677,7 @@ def surrender(indices_str=None, show_cmd_output=False):
             if match:
                 target_indices.append(int(match.group(1)))
         if not target_indices:
-            logger.info("No PID files found in .agdocs/swap.")
+            logger.info(f"No PID files found in {pid_dir}.")
             return
     else:
         try:

@@ -48,6 +48,7 @@ def main():
   make <index>                  Create a new worktree.
   delete <indices>|--all        Delete one, multiple, or all worktrees.
   init                          Initialize agro project structure.
+  mirror                        Mirror internal docs to public docs directory.
   help                          Show this help message.
 
 Common options for 'make' and 'exec':
@@ -93,6 +94,15 @@ Options for 'muster':
         help="Initialize the .agdocs directory structure for the project.",
     )
     parser_init.set_defaults(func=lambda args: core.init_project())
+
+    # --- mirror command ---
+    parser_mirror = subparsers.add_parser(
+        "mirror",
+        help="Mirror the internal docs to the public docs directory.",
+    )
+    parser_mirror.set_defaults(
+        func=lambda args: core.mirror_docs(show_cmd_output=(args.verbose >= 2))
+    )
 
     # --- Common arguments for make and exec ---
     common_parser = argparse.ArgumentParser(add_help=False)
