@@ -57,6 +57,12 @@ def _get_config_template():
 
 # Prefix for Docker volume names used for database persistence.
 # DB_VOLUME_NAME_PREFIX: {config.DEFAULTS['DB_VOLUME_NAME_PREFIX']}
+
+
+# --- Agent Execution ---
+
+# Default command to execute for 'agro exec'.
+# EXEC_CMD_DEFAULT: {config.DEFAULTS['EXEC_CMD_DEFAULT']}
 """
 
 
@@ -394,6 +400,7 @@ def exec_agent(
     no_overrides,
     no_all_extras,
     agent_args,
+    exec_cmd=None,
     indices_str=None,
     num_trees=None,
     show_cmd_output=False,
@@ -511,8 +518,9 @@ def exec_agent(
         logger.debug(f"Launching agent in detached mode from within {worktree_path}...")
 
         log_file_path = agswap_dir / "agro-exec.log"
+        exec_command = exec_cmd or config.EXEC_CMD_DEFAULT
         command = [
-            "maider.sh",
+            exec_command,
             "--yes",
             "-f",
             str(task_in_swap_path.relative_to(worktree_path)),

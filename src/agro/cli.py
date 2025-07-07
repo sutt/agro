@@ -19,9 +19,33 @@ def _is_indices_list(s):
 def _dispatch_exec(args):
     """Helper to dispatch exec command with complex argument parsing."""
     taskfile = args.taskfile
-    agent_args = args.agent_args
+    agent_args = args.agent_args.copy()
 
-    num_trees = args.num_trees_pos or args.num_trees_opt
+    num_trees = args.num_trees_opt
+    exec_cmd = None
+
+    # Try to parse num_trees and exec_cmd from the start of agent_args
+    args_to_process = []
+    if agent_args and not agent_args[0].startswith("-"):
+        args_to_process.append(agent_args.pop(0))
+    if agent_args and not agent_args[0].startswith("-"):
+        args_to_process.append(agent_args.pop(0))
+
+    for arg in args_to_process:
+        if arg.isdigit():
+            if num_trees is not None:
+                raise ValueError(
+                    "Number of trees specified twice (e.g. positionally and with -n)."
+                )
+            if args.tree_indices is not None:
+                raise ValueError(
+                    "Cannot specify number of trees positionally and with -t/--tree-indices."
+                )
+            num_trees = int(arg)
+        else:
+            if exec_cmd is not None:
+                raise ValueError("Cannot specify exec-cmd twice.")
+            exec_cmd = arg
 
     core.exec_agent(
         task_file=taskfile,
@@ -29,6 +53,7 @@ def _dispatch_exec(args):
         no_overrides=args.no_env_overrides,
         no_all_extras=args.no_all_extras,
         agent_args=agent_args,
+        exec_cmd=exec_cmd,
         indices_str=args.tree_indices,
         num_trees=num_trees,
         show_cmd_output=(args.verbose >= 2),
@@ -40,7 +65,7 @@ def main():
     Main entry point for the agro command-line interface.
     """
     epilog_text = """Available commands:
-  exec <taskfile> [num-trees]   Run an agent in new worktree(s), see also -n and -t.
+  exec <taskfile> [num-trees] [exec-cmd]   Run an agent in new worktree(s), see also -n and -t.
   surrender [indices]           Kill running agent processes (default: all).
   muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
@@ -177,14 +202,6 @@ Options for 'muster':
 
     exec_group = parser_exec.add_mutually_exclusive_group()
     exec_group.add_argument(
-        "num_trees_pos",
-        nargs="?",
-        type=int,
-        default=None,
-        metavar="num-trees",
-        help="Number of new worktrees to create.",
-    )
-    exec_group.add_argument(
         "-n",
         "--num-trees",
         type=int,
@@ -200,7 +217,7 @@ Options for 'muster':
     parser_exec.add_argument(
         "agent_args",
         nargs=argparse.REMAINDER,
-        help="Arguments to pass to cli-coder (Not Implemented)",
+        help="Optional num-trees, exec-cmd, and arguments to pass to the agent command.",
     )
     parser_exec.set_defaults(func=_dispatch_exec)
 
