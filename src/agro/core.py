@@ -144,6 +144,11 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras, show_cmd_output
         show_cmd_output=show_cmd_output,
     )
 
+    agswap_dir = worktree_path / ".agswap"
+    agswap_dir.mkdir()
+    (agswap_dir / ".gitignore").write_text("*\n")
+    logger.debug(f"Created worktree-specific swap dir: {agswap_dir}")
+
     env_source_path = Path(".env.example" if fresh_env else ".env")
     env_dest_path = worktree_path / ".env"
 
@@ -397,6 +402,12 @@ def exec_agent(
         )
 
         worktree_path = Path(config.WORKTREE_DIR) / f"t{index}"
+        agswap_dir = worktree_path / ".agswap"
+
+        task_in_swap_path = agswap_dir / task_path.name
+        shutil.copy(task_path, task_in_swap_path)
+        logger.debug(f"Copied task file to {task_in_swap_path}")
+
         task_fn_stem = Path(task_file).stem
         base_branch_name = f"{config.WORKTREE_OUTPUT_BRANCH_PREFIX}{task_fn_stem}"
         counter = 1
@@ -431,13 +442,12 @@ def exec_agent(
 
         logger.debug(f"Launching agent in detached mode from within {worktree_path}...")
 
-        log_file_path = worktree_path / "maider.log"
-        abs_task_file = os.path.abspath(task_file)
+        log_file_path = agswap_dir / "maider.log"
         command = [
             "maider.sh",
             "--yes",
             "-f",
-            abs_task_file,
+            str(task_in_swap_path.relative_to(worktree_path)),
             "--no-check-update",
             "--no-attribute-author",
             "--no-attribute-committer",
@@ -465,6 +475,7 @@ def exec_agent(
         logger.info(f"   Start time: {current_time}")
         logger.info(f"   PID: {process.pid} (saved to {pid_file.resolve()})")
         logger.info(f"   Log file: {log_file_path.resolve()}")
+        logger.info(f"   Task file copy: {task_in_swap_path.resolve()}")
 
 
 def muster_command(
