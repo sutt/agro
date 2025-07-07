@@ -1,0 +1,1 @@
+rsync -av --delete .agdocs/ .public-agdocs/

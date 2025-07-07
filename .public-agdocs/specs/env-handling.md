@@ -1,0 +1,2 @@
+for agro make command, eschew creating a new .env / .env.example file in a worktree if there is no .env / .env.example found in the root repo.
+- only eschew the .env creation if both .env and .env.example are not found. Continue to add warning here when this case is hit.
