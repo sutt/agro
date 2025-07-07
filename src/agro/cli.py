@@ -64,8 +64,16 @@ def main():
     """
     Main entry point for the agro command-line interface.
     """
-    epilog_text = """Available commands:
-  exec <taskfile> [num-trees] [exec-cmd]   Run an agent in new worktree(s), see also -n and -t.
+    epilog_text = """Main command:
+  exec [args] <taskfile> [num-trees] [exec-cmd]   
+                                
+        Run an agent in new worktree(s)
+        args:
+          -n <num-trees>        Number of worktrees to create.
+          -t <indices>          Specified worktree indice(s) (e.g., '1,2,3').
+          ...others             See below.
+
+Other Commands:
   surrender [indices]           Kill running agent processes (default: all).
   muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
@@ -83,8 +91,10 @@ Common options for 'make' and 'exec':
 
 Options for 'muster':
   -s, --server        Run command as a background server, redirecting output and saving PID.
-  -k, --kill-server   Kill the background server and clean up pid/log files."""
-
+  -k, --kill-server   Kill the background server and clean up pid/log files.
+    
+Options for 'init':
+  --conf              Only add a template agro.conf.yml to .agdocs/conf"""
     parser = argparse.ArgumentParser(
         description="A script to manage git worktrees for agent-based development.",
         prog="agro",
