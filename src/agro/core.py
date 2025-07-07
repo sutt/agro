@@ -30,6 +30,18 @@ def init_project():
     gitignore_path = agdocs_dir / ".gitignore"
     gitignore_path.write_text("swap/\n")
 
+    # Add .agdocs to root .gitignore if not already present
+    result = _run_command(
+        ["git", "check-ignore", "-q", str(agdocs_dir)],
+        check=False,
+    )
+    if result.returncode == 1:  # Not ignored
+        root_gitignore_path = Path(".gitignore")
+        entry = f"{agdocs_dir}/"
+        logger.info(f"Adding '{entry}' to {root_gitignore_path}...")
+        with root_gitignore_path.open("a") as f:
+            f.write(f"\n# Agro project directory\n{entry}\n")
+
     logger.info("✅ Project initialized successfully in: {agdocs_dir}")
     logger.debug(f"Created: {agdocs_dir}/")
     logger.debug(f"Created: {agdocs_dir}/specs/")
