@@ -13,6 +13,53 @@ from . import config
 logger = logging.getLogger(__name__)
 
 
+def _get_config_template():
+    """Returns the content for the default agro.conf.yml."""
+    return f"""# Agro Configuration File
+#
+# This file allows you to customize the behavior of Agro.
+# Uncomment and modify the settings below to override the defaults.
+
+# --- General Paths ---
+
+# Directory for storing private project documentation and specifications.
+# AGDOCS_DIR: {config.DEFAULTS['AGDOCS_DIR']}
+
+# Directory for storing public project documentation.
+# PUBLIC_AGDOCS_DIR: {config.DEFAULTS['PUBLIC_AGDOCS_DIR']}
+
+# Directory where git worktrees will be created.
+# WORKTREE_DIR: {config.DEFAULTS['WORKTREE_DIR']}
+
+
+# --- Branching ---
+
+# Prefix for branches created for worktrees. E.g., 'tree/t1', 'tree/t2'.
+# WORKTREE_BRANCH_PREFIX: {config.DEFAULTS['WORKTREE_BRANCH_PREFIX']}
+
+# Prefix for branches created when an agent outputs changes.
+# WORKTREE_OUTPUT_BRANCH_PREFIX: {config.DEFAULTS['WORKTREE_OUTPUT_BRANCH_PREFIX']}
+
+
+# --- Environment Replication (for containerized apps) ---
+
+# Base port for the API service in worktrees. Each worktree gets a unique port.
+# BASE_API_PORT: {config.DEFAULTS['BASE_API_PORT']}
+
+# Base port for the database service in worktrees.
+# DB_BASE_PORT: {config.DEFAULTS['DB_BASE_PORT']}
+
+# Prefix for the database container names.
+# DB_CONTAINER_NAME_PREFIX: {config.DEFAULTS['DB_CONTAINER_NAME_PREFIX']}
+
+# Prefix for the API container names.
+# API_CONTAINER_NAME_PREFIX: {config.DEFAULTS['API_CONTAINER_NAME_PREFIX']}
+
+# Prefix for Docker volume names used for database persistence.
+# DB_VOLUME_NAME_PREFIX: {config.DEFAULTS['DB_VOLUME_NAME_PREFIX']}
+"""
+
+
 def init_project():
     """Initializes the .agdocs directory structure."""
     agdocs_dir = Path(config.AGDOCS_DIR)
@@ -25,7 +72,11 @@ def init_project():
     agdocs_dir.mkdir()
     (agdocs_dir / "specs").mkdir()
     (agdocs_dir / "swap").mkdir()
-    (agdocs_dir / "conf").mkdir()
+    conf_dir = agdocs_dir / "conf"
+    conf_dir.mkdir()
+
+    config_file_path = conf_dir / "agro.conf.yml"
+    config_file_path.write_text(_get_config_template())
 
     gitignore_path = agdocs_dir / ".gitignore"
     gitignore_path.write_text("swap/\n")
@@ -47,6 +98,7 @@ def init_project():
     logger.debug(f"Created: {agdocs_dir}/specs/")
     logger.debug(f"Created: {agdocs_dir}/swap/")
     logger.debug(f"Created: {agdocs_dir}/conf/")
+    logger.debug(f"Created: {agdocs_dir}/conf/agro.conf.yml")
     logger.debug(f"Created: {agdocs_dir}/.gitignore")
 
 
