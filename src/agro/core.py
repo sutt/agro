@@ -93,7 +93,7 @@ def init_project():
         with root_gitignore_path.open("a") as f:
             f.write(f"\n# Agro project directory\n{entry}\n")
 
-    logger.info("✅ Project initialized successfully in: {agdocs_dir}")
+    logger.info(f"✅ Project initialized successfully in: {str(agdocs_dir)}")
     logger.debug(f"Created: {agdocs_dir}/")
     logger.debug(f"Created: {agdocs_dir}/specs/")
     logger.debug(f"Created: {agdocs_dir}/swap/")
