@@ -80,6 +80,7 @@ Other Commands:
   fade <pattern>                Delete local branches matching a regex pattern.
   make <index>                  Create a new worktree.
   delete <indices>|--all        Delete one, multiple, or all worktrees.
+  task [task-name]              Create a new task spec file and open it.
   init                          Initialize agro project structure.
   mirror                        Mirror internal docs to public docs directory.
   help                          Show this help message.
@@ -299,6 +300,22 @@ Options for 'init':
     parser_surrender.set_defaults(
         func=lambda args: core.surrender(
             args.indices, show_cmd_output=(args.verbose >= 2)
+        )
+    )
+
+    # --- task command ---
+    parser_task = subparsers.add_parser(
+        "task", help="Create a new task spec file and open it in your editor."
+    )
+    parser_task.add_argument(
+        "task_name",
+        nargs="?",
+        default=None,
+        help="The name of the task file (without .md extension).",
+    )
+    parser_task.set_defaults(
+        func=lambda args: core.create_task_file(
+            task_name=args.task_name, show_cmd_output=(args.verbose >= 2)
         )
     )
 
