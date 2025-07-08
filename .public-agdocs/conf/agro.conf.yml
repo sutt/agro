@@ -1,0 +1,48 @@
+# Agro Configuration File
+#
+# This file allows you to customize the behavior of Agro.
+# Uncomment and modify the settings below to override the defaults.
+
+# --- General Paths ---
+
+# Directory for storing private project documentation and specifications.
+# AGDOCS_DIR: .agdocs
+
+# Directory for storing public project documentation.
+# PUBLIC_AGDOCS_DIR: .public-agdocs
+
+# Directory where git worktrees will be created.
+# WORKTREE_DIR: ./trees
+
+
+# --- Branching ---
+
+# Prefix for branches created for worktrees. E.g., 'tree/t1', 'tree/t2'.
+# WORKTREE_BRANCH_PREFIX: tree/t
+
+# Prefix for branches created when an agent outputs changes.
+# WORKTREE_OUTPUT_BRANCH_PREFIX: output/
+
+
+# --- Environment Replication (for containerized apps) ---
+
+# Base port for the API service in worktrees. Each worktree gets a unique port.
+# BASE_API_PORT: 8000
+
+# Base port for the database service in worktrees.
+# DB_BASE_PORT: 5432
+
+# Prefix for the database container names.
+# DB_CONTAINER_NAME_PREFIX: tf-db
+
+# Prefix for the API container names.
+# API_CONTAINER_NAME_PREFIX: tf-api
+
+# Prefix for Docker volume names used for database persistence.
+# DB_VOLUME_NAME_PREFIX: tf-db-data
+
+
+# --- Agent Execution ---
+
+# Default command to execute for 'agro exec'.
+EXEC_CMD_DEFAULT: maider.sh
