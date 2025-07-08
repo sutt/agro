@@ -1,0 +1,1 @@
+add .agdocs to repo gitignore on init

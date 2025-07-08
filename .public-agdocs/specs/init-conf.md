@@ -1,0 +1,1 @@
+add option --conf to init subcommand, that will only generate a blank conf file, and will fail to do so if the file already exists.
