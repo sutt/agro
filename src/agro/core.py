@@ -78,6 +78,56 @@ def _get_config_template():
 """
 
 
+def find_task_file(task_identifier=None):
+    """
+    Finds a task file based on an identifier or finds the most recent one.
+
+    Args:
+        task_identifier (str, optional): A name, partial path, or full path.
+
+    Returns:
+        tuple: A tuple containing (Path, bool) where the Path is the found
+               task file and the bool is True if the file was auto-detected
+               (i.e., most recent). Returns (None, False) if not found.
+    """
+    specs_dir = Path(config.AGDOCS_DIR) / "specs"
+    specs_dir.mkdir(parents=True, exist_ok=True)
+
+    if task_identifier is None:
+        # Auto-detect most recent
+        md_files = list(specs_dir.glob("*.md"))
+        if not md_files:
+            return None, False
+
+        latest_file = max(md_files, key=lambda f: f.stat().st_mtime)
+        return latest_file, True
+
+    # User provided an identifier
+    # 1. Check if it's a direct file path
+    p = Path(task_identifier)
+    if p.is_file():
+        return p, False
+
+    # 2. Fuzzy match (with/without .md) in specs dir and root
+    name_with_md = (
+        task_identifier
+        if task_identifier.endswith(".md")
+        else f"{task_identifier}.md"
+    )
+
+    # Check in specs dir
+    candidate = specs_dir / name_with_md
+    if candidate.is_file():
+        return candidate, False
+
+    # Check in root dir
+    candidate = Path(name_with_md)
+    if candidate.is_file():
+        return candidate, False
+
+    return None, False
+
+
 def init_project(conf_only=False):
     """Initializes the .agdocs directory structure."""
     agdocs_dir = Path(config.AGDOCS_DIR)

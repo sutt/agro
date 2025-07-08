@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import sys
+from pathlib import Path
 
 from . import core, __version__
 
@@ -18,24 +19,32 @@ def _is_indices_list(s):
 
 def _dispatch_exec(args):
     """Helper to dispatch exec command with complex argument parsing."""
-    taskfile = args.taskfile
+    logger = logging.getLogger("agro")
+
+    taskfile_str = None
+    num_trees = args.num_trees_opt
+    exec_cmd = args.exec_cmd_opt
     agent_args = args.agent_args.copy()
 
-    num_trees = args.num_trees_opt
-    exec_cmd = None
-
-    # Try to parse num_trees and exec_cmd from the start of agent_args
-    args_to_process = []
+    # The first positional arg might be a taskfile. We check by seeing if it
+    # can be resolved to a file. If not, it's treated as a regular arg.
     if agent_args and not agent_args[0].startswith("-"):
-        args_to_process.append(agent_args.pop(0))
-    if agent_args and not agent_args[0].startswith("-"):
-        args_to_process.append(agent_args.pop(0))
+        found_path, _ = core.find_task_file(agent_args[0])
+        if found_path:
+            taskfile_str = agent_args.pop(0)
 
-    for arg in args_to_process:
+    # The next two positional args can be num_trees or exec_cmd, in any order.
+    pos_args_for_num_exec = []
+    if agent_args and not agent_args[0].startswith("-"):
+        pos_args_for_num_exec.append(agent_args.pop(0))
+    if agent_args and not agent_args[0].startswith("-"):
+        pos_args_for_num_exec.append(agent_args.pop(0))
+
+    for arg in pos_args_for_num_exec:
         if arg.isdigit():
             if num_trees is not None:
                 raise ValueError(
-                    "Number of trees specified twice (e.g. positionally and with -n)."
+                    "Number of trees specified twice (e.g., positionally and with -n)."
                 )
             if args.tree_indices is not None:
                 raise ValueError(
@@ -44,11 +53,41 @@ def _dispatch_exec(args):
             num_trees = int(arg)
         else:
             if exec_cmd is not None:
-                raise ValueError("Cannot specify exec-cmd twice.")
+                raise ValueError(
+                    "Cannot specify exec-cmd twice (e.g., positionally and with -c)."
+                )
             exec_cmd = arg
 
+    # --- Find and confirm task file ---
+    task_path = None
+    if taskfile_str:
+        task_path, _ = core.find_task_file(taskfile_str)
+        if not task_path:
+            # This should ideally not happen due to the check above, but as a safeguard:
+            raise FileNotFoundError(
+                f"Could not find task file matching '{taskfile_str}'."
+            )
+    else:
+        # No taskfile given, find the most recent one.
+        task_path, auto_detected = core.find_task_file()
+        if not task_path:
+            specs_dir = Path(core.config.AGDOCS_DIR) / "specs"
+            raise FileNotFoundError(
+                f"No task file specified and no .md files found in '{specs_dir}'."
+            )
+
+        if auto_detected:
+            try:
+                confirm = input(f"Use most recent task file '{task_path.name}'? [Y/n]: ")
+                if confirm.lower() not in ("y", ""):
+                    logger.warning("Operation cancelled by user.")
+                    return
+            except (EOFError, KeyboardInterrupt):
+                logger.warning("\nOperation cancelled.")
+                return
+
     core.exec_agent(
-        task_file=taskfile,
+        task_file=str(task_path),
         fresh_env=args.fresh_env,
         no_overrides=args.no_env_overrides,
         agent_args=agent_args,
@@ -64,12 +103,13 @@ def main():
     Main entry point for the agro command-line interface.
     """
     epilog_text = """Main command:
-  exec [args] <taskfile> [num-trees] [exec-cmd]   
+  exec [args] [taskfile] [num-trees] [exec-cmd]   
                                 
         Run an agent in new worktree(s)
         args:
           -n <num-trees>        Number of worktrees to create.
           -t <indices>          Specified worktree indice(s) (e.g., '1,2,3').
+          -c <exec-cmd>         Run the exec-cmd to launch agent on worktree
           ...others             See below.
 
 Other Commands:
@@ -199,10 +239,6 @@ Options for 'init':
         help="Re-creates worktree(s) and executes detached agent processes. "
         "All arguments after the taskfile and exec options are passed to the agent.",
     )
-    parser_exec.add_argument(
-        "taskfile", help="The taskfile for the agent (e.g., tasks/my-task.md)."
-    )
-
     exec_group = parser_exec.add_mutually_exclusive_group()
     exec_group.add_argument(
         "-n",
@@ -218,9 +254,15 @@ Options for 'init':
     )
 
     parser_exec.add_argument(
+        "-c",
+        "--exec-cmd",
+        dest="exec_cmd_opt",
+        help="Run the exec-cmd to launch agent on worktree.",
+    )
+    parser_exec.add_argument(
         "agent_args",
         nargs=argparse.REMAINDER,
-        help="Optional num-trees, exec-cmd, and arguments to pass to the agent command.",
+        help="Optional taskfile, num-trees, exec-cmd, and arguments to pass to the agent command.",
     )
     parser_exec.set_defaults(func=_dispatch_exec)
 
