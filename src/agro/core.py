@@ -13,6 +13,48 @@ from . import config
 logger = logging.getLogger(__name__)
 
 
+def find_task_file(file_str: str) -> Path | None:
+    """
+    Fuzzy search for a task file.
+    Checks for existence as-is, with .md, and in specs dir.
+    """
+    p = Path(file_str)
+    if p.is_file():
+        return p
+
+    if not file_str.endswith(".md"):
+        p_md = Path(f"{file_str}.md")
+        if p_md.is_file():
+            return p_md
+
+    specs_dir = Path(config.AGDOCS_DIR) / "specs"
+    if specs_dir.is_dir():
+        spec_p = specs_dir / file_str
+        if spec_p.is_file():
+            return spec_p
+
+        if not file_str.endswith(".md"):
+            spec_p_md = specs_dir / f"{file_str}.md"
+            if spec_p_md.is_file():
+                return spec_p_md
+
+    return None
+
+
+def find_most_recent_task_file() -> Path | None:
+    """Finds the most recently modified .md file in the specs directory."""
+    specs_dir = Path(config.AGDOCS_DIR) / "specs"
+    if not specs_dir.is_dir():
+        return None
+
+    md_files = list(specs_dir.glob("*.md"))
+    if not md_files:
+        return None
+
+    latest_file = max(md_files, key=lambda p: p.stat().st_mtime)
+    return latest_file
+
+
 def _get_config_template():
     """Returns the content for the default agro.conf.yml."""
     return f"""# Agro Configuration File

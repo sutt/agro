@@ -18,20 +18,20 @@ def _is_indices_list(s):
 
 def _dispatch_exec(args):
     """Helper to dispatch exec command with complex argument parsing."""
-    taskfile = args.taskfile
     agent_args = args.agent_args.copy()
 
     num_trees = args.num_trees_opt
-    exec_cmd = None
+    exec_cmd = args.exec_cmd_opt
+    taskfile = None
 
-    # Try to parse num_trees and exec_cmd from the start of agent_args
-    args_to_process = []
-    if agent_args and not agent_args[0].startswith("-"):
-        args_to_process.append(agent_args.pop(0))
-    if agent_args and not agent_args[0].startswith("-"):
-        args_to_process.append(agent_args.pop(0))
+    # Extract non-dashed arguments from the beginning of agent_args
+    pos_args = []
+    while agent_args and not agent_args[0].startswith("-"):
+        pos_args.append(agent_args.pop(0))
 
-    for arg in args_to_process:
+    # First pass: find num_trees
+    remaining_pos_args = []
+    for arg in pos_args:
         if arg.isdigit():
             if num_trees is not None:
                 raise ValueError(
@@ -43,9 +43,41 @@ def _dispatch_exec(args):
                 )
             num_trees = int(arg)
         else:
-            if exec_cmd is not None:
-                raise ValueError("Cannot specify exec-cmd twice.")
-            exec_cmd = arg
+            remaining_pos_args.append(arg)
+
+    # Second pass: find taskfile from remaining string args
+    unmatched_args = []
+    for arg in remaining_pos_args:
+        found_path = core.find_task_file(arg)
+        if found_path and taskfile is None:
+            taskfile = str(found_path)
+        else:
+            unmatched_args.append(arg)
+
+    # Third pass: find exec_cmd from remaining args
+    for arg in unmatched_args:
+        if exec_cmd is not None:
+            raise ValueError("Cannot specify exec-cmd twice.")
+        exec_cmd = arg
+
+    if not taskfile:
+        # find most recent
+        found_path = core.find_most_recent_task_file()
+        if found_path:
+            logger.info(f"No task file specified. Using most recent: {found_path}")
+            try:
+                confirm = input("Proceed with this task file? [Y/n]: ")
+                if confirm.lower() not in ("y", ""):
+                    logger.info("Operation cancelled.")
+                    return
+            except (EOFError, KeyboardInterrupt):
+                logger.warning("\nOperation cancelled.")
+                return
+            taskfile = str(found_path)
+        else:
+            raise FileNotFoundError(
+                "No task file specified and no task files found in default directory."
+            )
 
     core.exec_agent(
         task_file=taskfile,
@@ -64,12 +96,13 @@ def main():
     Main entry point for the agro command-line interface.
     """
     epilog_text = """Main command:
-  exec [args] <taskfile> [num-trees] [exec-cmd]   
+  exec [args] [taskfile] [num-trees] [exec-cmd]   
                                 
         Run an agent in new worktree(s)
         args:
           -n <num-trees>        Number of worktrees to create.
           -t <indices>          Specified worktree indice(s) (e.g., '1,2,3').
+          -c <exec-cmd>         Run the exec-cmd to launch agent on worktree
           ...others             See below.
 
 Other Commands:
@@ -199,9 +232,6 @@ Options for 'init':
         help="Re-creates worktree(s) and executes detached agent processes. "
         "All arguments after the taskfile and exec options are passed to the agent.",
     )
-    parser_exec.add_argument(
-        "taskfile", help="The taskfile for the agent (e.g., tasks/my-task.md)."
-    )
 
     exec_group = parser_exec.add_mutually_exclusive_group()
     exec_group.add_argument(
@@ -218,9 +248,16 @@ Options for 'init':
     )
 
     parser_exec.add_argument(
+        "-c",
+        "--exec-cmd",
+        dest="exec_cmd_opt",
+        help="Run the exec-cmd to launch agent on worktree.",
+    )
+
+    parser_exec.add_argument(
         "agent_args",
         nargs=argparse.REMAINDER,
-        help="Optional num-trees, exec-cmd, and arguments to pass to the agent command.",
+        help="Optional [taskfile], [num-trees], [exec-cmd], and arguments to pass to the agent command.",
     )
     parser_exec.set_defaults(func=_dispatch_exec)
 
