@@ -11,6 +11,10 @@ DEFAULTS = {
     'WORKTREE_OUTPUT_BRANCH_PREFIX': 'output/',
     'EXEC_CMD_DEFAULT': 'aider',
     'AGRO_EDITOR_CMD': 'code',
+    'ENV_SETUP_CMDS': [
+        'uv venv',
+        'uv sync --quiet {all_extras_flag}',
+    ],
     'BASE_API_PORT': 8000,
     'DB_BASE_PORT': 5432,
     'DB_CONTAINER_NAME_PREFIX': 'tf-db',
@@ -48,6 +52,7 @@ WORKTREE_OUTPUT_BRANCH_PREFIX = _config['WORKTREE_OUTPUT_BRANCH_PREFIX']
 # Agro-Agent Configs
 EXEC_CMD_DEFAULT = _config['EXEC_CMD_DEFAULT']
 AGRO_EDITOR_CMD = _config['AGRO_EDITOR_CMD']
+ENV_SETUP_CMDS = _config['ENV_SETUP_CMDS']
 
 # App Env Replication for Configs
 BASE_API_PORT = int(_config['BASE_API_PORT'])
