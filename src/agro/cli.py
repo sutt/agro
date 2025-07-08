@@ -6,6 +6,9 @@ import sys
 from . import core, __version__
 
 
+logger = logging.getLogger("agro")
+
+
 def _is_indices_list(s):
     """Check if a string is a comma-separated list of digits."""
     if not s:
@@ -363,7 +366,6 @@ Options for 'init':
         else:  # verbose == 0
             log_level = logging.INFO
 
-        logger = logging.getLogger("agro")
         logger.setLevel(log_level)
 
         # Handler for stdout (INFO, DEBUG)
@@ -383,7 +385,7 @@ Options for 'init':
 
         args.func(args)
     except Exception as e:
-        logging.getLogger("agro").error(f"Error: {e}")
+        logger.error(f"Error: {e}")
         sys.exit(1)
 
 
