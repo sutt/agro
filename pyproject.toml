@@ -33,3 +33,8 @@ test = [
 
 [project.urls]
 Homepage = "https://github.com/sutt/agro"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
