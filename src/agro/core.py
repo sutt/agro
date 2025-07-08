@@ -59,6 +59,16 @@ def _get_config_template():
 # DB_VOLUME_NAME_PREFIX: {config.DEFAULTS['DB_VOLUME_NAME_PREFIX']}
 
 
+# --- Python Environment ---
+
+# Commands to set up the Python environment in a new worktree.
+# You can use the placeholder {{all_extras_flag}} which will be replaced by
+# '--all-extras' unless the --no-all-extras flag is used.
+# ENV_SETUP_CMDS:
+#   - 'uv venv'
+#   - 'uv sync --quiet {{all_extras_flag}}'
+
+
 # --- Agent Execution ---
 
 # Default command to execute for 'agro exec'.
@@ -315,17 +325,23 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras, show_cmd_output
             f.write(f"FORWARDED_ALLOW_IPS={network_gateway}\n")
 
     logger.debug(f"Setting up Python environment in {worktree_path}...")
-    _run_command(
-        ["uv", "venv"],
-        cwd=str(worktree_path),
-        capture_output=True,
-        show_cmd_output=show_cmd_output,
-    )
-
-    uv_sync_command = ["uv", "sync", "--quiet"]
-    if not no_all_extras:
-        uv_sync_command.append("--all-extras")
-    _run_command(uv_sync_command, cwd=str(worktree_path), show_cmd_output=show_cmd_output)
+    if not (worktree_path / "pyproject.toml").is_file():
+        logger.warning(
+            f"No pyproject.toml found in {worktree_path}. Skipping Python environment setup."
+        )
+    else:
+        all_extras_flag = "--all-extras" if not no_all_extras else ""
+        for cmd_str_template in config.ENV_SETUP_CMDS:
+            cmd_str = cmd_str_template.replace('{all_extras_flag}', all_extras_flag)
+            command = shlex.split(cmd_str)
+            if not command:
+                continue
+            _run_command(
+                command,
+                cwd=str(worktree_path),
+                capture_output=True,
+                show_cmd_output=show_cmd_output,
+            )
 
     logger.debug("\n" + "🌴 New worktree created successfully.")
     logger.debug(f"   Worktree: {worktree_path}")
