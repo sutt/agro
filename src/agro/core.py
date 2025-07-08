@@ -232,7 +232,7 @@ def _run_command(
 
 def _setup_python_environment(worktree_path, no_all_extras, show_cmd_output):
     """Sets up the Python environment in the given worktree path."""
-    logger.debug(f"Setting up Python environment in {worktree_path}...")
+    logger.debug(f"Trying to set up Python environment in {worktree_path}...")
 
     has_pyproject = (worktree_path / "pyproject.toml").is_file()
     req_files = sorted(list(worktree_path.glob("requirements*.txt")))
@@ -241,43 +241,23 @@ def _setup_python_environment(worktree_path, no_all_extras, show_cmd_output):
         logger.warning(
             f"No pyproject.toml or requirements*.txt found in {worktree_path}. Skipping Python environment setup."
         )
+        # current behavior: don't initialize uv isolated environment;
+        # might change later
         return
 
-    # If there's a pyproject.toml, assume ENV_SETUP_CMDS handles venv creation and installation.
-    if has_pyproject:
-        all_extras_flag = "--all-extras" if not no_all_extras else ""
-        for cmd_str_template in config.ENV_SETUP_CMDS:
-            cmd_str = cmd_str_template.replace('{all_extras_flag}', all_extras_flag)
-            command = shlex.split(cmd_str)
-            if not command:
-                continue
-            _run_command(
-                command,
-                cwd=str(worktree_path),
-                capture_output=True,
-                show_cmd_output=show_cmd_output,
-            )
-    # If there's no pyproject.toml but there are requirements files, create a venv.
-    elif req_files:
-        logger.debug("No pyproject.toml found, creating venv for requirements files...")
+    
+    all_extras_flag = "--all-extras" if not no_all_extras else ""
+    for cmd_str_template in config.ENV_SETUP_CMDS:
+        cmd_str = cmd_str_template.replace('{all_extras_flag}', all_extras_flag)
+        command = shlex.split(cmd_str)
+        if not command:
+            continue
         _run_command(
-            ["uv", "venv"],
+            command,
             cwd=str(worktree_path),
             capture_output=True,
             show_cmd_output=show_cmd_output,
         )
-
-    # Install any requirements files. If pyproject.toml exists, this will install
-    # them into the same venv. This is useful for projects that use both.
-    if req_files:
-        for req_file in req_files:
-            logger.debug(f"Installing dependencies from {req_file.name}...")
-            _run_command(
-                ["uv", "pip", "install", "-r", str(req_file.relative_to(worktree_path))],
-                cwd=str(worktree_path),
-                capture_output=True,
-                show_cmd_output=show_cmd_output,
-            )
 
 
 def make_new_tree(index, fresh_env, no_overrides, no_all_extras, show_cmd_output=False):
