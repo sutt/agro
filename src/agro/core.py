@@ -63,6 +63,9 @@ def _get_config_template():
 
 # Default command to execute for 'agro exec'.
 # EXEC_CMD_DEFAULT: {config.DEFAULTS['EXEC_CMD_DEFAULT']}
+
+# Default command to open spec files with 'agro task'.
+# AGRO_EDITOR_CMD: {config.DEFAULTS['AGRO_EDITOR_CMD']}
 """
 
 
@@ -122,6 +125,59 @@ def init_project(conf_only=False):
     logger.debug(f"Created: {agdocs_dir}/conf/")
     logger.debug(f"Created: {agdocs_dir}/conf/agro.conf.yml")
     logger.debug(f"Created: {agdocs_dir}/.gitignore")
+
+
+def create_task_file(task_name=None, show_cmd_output=False):
+    """Creates a new task spec file and opens it in the editor."""
+    if not task_name:
+        try:
+            task_name = input("Enter the task name: ")
+        except (EOFError, KeyboardInterrupt):
+            logger.warning("\nOperation cancelled.")
+            return
+        if not task_name:
+            logger.warning("Task name cannot be empty. Operation cancelled.")
+            return
+
+    if task_name.endswith(".md"):
+        logger.warning(
+            "Task name should not include the .md extension. It will be added automatically."
+        )
+        task_name = task_name[:-3]
+
+    specs_dir = Path(config.AGDOCS_DIR) / "specs"
+    specs_dir.mkdir(parents=True, exist_ok=True)
+
+    task_file_path = specs_dir / f"{task_name}.md"
+
+    if not task_file_path.exists():
+        logger.info(f"Creating new task file: {task_file_path}")
+        task_file_path.touch()
+    else:
+        logger.info(f"Task file already exists: {task_file_path}")
+
+    editor_cmd = config.AGRO_EDITOR_CMD
+    if not editor_cmd:
+        logger.warning("AGRO_EDITOR_CMD is not set in your config. Cannot open file.")
+        logger.info(f"You can edit the file at: {task_file_path}")
+        return
+
+    logger.info(f"Opening {task_file_path} with '{editor_cmd}'...")
+
+    command = shlex.split(editor_cmd) + [str(task_file_path)]
+
+    try:
+        subprocess.Popen(
+            command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+    except FileNotFoundError:
+        logger.error(
+            f"Error: Command '{command[0]}' not found. Is it in your PATH?"
+        )
+        logger.info(f"You can edit the file at: {task_file_path}")
+    except Exception as e:
+        logger.error(f"Error opening editor: {e}")
+        logger.info(f"You can edit the file at: {task_file_path}")
 
 
 def _run_command(
