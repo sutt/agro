@@ -51,7 +51,6 @@ def _dispatch_exec(args):
         task_file=taskfile,
         fresh_env=args.fresh_env,
         no_overrides=args.no_env_overrides,
-        no_all_extras=args.no_all_extras,
         agent_args=agent_args,
         exec_cmd=exec_cmd,
         indices_str=args.tree_indices,
@@ -88,7 +87,6 @@ Other Commands:
 Common options for 'make' and 'exec':
   --fresh-env         When creating a worktree, use .env.example as the base instead of .env.
   --no-env-overrides  When creating a worktree, do not add port overrides to the .env file.
-  --no-all-extras     Do not install all extra dependencies when running 'uv sync'.
 
 Options for 'muster':
   -s, --server        Run command as a background server, redirecting output and saving PID.
@@ -157,11 +155,6 @@ Options for 'init':
         action="store_true",
         help="When creating a worktree, do not add port overrides to the .env file.",
     )
-    common_parser.add_argument(
-        "--no-all-extras",
-        action="store_true",
-        help="Do not install all extra dependencies when running 'uv sync'.",
-    )
 
     # --- make command ---
     parser_make = subparsers.add_parser(
@@ -175,7 +168,6 @@ Options for 'init':
             args.index,
             args.fresh_env,
             args.no_env_overrides,
-            args.no_all_extras,
             show_cmd_output=(args.verbose >= 2),
         )
     )

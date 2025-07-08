@@ -62,11 +62,10 @@ def _get_config_template():
 # --- Python Environment ---
 
 # Commands to set up the Python environment in a new worktree.
-# You can use the placeholder {{all_extras_flag}} which will be replaced by
-# '--all-extras' unless the --no-all-extras flag is used.
+# For example, to install all optional dependency groups with uv:
 # ENV_SETUP_CMDS:
 #   - 'uv venv'
-#   - 'uv sync --quiet {{all_extras_flag}}'
+#   - 'uv sync --quiet --all-extras'
 
 
 # --- Agent Execution ---
@@ -230,7 +229,7 @@ def _run_command(
         raise
 
 
-def _setup_python_environment(worktree_path, no_all_extras, show_cmd_output):
+def _setup_python_environment(worktree_path, show_cmd_output):
     """Sets up the Python environment in the given worktree path."""
     logger.debug(f"Trying to set up Python environment in {worktree_path}...")
 
@@ -245,10 +244,7 @@ def _setup_python_environment(worktree_path, no_all_extras, show_cmd_output):
         # might change later
         return
 
-    
-    all_extras_flag = "--all-extras" if not no_all_extras else ""
-    for cmd_str_template in config.ENV_SETUP_CMDS:
-        cmd_str = cmd_str_template.replace('{all_extras_flag}', all_extras_flag)
+    for cmd_str in config.ENV_SETUP_CMDS:
         command = shlex.split(cmd_str)
         if not command:
             continue
@@ -260,7 +256,7 @@ def _setup_python_environment(worktree_path, no_all_extras, show_cmd_output):
         )
 
 
-def make_new_tree(index, fresh_env, no_overrides, no_all_extras, show_cmd_output=False):
+def make_new_tree(index, fresh_env, no_overrides, show_cmd_output=False):
     """Creates a new git worktree with a dedicated environment."""
     tree_name = f"t{index}"
     branch_name = f"{config.WORKTREE_BRANCH_PREFIX}{index}"
@@ -354,7 +350,7 @@ def make_new_tree(index, fresh_env, no_overrides, no_all_extras, show_cmd_output
             f.write(f"NETWORK_GATEWAY={network_gateway}\n")
             f.write(f"FORWARDED_ALLOW_IPS={network_gateway}\n")
 
-    _setup_python_environment(worktree_path, no_all_extras, show_cmd_output)
+    _setup_python_environment(worktree_path, show_cmd_output)
 
     logger.debug("\n" + "🌴 New worktree created successfully.")
     logger.debug(f"   Worktree: {worktree_path}")
@@ -483,7 +479,6 @@ def exec_agent(
     task_file,
     fresh_env,
     no_overrides,
-    no_all_extras,
     agent_args,
     exec_cmd=None,
     indices_str=None,
@@ -558,7 +553,7 @@ def exec_agent(
 
         logger.debug(f"\nCreating new worktree for index {index}...")
         initial_sha = make_new_tree(
-            index, fresh_env, no_overrides, no_all_extras, show_cmd_output
+            index, fresh_env, no_overrides, show_cmd_output
         )
 
         worktree_path = Path(config.WORKTREE_DIR) / f"t{index}"
