@@ -124,6 +124,29 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional():
             show_cmd_output=True,
         )
 
+def test_dispatch_exec_with_num_trees_and_exec_cmd_positional_2():
+    """Test exec with taskfile, num_trees, and exec_cmd positional args."""
+    args = argparse.Namespace(
+        taskfile="task.md",
+        agent_args=["my-agent", "3", "--agent-opt"],
+        num_trees_opt=None,
+        tree_indices=None,
+        fresh_env=True,
+        no_env_overrides=True,
+        verbose=2,
+    )
+    with patch("agro.cli.core.exec_agent") as mock_exec_agent:
+        _dispatch_exec(args)
+        mock_exec_agent.assert_called_once_with(
+            task_file="task.md",
+            fresh_env=True,
+            no_overrides=True,
+            agent_args=["--agent-opt"],
+            exec_cmd="my-agent",
+            indices_str=None,
+            num_trees=3,
+            show_cmd_output=True,
+        )
 
 def test_dispatch_exec_with_num_trees_option():
     """Test exec with -n option for num_trees."""
