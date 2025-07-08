@@ -34,7 +34,6 @@ def test_dispatch_exec_simple():
         tree_indices=None,
         fresh_env=False,
         no_env_overrides=False,
-        no_all_extras=False,
         verbose=0,
     )
     with patch("agro.cli.core.exec_agent") as mock_exec_agent:
@@ -43,7 +42,6 @@ def test_dispatch_exec_simple():
             task_file="task.md",
             fresh_env=False,
             no_overrides=False,
-            no_all_extras=False,
             agent_args=[],
             exec_cmd=None,
             indices_str=None,
@@ -61,7 +59,6 @@ def test_dispatch_exec_with_num_trees_positional():
         tree_indices=None,
         fresh_env=False,
         no_env_overrides=False,
-        no_all_extras=False,
         verbose=0,
     )
     with patch("agro.cli.core.exec_agent") as mock_exec_agent:
@@ -70,7 +67,6 @@ def test_dispatch_exec_with_num_trees_positional():
             task_file="task.md",
             fresh_env=False,
             no_overrides=False,
-            no_all_extras=False,
             agent_args=[],
             exec_cmd=None,
             indices_str=None,
@@ -88,7 +84,6 @@ def test_dispatch_exec_with_exec_cmd_positional():
         tree_indices=None,
         fresh_env=False,
         no_env_overrides=False,
-        no_all_extras=False,
         verbose=0,
     )
     with patch("agro.cli.core.exec_agent") as mock_exec_agent:
@@ -97,7 +92,6 @@ def test_dispatch_exec_with_exec_cmd_positional():
             task_file="task.md",
             fresh_env=False,
             no_overrides=False,
-            no_all_extras=False,
             agent_args=[],
             exec_cmd="my-agent",
             indices_str=None,
@@ -115,7 +109,6 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional():
         tree_indices=None,
         fresh_env=True,
         no_env_overrides=True,
-        no_all_extras=True,
         verbose=2,
     )
     with patch("agro.cli.core.exec_agent") as mock_exec_agent:
@@ -124,7 +117,6 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional():
             task_file="task.md",
             fresh_env=True,
             no_overrides=True,
-            no_all_extras=True,
             agent_args=["--agent-opt"],
             exec_cmd="my-agent",
             indices_str=None,
@@ -142,7 +134,6 @@ def test_dispatch_exec_with_num_trees_option():
         tree_indices=None,
         fresh_env=False,
         no_env_overrides=False,
-        no_all_extras=False,
         verbose=0,
     )
     with patch("agro.cli.core.exec_agent") as mock_exec_agent:
@@ -151,7 +142,6 @@ def test_dispatch_exec_with_num_trees_option():
             task_file="task.md",
             fresh_env=False,
             no_overrides=False,
-            no_all_extras=False,
             agent_args=["--agent-opt"],
             exec_cmd="my-agent",
             indices_str=None,
@@ -169,7 +159,6 @@ def test_dispatch_exec_with_tree_indices_option():
         tree_indices="1,2,3",
         fresh_env=False,
         no_env_overrides=False,
-        no_all_extras=False,
         verbose=0,
     )
     with patch("agro.cli.core.exec_agent") as mock_exec_agent:
@@ -178,7 +167,6 @@ def test_dispatch_exec_with_tree_indices_option():
             task_file="task.md",
             fresh_env=False,
             no_overrides=False,
-            no_all_extras=False,
             agent_args=["--agent-opt"],
             exec_cmd="my-agent",
             indices_str="1,2,3",
@@ -196,7 +184,6 @@ def test_dispatch_exec_num_trees_conflict_positional():
         tree_indices=None,
         fresh_env=False,
         no_env_overrides=False,
-        no_all_extras=False,
         verbose=0,
     )
     with pytest.raises(ValueError, match="Number of trees specified twice"):
@@ -212,7 +199,6 @@ def test_dispatch_exec_num_trees_conflict_indices():
         tree_indices="1,2",
         fresh_env=False,
         no_env_overrides=False,
-        no_all_extras=False,
         verbose=0,
     )
     with pytest.raises(
