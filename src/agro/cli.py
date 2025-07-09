@@ -23,6 +23,7 @@ def _dispatch_exec(args):
     num_trees = args.num_trees_opt
     exec_cmd = args.exec_cmd_opt
     taskfile_str = None
+    task_file = None
 
     # 1. Get all positional args before any options.
     positional_args = []
@@ -65,16 +66,22 @@ def _dispatch_exec(args):
             taskfile_str = positional_args[0]
             exec_cmd = positional_args[1]
         elif len(positional_args) == 1:
-            # Is it taskfile or exec_cmd? Check if it's a file.
-            if core.find_task_file(positional_args[0]):
-                taskfile_str = positional_args[0]
+            arg = positional_args[0]
+            if arg.endswith(".md"):
+                taskfile_str = arg
             else:
-                # Not a file, must be exec_cmd.
-                exec_cmd = positional_args[0]
+                # Is it taskfile or exec_cmd? Check if it's a file.
+                task_file = core.find_task_file(arg)
+                if task_file:
+                    taskfile_str = arg
+                else:
+                    # Not a file, must be exec_cmd.
+                    exec_cmd = arg
 
     # Now, handle the taskfile logic.
     if taskfile_str:
-        task_file = core.find_task_file(taskfile_str)
+        if not task_file:
+            task_file = core.find_task_file(taskfile_str)
         if not task_file:
             raise FileNotFoundError(f"Task file '{taskfile_str}' not found.")
     else:
