@@ -11,6 +11,32 @@ DEFAULTS = {
     'WORKTREE_OUTPUT_BRANCH_PREFIX': 'output/',
     'EXEC_CMD_DEFAULT': 'aider',
     'AGENT_TYPE': 'aider',
+    'AGENT_CONFIG': {
+        'aider': {
+            'task_file_arg_template': ['-f', '{task_file}'],
+            'args': [
+                "--yes",
+                "--no-check-update",
+                "--no-attribute-author",
+                "--no-attribute-committer",
+                "--no-attribute-co-authored-by",
+            ]
+        },
+        'claude': {
+            'task_file_arg_template': None,
+            'args': [
+                "-p",
+                "--allowedTools",
+                "Write Edit MultiEdit",
+            ]
+        },
+        'gemini': {
+            'task_file_arg_template': None,
+            'args': [
+                "-y",
+            ]
+        }
+    },
     'AGRO_EDITOR_CMD': 'code',
     'ENV_SETUP_CMDS': [
         'uv venv',
@@ -56,6 +82,7 @@ WORKTREE_OUTPUT_BRANCH_PREFIX = _config['WORKTREE_OUTPUT_BRANCH_PREFIX']
 # Agro-Agent Configs
 EXEC_CMD_DEFAULT = _config['EXEC_CMD_DEFAULT']
 AGENT_TYPE = _config['AGENT_TYPE']
+AGENT_CONFIG = _config['AGENT_CONFIG']
 AGRO_EDITOR_CMD = _config['AGRO_EDITOR_CMD']
 ENV_SETUP_CMDS = _config['ENV_SETUP_CMDS']
 

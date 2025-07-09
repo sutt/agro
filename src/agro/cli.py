@@ -91,6 +91,7 @@ def _dispatch_exec(args):
         indices_str=args.tree_indices,
         num_trees=num_trees,
         show_cmd_output=(args.verbose >= 2),
+        agent_type=args.agent_type_opt,
     )
 
 
@@ -255,6 +256,13 @@ Options for 'init':
         "--exec-cmd",
         dest="exec_cmd_opt",
         help="Run the exec-cmd to launch agent on worktree.",
+    )
+
+    parser_exec.add_argument(
+        "-a",
+        "--agent-type",
+        dest="agent_type_opt",
+        help="Specify agent type to override config (e.g., 'aider', 'claude', 'gemini').",
     )
 
     parser_exec.add_argument(

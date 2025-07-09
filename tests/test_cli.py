@@ -39,6 +39,7 @@ def test_dispatch_exec_simple(mock_find, mock_find_recent, mock_exec_agent):
         num_trees_opt=None,
         tree_indices=None,
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -54,6 +55,7 @@ def test_dispatch_exec_simple(mock_find, mock_find_recent, mock_exec_agent):
         indices_str=None,
         num_trees=None,
         show_cmd_output=False,
+        agent_type=None,
     )
 
 
@@ -70,6 +72,7 @@ def test_dispatch_exec_with_num_trees_positional(
         num_trees_opt=None,
         tree_indices=None,
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -85,6 +88,7 @@ def test_dispatch_exec_with_num_trees_positional(
         indices_str=None,
         num_trees=3,
         show_cmd_output=False,
+        agent_type=None,
     )
 
 
@@ -101,6 +105,7 @@ def test_dispatch_exec_with_exec_cmd_positional(
         num_trees_opt=None,
         tree_indices=None,
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -117,6 +122,7 @@ def test_dispatch_exec_with_exec_cmd_positional(
         indices_str=None,
         num_trees=None,
         show_cmd_output=False,
+        agent_type=None,
     )
 
 
@@ -133,6 +139,7 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional(
         num_trees_opt=None,
         tree_indices=None,
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=True,
         no_env_overrides=True,
         verbose=2,
@@ -147,6 +154,7 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional(
         indices_str=None,
         num_trees=3,
         show_cmd_output=True,
+        agent_type=None,
     )
 
 
@@ -163,6 +171,7 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional_2(
         num_trees_opt=None,
         tree_indices=None,
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=True,
         no_env_overrides=True,
         verbose=2,
@@ -177,6 +186,7 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional_2(
         indices_str=None,
         num_trees=3,
         show_cmd_output=True,
+        agent_type=None,
     )
 
 
@@ -193,6 +203,7 @@ def test_dispatch_exec_with_num_trees_option(
         num_trees_opt=3,
         tree_indices=None,
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -207,6 +218,7 @@ def test_dispatch_exec_with_num_trees_option(
         indices_str=None,
         num_trees=3,
         show_cmd_output=False,
+        agent_type=None,
     )
 
 
@@ -223,6 +235,7 @@ def test_dispatch_exec_with_tree_indices_option(
         num_trees_opt=None,
         tree_indices="1,2,3",
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -237,6 +250,7 @@ def test_dispatch_exec_with_tree_indices_option(
         indices_str="1,2,3",
         num_trees=None,
         show_cmd_output=False,
+        agent_type=None,
     )
 
 
@@ -253,6 +267,7 @@ def test_dispatch_exec_with_exec_cmd_option(
         num_trees_opt=None,
         tree_indices=None,
         exec_cmd_opt="my-agent",
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -267,6 +282,7 @@ def test_dispatch_exec_with_exec_cmd_option(
         indices_str=None,
         num_trees=None,
         show_cmd_output=False,
+        agent_type=None,
     )
 
 
@@ -277,6 +293,7 @@ def test_dispatch_exec_num_trees_conflict_positional():
         num_trees_opt=3,
         tree_indices=None,
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -292,6 +309,7 @@ def test_dispatch_exec_num_trees_conflict_indices():
         num_trees_opt=None,
         tree_indices="1,2",
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -310,6 +328,7 @@ def test_dispatch_exec_exec_cmd_conflict():
         num_trees_opt=None,
         tree_indices=None,
         exec_cmd_opt="my-agent",
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -328,6 +347,7 @@ def test_dispatch_exec_no_taskfile_found(mock_find_recent, mock_find):
         num_trees_opt=None,
         tree_indices=None,
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -349,6 +369,7 @@ def test_dispatch_exec_no_taskfile_use_recent_confirm_yes(
         num_trees_opt=None,
         tree_indices=None,
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -364,6 +385,7 @@ def test_dispatch_exec_no_taskfile_use_recent_confirm_yes(
         indices_str=None,
         num_trees=None,
         show_cmd_output=False,
+        agent_type=None,
     )
 
 
@@ -380,6 +402,7 @@ def test_dispatch_exec_no_taskfile_use_recent_confirm_no(
         num_trees_opt=None,
         tree_indices=None,
         exec_cmd_opt=None,
+        agent_type_opt=None,
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
@@ -387,3 +410,35 @@ def test_dispatch_exec_no_taskfile_use_recent_confirm_no(
     _dispatch_exec(args)
     mock_input.assert_called_once()
     mock_exec_agent.assert_not_called()
+
+
+@patch("agro.cli.core.exec_agent")
+@patch("agro.cli.core.find_most_recent_task_file", return_value=None)
+@patch("agro.cli.core.find_task_file")
+def test_dispatch_exec_with_agent_type_option(
+    mock_find, mock_find_recent, mock_exec_agent
+):
+    """Test exec with -a option for agent_type."""
+    mock_find.return_value = Path("task.md")
+    args = argparse.Namespace(
+        agent_args=["task.md"],
+        num_trees_opt=None,
+        tree_indices=None,
+        exec_cmd_opt=None,
+        agent_type_opt="gemini",
+        fresh_env=False,
+        no_env_overrides=False,
+        verbose=0,
+    )
+    _dispatch_exec(args)
+    mock_exec_agent.assert_called_once_with(
+        task_file="task.md",
+        fresh_env=False,
+        no_overrides=False,
+        agent_args=[],
+        exec_cmd=None,
+        indices_str=None,
+        num_trees=None,
+        show_cmd_output=False,
+        agent_type="gemini",
+    )

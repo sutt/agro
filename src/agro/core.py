@@ -102,7 +102,7 @@ def _get_config_template():
 # Default command to execute for 'agro exec'.
 # EXEC_CMD_DEFAULT: {config.DEFAULTS['EXEC_CMD_DEFAULT']}
 
-# The type of agent being used. Determines which built-in flags are passed.
+# The type of agent being used. Determines how built-in flags are passed.
 # Supported values: "aider", "claude", "gemini".
 # AGENT_TYPE: {config.DEFAULTS['AGENT_TYPE']}
 
@@ -499,6 +499,7 @@ def exec_agent(
     indices_str=None,
     num_trees=None,
     show_cmd_output=False,
+    agent_type=None,
 ):
     """Deletes, recreates, and runs detached agent processes in worktrees."""
     task_path = Path(task_file)
@@ -614,36 +615,43 @@ def exec_agent(
 
         log_file_path = agswap_dir / "agro-exec.log"
         exec_command = exec_cmd or config.EXEC_CMD_DEFAULT
-        command = [exec_command]
-        task_file_rel_path = str(task_in_swap_path.relative_to(worktree_path))
 
-        if config.AGENT_TYPE == "aider":
-            command.extend(
-                [
-                    "--yes",
-                    "-f",
-                    task_file_rel_path,
-                    "--no-check-update",
-                    "--no-attribute-author",
-                    "--no-attribute-committer",
-                    "--no-attribute-co-authored-by",
-                ]
-            )
-        else:
-            # For other agent types, we just pass the task file.
-            # The exec_cmd can be configured to handle it.
-            command.append(task_file_rel_path)
+        agent_type_to_use = agent_type or config.AGENT_TYPE
+        agent_config_data = config.AGENT_CONFIG.get(agent_type_to_use)
+        if not agent_config_data:
+            raise ValueError(f"Unknown or unsupported agent type: '{agent_type_to_use}'")
+
+        command = [exec_command]
+        command.extend(agent_config_data.get("args", []))
+
+        task_file_rel_path = str(task_in_swap_path.relative_to(worktree_path))
+        task_file_arg_template = agent_config_data.get("task_file_arg_template")
+
+        if task_file_arg_template:
+            task_args = [
+                arg.format(task_file=task_file_rel_path)
+                for arg in task_file_arg_template
+            ]
+            command.extend(task_args)
 
         command.extend(agent_args)
 
+        popen_kwargs = {
+            "cwd": str(worktree_path),
+            "stderr": subprocess.STDOUT,
+            "start_new_session": True,  # Detach from parent
+        }
+
         with open(log_file_path, "wb") as log_file:
-            process = subprocess.Popen(
-                command,
-                cwd=str(worktree_path),
-                stdout=log_file,
-                stderr=subprocess.STDOUT,
-                start_new_session=True,  # Detach from parent
-            )
+            popen_kwargs["stdout"] = log_file
+            if task_file_arg_template:
+                # Agent takes task file as command-line argument
+                process = subprocess.Popen(command, **popen_kwargs)
+            else:
+                # Agent takes task file via stdin
+                with open(task_in_swap_path, "r") as task_f:
+                    popen_kwargs["stdin"] = task_f
+                    process = subprocess.Popen(command, **popen_kwargs)
 
         pid_file.write_text(str(process.pid))
 
