@@ -82,6 +82,20 @@ def _dispatch_exec(args):
                 "No task file specified and no task files found in default directory."
             )
 
+    agent_type = args.agent_type_opt
+
+    # Infer agent_type from exec_cmd if not provided
+    if exec_cmd and not agent_type:
+        for at in core.config.AGENT_CONFIG:
+            if at in exec_cmd:
+                agent_type = at
+                logger.debug(f"Inferred agent type '{agent_type}' from exec_cmd '{exec_cmd}'")
+                break
+    # Infer exec_cmd from agent_type if not provided
+    elif agent_type and not exec_cmd:
+        exec_cmd = agent_type
+        logger.debug(f"Inferred exec_cmd '{exec_cmd}' from agent_type '{agent_type}'")
+
     core.exec_agent(
         task_file=taskfile,
         fresh_env=args.fresh_env,
@@ -91,7 +105,7 @@ def _dispatch_exec(args):
         indices_str=args.tree_indices,
         num_trees=num_trees,
         show_cmd_output=(args.verbose >= 2),
-        agent_type=args.agent_type_opt,
+        agent_type=agent_type,
     )
 
 
