@@ -102,6 +102,10 @@ def _get_config_template():
 # Default command to execute for 'agro exec'.
 # EXEC_CMD_DEFAULT: {config.DEFAULTS['EXEC_CMD_DEFAULT']}
 
+# The type of agent being used. Determines which built-in flags are passed.
+# Supported values: "aider", "claude", "gemini".
+# AGENT_TYPE: {config.DEFAULTS['AGENT_TYPE']}
+
 # Default command to open spec files with 'agro task'.
 # AGRO_EDITOR_CMD: {config.DEFAULTS['AGRO_EDITOR_CMD']}
 """
@@ -610,16 +614,27 @@ def exec_agent(
 
         log_file_path = agswap_dir / "agro-exec.log"
         exec_command = exec_cmd or config.EXEC_CMD_DEFAULT
-        command = [
-            exec_command,
-            "--yes",
-            "-f",
-            str(task_in_swap_path.relative_to(worktree_path)),
-            "--no-check-update",
-            "--no-attribute-author",
-            "--no-attribute-committer",
-            "--no-attribute-co-authored-by",
-        ] + agent_args
+        command = [exec_command]
+        task_file_rel_path = str(task_in_swap_path.relative_to(worktree_path))
+
+        if config.AGENT_TYPE == "aider":
+            command.extend(
+                [
+                    "--yes",
+                    "-f",
+                    task_file_rel_path,
+                    "--no-check-update",
+                    "--no-attribute-author",
+                    "--no-attribute-committer",
+                    "--no-attribute-co-authored-by",
+                ]
+            )
+        else:
+            # For other agent types, we just pass the task file.
+            # The exec_cmd can be configured to handle it.
+            command.append(task_file_rel_path)
+
+        command.extend(agent_args)
 
         with open(log_file_path, "wb") as log_file:
             process = subprocess.Popen(
