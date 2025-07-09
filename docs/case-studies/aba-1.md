@@ -11,7 +11,7 @@ More specfically we'll default to using `aider` with with `gemini-2.5-pro-previe
 #### tl;dr
 - We use multiple agents to generate potential solutions to [task](https://github.com/sutt/agro/blob/example/implicit-arg/.public-agdocs/specs/implicit-taskfile.md).
 - We compare the solutions at a high-level with `git` and `pytest`.
-- We test the best solution and accept it, generated code corresponding to commits: `82284d` and `2d22267`.
+- We test the best solution and accept it, generated code corresponding to commits:[`4bbfa5`](https://github.com/sutt/agro/commit/4bbfa54d239d1aa06bb2337f06e40d6c9b36b78f) [`fc514b`](https://github.com/sutt/agro/commit/fc514bdea08d1f0f51908e6a0da29bd8542c3107).
 - Brief look at other not-accepted soltuions for how they differed and problems they ran into. 
 
 ### Feature for Case-Study
@@ -27,7 +27,7 @@ Update the args to have a -c as an alias for exec-cmd.
 - Num-tree and exec-cmd can swap places positionally
 
 the new docs are
-  exec [args] [taskfile] [num-trees] [exec-cmd]   
+  exec [args] [taskfile] [num-trees] [exec-cmd]
                                 
         Run an agent in new worktree(s)
         args:
@@ -83,31 +83,58 @@ TODO - look at the diffs of cli help
 
 #### Spec file context
 
-Note that this is an unusally complex and well formatted prompt compared to the others that have been run so far.
+Note that this is an unusally complex and well formatted prompt compared to the others that have been run so far. For some other examples see all the specs of 
 
-TODO - insert 3 example 
-TODO - show contents in a detail box
+- **agswap-dir.md**
+```md
+add a .agswap directory on worktree creation with a .gitignore inside this log directory (contents=*).
+If running from exec_agent:
+- write the prompt-file into the log directory with the same filename as the src.
+- pipe the stdout / stderr from maider into this directory.
+```
+
+- **config-yaml.md**
+```md
+add an optional yaml config for agro.
+the default place to look to load it is .agdocs/conf/agro.conf.yml
+add all the variables from the current expected .env, and change config to load from yaml instead.
+also:
+create a template config on "agro init" command. the template file will have comments explaining what the config does and a commented to out default version.
+```
 
 
 ### Create a solution
 
 Now that we've discussed the tasks, let's walk through how the solutions were developed.
 
+##### Preview
+
+The generated code on the three runs have been push to branches here (and sneak peak at the accepted status):
+- [tree/example/implicit-arg.output.1](https://github.com/sutt/agro/tree/example/implicit-arg.output.1)  (accepted: 🏆)
+- [tree/example/implicit-arg.output.2](https://github.com/sutt/agro/tree/example/implicit-arg.output.2)  (accepted: 👎)
+- [tree/example/implicit-arg.output.3](https://github.com/sutt/agro/tree/example/implicit-arg.output.3)  (accepted: 👎)
+
+
+These were all performed with `aider` as the agent, `gemini2.5-pro-06-05` as the model and off the commit 
+
 ##### Follow Along
 If you want to follow this tutorial, you can start from the git checkpoint where this feature was run, and 
 
 ```bash
 # have agro installed
+agro --version 
+# agro v0.1.4
+
 # clone the branch
-git clone git@github.com:sutt/agro # TODO-branch
+git clone --branch implicit-arg git@github.com:sutt/agro.git example-agro
+cd example-agro
 
 # copy the spec file into internal agdocs
 agro init
 cp .public-agdocs/specs/implicit-taskfile.cmd .agdocs/specs/
-
-agro exec .agdocs/specs/
-
 ```
+
+Now you should be ready to run the same commands
 
 ### Start the Agents: `agro exec`
 #### Run
@@ -288,13 +315,81 @@ Now that this looks like a winning solution, let's take a look at how it was imp
     - one key property they are missing: they don't really check the filesystem logic, the mocks just help bypass any need to do this.
       - This is OK and maybe the correct way to write these unittests, but means that the functionality might not be fully functional when we go to use it on an actual filesystem.
 
-### Understanding other solutions
+### Repeated commits from aider
 
-What can we learn from the tests of other soltuions.
+When we examine the git log of the correct solution we see two 
+
+```
+commit c2e787d00c14a16be0067c7f7972a5e35e268ed3
+Author: sutt <wsutton17@gmail.com>
+Date:   Tue Jul 8 19:03:09 2025 -0400
+
+    fix: Make logger module-level to fix undefined name errors
+
+commit 1c5bb98bda55248c4baf9dde70de3368205bfebd
+Author: sutt <wsutton17@gmail.com>
+Date:   Tue Jul 8 19:02:27 2025 -0400
+
+    feat: Make exec taskfile optional/positional, add discovery & -c alias
+```
+
+If we examine the aider chat history we see:
+
+```
++> Commit 1c5bb98 feat: Make exec taskfile optional/positional, add discovery & -c alias  
++>  
++> # Fix any errors below, if possible.  
++>  
++> ## Running: /home/user/.local/share/uv/tools/aider-chat/bin/python -m flake8 --select=E9,F821,F823,F831,F406,F407,F701,F702,F704,F706 --show-source --isolated src/agro/cli.py  
++>  
++> src/agro/cli.py:67:13: F821 undefined name 'logger'  
++> logger.info(f"No task file specified. Using most recent: {found_path}")  
++> ^  
++> src/agro/cli.py:71:21: F821 undefined name 'logger'  
++> logger.info("Operation cancelled.")  
++> ^  
++> src/agro/cli.py:74:17: F821 undefined name 'logger'  
++> logger.warning("\nOperation cancelled.")  
++> ^  
++>  
++> ## See relevant lines below marked with █.  
++>  
++> src/agro/cli.py:  
++> ...⋮...  
++> 19│def _dispatch_exec(args):  
++> 20│    """Helper to dispatch exec command with complex argument parsing."""  
++> ...⋮...  
+
+...
+
++
++```python
++src/agro/cli.py
++<<<<<<< SEARCH
++    except Exception as e:
++        logging.getLogger("agro").error(f"Error: {e}")
++        sys.exit(1)
++=======
++    except Exception as e:
++        logger.error(f"Error: {e}")
++        sys.exit(1)
++>>>>>>> REPLACE
++```
++
++These changes define the logger at the module level, then have `main()` configure it before it's used. This resolves the errors.
++
++> Tokens: 24k sent, 327 received. Cost: $0.03 message, $0.12 session.  
++> Applied edit to src/agro/cli.py  
++> Commit c2e787d fix: Make logger module-level to fix undefined name errors  
++> pytest tests/test_cli.py  
++> Run shell command? (Y)es/(N)o/(D)on't ask again [Yes]: n  
+```
+
+This shows the power of giving the agent the ability to run commands on the repo, in this case linting.
 
 #### Summary of state of pytest
 
-TODO - show how agent 3 is able to fix itself
+Also when we ran pytest in Agent3 and passed in the results it was able to fix itself with aider by refactoring the tests. (Not true of Agent2). This shows a shortcoming of aider doesn't t ruly run in "yolo" mode with ability to run arbitrary bash commands.
 
-### Wrapping up & Summarizing
+So this will need to be an improvement.
 
