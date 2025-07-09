@@ -10,6 +10,7 @@ DEFAULTS = {
     'WORKTREE_BRANCH_PREFIX': 'tree/t',
     'WORKTREE_OUTPUT_BRANCH_PREFIX': 'output/',
     'EXEC_CMD_DEFAULT': 'aider',
+    'AGENT_TYPE': 'aider',
     'AGRO_EDITOR_CMD': 'code',
     'ENV_SETUP_CMDS': [
         'uv venv',
@@ -34,6 +35,13 @@ def _load_config():
             except yaml.YAMLError as e:
                 print(f"Warning: Could not parse config file {config_path}. Using default values. Error: {e}", file=sys.stderr)
 
+    valid_agent_types = {"aider", "gemini", "claude"}
+    agent_type = config.get('AGENT_TYPE')
+    if agent_type not in valid_agent_types:
+        valid_types_str = ", ".join(sorted(list(valid_agent_types)))
+        print(f"Error: Invalid AGENT_TYPE '{agent_type}'. Must be one of {valid_types_str}.", file=sys.stderr)
+        sys.exit(1)
+
     return config
 
 _config = _load_config()
@@ -47,6 +55,7 @@ WORKTREE_OUTPUT_BRANCH_PREFIX = _config['WORKTREE_OUTPUT_BRANCH_PREFIX']
 
 # Agro-Agent Configs
 EXEC_CMD_DEFAULT = _config['EXEC_CMD_DEFAULT']
+AGENT_TYPE = _config['AGENT_TYPE']
 AGRO_EDITOR_CMD = _config['AGRO_EDITOR_CMD']
 ENV_SETUP_CMDS = _config['ENV_SETUP_CMDS']
 
