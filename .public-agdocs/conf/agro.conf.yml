@@ -29,20 +29,19 @@
 # Base port for the API service in worktrees. Each worktree gets a unique port.
 # BASE_API_PORT: 8000
 
-# Base port for the database service in worktrees.
-# DB_BASE_PORT: 5432
+# --- Python Environment ---
 
-# Prefix for the database container names.
-# DB_CONTAINER_NAME_PREFIX: tf-db
-
-# Prefix for the API container names.
-# API_CONTAINER_NAME_PREFIX: tf-api
-
-# Prefix for Docker volume names used for database persistence.
-# DB_VOLUME_NAME_PREFIX: tf-db-data
+# Commands to set up the Python environment in a new worktree.
+# For example, to install all optional dependency groups with uv:
+# ENV_SETUP_CMDS:
+#   - 'uv venv'
+#   - 'uv sync --quiet --all-extras'
 
 
 # --- Agent Execution ---
 
 # Default command to execute for 'agro exec'.
 EXEC_CMD_DEFAULT: maider.sh
+
+# Default command to open spec files with 'agro task'.
+# AGRO_EDITOR_CMD: code
