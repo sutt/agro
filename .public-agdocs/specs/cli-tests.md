@@ -1,0 +1,2 @@
+implement pytest for this repo out of dir ./tests from root.
+start by adding some unit tests to see how cli.py module handles different variations of the exec command and how the impacts to the value of the args passed to the functions.

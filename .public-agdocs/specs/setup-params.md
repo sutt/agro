@@ -1,0 +1,1 @@
+factor out the env replication setup steps into config just as the EXEC_CMD was factored out of being hard-coded into exec's shell. These steps include the uv sync, and looking for a pyproject.yaml.
