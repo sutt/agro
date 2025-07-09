@@ -94,7 +94,7 @@ def _get_config_template():
 # For example, to install all optional dependency groups with uv:
 # ENV_SETUP_CMDS:
 #   - 'uv venv'
-#   - 'uv sync --quiet --all-extras'
+#   - 'uv sync --quiet --group test'
 
 
 # --- Agent Execution ---
