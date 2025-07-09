@@ -436,9 +436,108 @@ def test_dispatch_exec_with_agent_type_option(
         fresh_env=False,
         no_overrides=False,
         agent_args=[],
-        exec_cmd=None,
+        exec_cmd="gemini",
         indices_str=None,
         num_trees=None,
         show_cmd_output=False,
         agent_type="gemini",
     )
+
+
+@patch("agro.cli.core.exec_agent")
+@patch("agro.cli.core.find_most_recent_task_file", return_value=None)
+@patch("agro.cli.core.find_task_file")
+def test_dispatch_exec_infer_agent_type_from_exec_cmd(
+    mock_find, mock_find_recent, mock_exec_agent
+):
+    """Test agent_type is inferred from exec_cmd."""
+    mock_find.return_value = Path("task.md")
+    with patch("agro.cli.core.config.AGENT_CONFIG", {"gemini": {}}):
+        args = argparse.Namespace(
+            agent_args=["task.md"],
+            num_trees_opt=None,
+            tree_indices=None,
+            exec_cmd_opt="my-gemini-agent",
+            agent_type_opt=None,
+            fresh_env=False,
+            no_env_overrides=False,
+            verbose=0,
+        )
+        _dispatch_exec(args)
+        mock_exec_agent.assert_called_once_with(
+            task_file="task.md",
+            fresh_env=False,
+            no_overrides=False,
+            agent_args=[],
+            exec_cmd="my-gemini-agent",
+            indices_str=None,
+            num_trees=None,
+            show_cmd_output=False,
+            agent_type="gemini",
+        )
+
+
+@patch("agro.cli.core.exec_agent")
+@patch("agro.cli.core.find_most_recent_task_file", return_value=None)
+@patch("agro.cli.core.find_task_file")
+def test_dispatch_exec_infer_agent_type_from_positional_exec_cmd(
+    mock_find, mock_find_recent, mock_exec_agent
+):
+    """Test agent_type is inferred from positional exec_cmd."""
+    mock_find.side_effect = lambda arg: Path("task.md") if arg == "task.md" else None
+    with patch("agro.cli.core.config.AGENT_CONFIG", {"gemini": {}}):
+        args = argparse.Namespace(
+            agent_args=["task.md", "my-gemini-agent"],
+            num_trees_opt=None,
+            tree_indices=None,
+            exec_cmd_opt=None,
+            agent_type_opt=None,
+            fresh_env=False,
+            no_env_overrides=False,
+            verbose=0,
+        )
+        _dispatch_exec(args)
+        mock_exec_agent.assert_called_once_with(
+            task_file="task.md",
+            fresh_env=False,
+            no_overrides=False,
+            agent_args=[],
+            exec_cmd="my-gemini-agent",
+            indices_str=None,
+            num_trees=None,
+            show_cmd_output=False,
+            agent_type="gemini",
+        )
+
+
+@patch("agro.cli.core.exec_agent")
+@patch("agro.cli.core.find_most_recent_task_file", return_value=None)
+@patch("agro.cli.core.find_task_file")
+def test_dispatch_exec_no_inference_when_both_provided(
+    mock_find, mock_find_recent, mock_exec_agent
+):
+    """Test no inference occurs when both agent_type and exec_cmd are provided."""
+    mock_find.return_value = Path("task.md")
+    with patch("agro.cli.core.config.AGENT_CONFIG", {"gemini": {}, "aider": {}}):
+        args = argparse.Namespace(
+            agent_args=["task.md"],
+            num_trees_opt=None,
+            tree_indices=None,
+            exec_cmd_opt="my-gemini-agent",
+            agent_type_opt="aider",
+            fresh_env=False,
+            no_env_overrides=False,
+            verbose=0,
+        )
+        _dispatch_exec(args)
+        mock_exec_agent.assert_called_once_with(
+            task_file="task.md",
+            fresh_env=False,
+            no_overrides=False,
+            agent_args=[],
+            exec_cmd="my-gemini-agent",
+            indices_str=None,
+            num_trees=None,
+            show_cmd_output=False,
+            agent_type="aider",
+        )
