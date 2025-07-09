@@ -88,19 +88,6 @@ def _get_config_template():
 # Base port for the API service in worktrees. Each worktree gets a unique port.
 # BASE_API_PORT: {config.DEFAULTS['BASE_API_PORT']}
 
-# Base port for the database service in worktrees.
-# DB_BASE_PORT: {config.DEFAULTS['DB_BASE_PORT']}
-
-# Prefix for the database container names.
-# DB_CONTAINER_NAME_PREFIX: {config.DEFAULTS['DB_CONTAINER_NAME_PREFIX']}
-
-# Prefix for the API container names.
-# API_CONTAINER_NAME_PREFIX: {config.DEFAULTS['API_CONTAINER_NAME_PREFIX']}
-
-# Prefix for Docker volume names used for database persistence.
-# DB_VOLUME_NAME_PREFIX: {config.DEFAULTS['DB_VOLUME_NAME_PREFIX']}
-
-
 # --- Python Environment ---
 
 # Commands to set up the Python environment in a new worktree.
@@ -304,14 +291,6 @@ def make_new_tree(index, fresh_env, no_overrides, show_cmd_output=False):
     branch_name = f"{config.WORKTREE_BRANCH_PREFIX}{index}"
     worktree_path = Path(config.WORKTREE_DIR) / tree_name
     api_port = config.BASE_API_PORT + index
-    db_port = config.DB_BASE_PORT + index
-    db_container_name = f"{config.DB_CONTAINER_NAME_PREFIX}-t{index}"
-    api_container_name = f"{config.API_CONTAINER_NAME_PREFIX}-t{index}"
-    db_volume_name = f"{config.DB_VOLUME_NAME_PREFIX}-t{index}"
-    network_name = f"app_net_t{index}"
-    subnet_third_octet = 32 + index
-    network_subnet = f"192.168.{subnet_third_octet}.0/24"
-    network_gateway = f"192.168.{subnet_third_octet}.1"
 
     worktree_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -382,15 +361,6 @@ def make_new_tree(index, fresh_env, no_overrides, show_cmd_output=False):
             f.write("\n")
             f.write("### Worktree Overrides ---\n")
             f.write(f"API_PORT={api_port}\n")
-            f.write(f"API_MAPPED_PORT={api_port}\n")
-            f.write(f"DB_MAPPED_PORT={db_port}\n")
-            f.write(f"DB_VOLUME_NAME={db_volume_name}\n")
-            f.write(f"DB_CONTAINER_NAME={db_container_name}\n")
-            f.write(f"API_CONTAINER_NAME={api_container_name}\n")
-            f.write(f"NETWORK_NAME={network_name}\n")
-            f.write(f"NETWORK_SUBNET={network_subnet}\n")
-            f.write(f"NETWORK_GATEWAY={network_gateway}\n")
-            f.write(f"FORWARDED_ALLOW_IPS={network_gateway}\n")
 
     _setup_python_environment(worktree_path, show_cmd_output)
 
@@ -399,7 +369,6 @@ def make_new_tree(index, fresh_env, no_overrides, show_cmd_output=False):
     logger.debug(f"   Branch: {branch_name}")
     if not no_overrides and env_file_created:
         logger.debug(f"   API Port: {api_port}")
-        logger.debug(f"   DB Port:  {db_port}")
 
     return initial_sha
 

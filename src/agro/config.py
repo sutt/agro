@@ -16,10 +16,6 @@ DEFAULTS = {
         'uv sync --quiet --group test',
     ],
     'BASE_API_PORT': 8000,
-    'DB_BASE_PORT': 5432,
-    'DB_CONTAINER_NAME_PREFIX': 'tf-db',
-    'API_CONTAINER_NAME_PREFIX': 'tf-api',
-    'DB_VOLUME_NAME_PREFIX': 'tf-db-data',
 }
 
 def _load_config():
@@ -56,7 +52,4 @@ ENV_SETUP_CMDS = _config['ENV_SETUP_CMDS']
 
 # App Env Replication for Configs
 BASE_API_PORT = int(_config['BASE_API_PORT'])
-DB_BASE_PORT = int(_config['DB_BASE_PORT'])
-DB_CONTAINER_NAME_PREFIX = _config['DB_CONTAINER_NAME_PREFIX']
-API_CONTAINER_NAME_PREFIX = _config['API_CONTAINER_NAME_PREFIX']
-DB_VOLUME_NAME_PREFIX = _config['DB_VOLUME_NAME_PREFIX']
+
