@@ -27,6 +27,8 @@ For local dev updates run the `./redeploy` script to reinstall the local repo as
 
 ### At a Glance - Hello, World!
 
+**Warning: this workflow is deprecated as of v0.1.4, see this [case study](./docs/case-studies/aba-1.md) for a better tutorial for for working with v0.1.4**
+
 **0. Clone the Demo Repo**
 
 

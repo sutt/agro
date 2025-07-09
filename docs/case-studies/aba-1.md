@@ -1,0 +1,300 @@
+# Agro-builds-Agro pt 1
+_July 8, 2025_
+
+
+### Introduction
+
+We're prsenting a case study of using agent based workflow to create a feature. Specifically we're using `agro` to build features on `agro`. 
+
+More specfically we'll default to using `aider` with with `gemini-2.5-pro-preview-06-05` for our agent generations.
+
+#### tl;dr
+- We use multiple agents to generate potential solutions to [task](https://github.com/sutt/agro/blob/example/implicit-arg/.public-agdocs/specs/implicit-taskfile.md).
+- We compare the solutions at a high-level with `git` and `pytest`.
+- We test the best solution and accept it, generated code corresponding to commits: `82284d` and `2d22267`.
+- Brief look at other not-accepted soltuions for how they differed and problems they ran into. 
+
+### Feature for Case-Study
+
+Here is the file [implicit-taskfile.md](../../.public-agdocs/specs/implicit-taskfile.md) and here are the contents:
+
+```md
+Update the cli logic to allow taskfile to be an optional and positional argument. 
+
+Update the args to have a -c as an alias for exec-cmd.
+
+- Remember taskfile is always a str, num-trees is always int, exec-cmd is always a str. 
+- Num-tree and exec-cmd can swap places positionally
+
+the new docs are
+  exec [args] [taskfile] [num-trees] [exec-cmd]   
+                                
+        Run an agent in new worktree(s)
+        args:
+          -n <num-trees>        Number of worktrees to create.
+          -t <indices>          Specified worktree indice(s) (e.g., '1,2,3').
+          -c <exec-cmd>         Run the exec-cmd to launch agent on worktree
+          ...others             See below.
+
+
+In the case when taskfile is not passed it will be searched for:
+
+- if found the user will get a Prompt to confirm before proceeding with the full command
+- if not found the user will be notified, with expected vs actual message and command terminated
+(When taskfile is passed explicitly the user should not a prompt confirm)
+
+The takfile that will be selected to pass onto the main command is the most recently modified .md file in ./.agdocs/specs/ directory (or whatever the config points to).
+
+In the case where the taskfile is pass explicitly:
+
+- The taskfile can be searched to match:
+    - in .agdocs/specs/ by default (although use config vars)
+    - or possibly at root or the path specified
+
+- The taskfile will be a fuzzy match here since taskfiles are .md's and the taskfile might or might not be passed with this extension, and a full relative path might be specified or not in the case assuming you'll look in the default directory. Also the files could be at root, don't worry about the case of collisiosn other than just ignore the user.
+    - user could say: agro exec add-db # which will search for .agdocs/specs/add-db.md or ./add-db.md 
+    - user could say: agro exec make-readme.md # which will search for .agdocs/specs/make-readme.md or ./make-readme.md
+    - user could say: agro exec .agdocs/specs/add-db.md # which will search for only .agdocs/specs/add-db.md
+    This functionality of fuzzy matching the taskfile input string to possible existing files in the repo should be include both 
+
+Update and refactor cli tests as needed for these updates, and add new tests for this functionality.
+```
+
+#### Context for feature
+It helps to understand a little context around the reason for this feature and the development history leading up to it.
+
+The **main rationale** is designed to make the cli command `agro exec` very simple to invoke by eliminating all required arguments while keeping the power and composability. In other words, these will multiple valid ways to call the command, which are appealing to different types of users.
+
+```bash
+# this is valid and very easy to show for quickstart
+agro exec
+
+# this is valid; and works for explicit scripting and complex use
+agro exec .agdocs/specs/my-feature.md -n 3 -c gemini  
+
+# this is valid; and equivalent to line above, but more ergonomic
+agro exec my-feature 3 gemini  
+```
+
+#### Evolution of the feature
+
+
+TODO - look at the diffs of cli help 
+
+#### Spec file context
+
+Note that this is an unusally complex and well formatted prompt compared to the others that have been run so far.
+
+TODO - insert 3 example 
+TODO - show contents in a detail box
+
+
+### Create a solution
+
+Now that we've discussed the tasks, let's walk through how the solutions were developed.
+
+##### Follow Along
+If you want to follow this tutorial, you can start from the git checkpoint where this feature was run, and 
+
+```bash
+# have agro installed
+# clone the branch
+git clone git@github.com:sutt/agro # TODO-branch
+
+# copy the spec file into internal agdocs
+agro init
+cp .public-agdocs/specs/implicit-taskfile.cmd .agdocs/specs/
+
+agro exec .agdocs/specs/
+
+```
+
+### Start the Agents: `agro exec`
+#### Run
+Run three separate agents on the task:
+```
+agro exec .agdocs/specs/implicit-taskfile.md 3
+```
+### Examine the git history
+View a summary of the  first agent's changes
+##### Run
+```
+git diff --stat tree/t1 output/implicit-taskfile.1
+```
+##### Output
+```bash
+src/agro/cli.py   |  77 ++++++++---
+src/agro/core.py  |  42 ++++++
+tests/test_cli.py | 394 ++++++++++++++++++++++++++++++++++++++----------------
+3 files changed, 376 insertions(+), 137 deletions(-)
+```
+##### Run
+```
+git diff --stat tree/t2 output/implicit-taskfile.2
+git diff --stat tree/t3 output/implicit-taskfile.3
+```
+##### Output
+```bash
+src/agro/cli.py   |  76 ++++++++++++----
+src/agro/core.py  |  50 ++++++++++
+tests/test_cli.py | 267 ++++++++++++++++++++++++------------------------------
+3 files changed, 225 insertions(+), 168 deletions(-)
+
+src/agro/cli.py   |  92 +++++++++++++----
+src/agro/core.py  |  46 +++++++++
+tests/test_cli.py | 297 +++++++++++++++++++++++++++++++-----------------------
+3 files changed, 288 insertions(+), 147 deletions(-)
+
+```
+So each solution changed the same files, roughly the same amount. This is generally a good sign as it means the model is handling it well.
+ 
+
+### Check Tests
+
+We can see that agent1 has all passing tests, and added new tests. The other agents (2 and 3) have a few tests failing after their edits.
+
+<details>
+    <summary>
+    We started we started with 19 tests by running pytest on feature branch
+    </summary>
+
+We can see the original branch had 19 tests
+
+```uv run pytest```
+
+```bash
+=========================================== test session starts ===========================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/agro/agro
+configfile: pyproject.toml
+testpaths: tests
+collected 19 items                                                                                        
+
+tests/test_cli.py ...................                                                               [100%]
+
+=========================================== 19 passed in 0.08s ============================================
+```
+</details>
+
+#### Run
+```agro -vv muster 'uv run pytest -q --tb=no' 1,2,3```
+
+- Notice the `agro -vv` mode allows all-tests-pass suites to print confirmation.
+- Notice the `-q --tb=no` args passed to pytest prevent failed tests from overwhelming the output; but still see how many failed.
+
+##### Results
+```bash
+
+--- Running command in t1 (trees/t1) ---
+$ uv run pytest -q --tb=no
+Running command in 'trees/t1': $ uv run pytest -q --tb=no
+........................                                                 [100%]
+24 passed in 0.06s
+
+--- Running command in t2 (trees/t2) ---
+$ uv run pytest -q --tb=no
+Running command in 'trees/t2': $ uv run pytest -q --tb=no
+............F.....                                                       [100%]
+=========================== short test summary info ============================
+FAILED tests/test_cli.py::test_dispatch_exec_auto_detect_taskfile - Assertion...
+1 failed, 17 passed in 0.05s
+
+--- Running command in t3 (trees/t3) ---
+$ uv run pytest -q --tb=no
+Running command in 'trees/t3': $ uv run pytest -q --tb=no
+...........FF......F                                                     [100%]
+=========================== short test summary info ============================
+FAILED tests/test_cli.py::test_dispatch_exec_explicit_taskfile - AssertionErr...
+FAILED tests/test_cli.py::test_dispatch_exec_taskfile_and_num_trees - Asserti...
+FAILED tests/test_cli.py::test_dispatch_exec_explicit_taskfile_not_found - As...
+3 failed, 17 passed in 0.06s
+
+```
+
+
+### Manually test solution
+
+Let's go with agent1's solution since it passed all its tests (and added the most new tests).
+
+Let's get this with the command
+
+```
+agro grab output/implicit-taskfile.1
+```
+
+We should now have the edits from the agent and be on branc `output/implicit-taskfile.1.copy` and we'll run `./redeploy` to the `uv tool` uninstall/install on this repo. Now that we have the updated code, and the changes active in package itself  the system, we'll test it on another repo to test
+
+
+#### Check the cli help to see it was updated
+Looks like both on both counts:
+- `taskfile` is denoted as optional
+- `-c` alias documented
+##### Run
+```agro -h```
+##### Output
+```bash
+usage: agro [-h] [--version] [-v] [-q]
+...
+Main command:
+  exec [args] [taskfile] [num-trees] [exec-cmd]   
+                                
+        Run an agent in new worktree(s)
+        args:
+          -n <num-trees>        Number of worktrees to create.
+          -t <indices>          Specified worktree indice(s) (e.g., '1,2,3').
+          -c <exec-cmd>         Run the exec-cmd to launch agent on worktree
+          ...others             See below.
+
+Other Commands:
+  ...
+```
+
+#### Get Testing Repo
+
+We'll head over to another test repo to make testing surface area smaller (and less tied into the package development itself).
+
+```bash
+git clone git@github.com:sutt/agro-demo.git
+cd agro-demo
+```
+
+### Manual Testing
+
+Having a decent idea of the spec requirements we have a good idea of how to test this 
+
+We don't read all the AI's tests but they help the agents reason and check if this doesn't work.
+
+### Understanding the changes
+Now that this looks like a winning solution, let's take a look at how it was implemented:
+
+##### `src` changes
+- parsing logic in `_dispatch_exec`
+- updates to argparse setup and help text
+- task file match logic: fuzzy name and most-recent
+
+##### `tests` changes
+- There needs to be a refactoring of the existing tests structure
+    - this is accomplished with:
+        - adding patching existing tests with on find_task_files functionality (in addition to existing mock on actual exec_cmd).
+        - move `testfile` arg input to an item within `agent_args` for input.
+- Do these tests still check the same conditions?
+    - largely, yes (You can see more discussion below). This is important because we don't want the agent to simply change the business logic of the test for it to pass, but simply change the structure of test setup to deal with the updated src logic.
+    - there are even some additional checks within the existing tests like find_match function has been asserted to be called once.
+    - there's some nice work with stub lambda expression and terminal prompt bypass patches that help these tests refactor smoothly with the additional mocks.
+- What do the new tests do?
+    - some look at whether shell exits before the main function is called
+    - lots of unimportant tests around mutually_exclusive property of calling the same arg positionally  + and with an alias flag.
+    - missing the things i'd really check like permutation of the three optional positional args in different orders.
+    - one key property they are missing: they don't really check the filesystem logic, the mocks just help bypass any need to do this.
+      - This is OK and maybe the correct way to write these unittests, but means that the functionality might not be fully functional when we go to use it on an actual filesystem.
+
+### Understanding other solutions
+
+What can we learn from the tests of other soltuions.
+
+#### Summary of state of pytest
+
+TODO - show how agent 3 is able to fix itself
+
+### Wrapping up & Summarizing
+
