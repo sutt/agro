@@ -497,7 +497,7 @@ def delete_tree(indices_str=None, all_flag=False, show_cmd_output=False):
                 show_cmd_output=show_cmd_output,
             )
         else:
-            logger.warning(
+            logger.debug(
                 f"Worktree '{worktree_path}' not found or not a valid worktree. Skipping removal."
             )
 
@@ -512,7 +512,7 @@ def delete_tree(indices_str=None, all_flag=False, show_cmd_output=False):
                 ["git", "branch", "-D", branch_name], show_cmd_output=show_cmd_output
             )
         else:
-            logger.warning(f"Branch '{branch_name}' not found. Skipping deletion.")
+            logger.debug(f"Branch '{branch_name}' not found. Skipping deletion.")
 
         logger.info(f"♻️  Cleanup for index {i} complete.")
 
@@ -664,16 +664,15 @@ def exec_agent(
         pid_file.write_text(str(process.pid))
 
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        logger.info("")
         logger.info(f"🏃 Agent for index {index} started successfully.")
         logger.info(f"   Worktree: {worktree_path.resolve()}")
         logger.info(f"   Task file: {task_path.resolve()}")
         logger.info(f"   Branch: {new_branch_name}")
-        logger.info(f"   Initial SHA: {initial_sha}")
+        logger.info(f"   Initial commit SHA: {initial_sha[:6]}")
         logger.info(f"   Start time: {current_time}")
-        logger.info(f"   PID: {process.pid} (saved to {pid_file.resolve()})")
-        logger.info(f"   Log file: {log_file_path.resolve()}")
-        logger.info(f"   Task file copy: {task_in_swap_path.resolve()}")
+        logger.debug(f"   PID: {process.pid} (saved to {pid_file.resolve()})")
+        logger.debug(f"   Log file: {log_file_path.resolve()}")
+        logger.debug(f"   Task file copy: {task_in_swap_path.resolve()}")
 
 
 def muster_command(
