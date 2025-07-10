@@ -7,12 +7,12 @@ import time
 
 def setup_logging(worktree_path):
     """Set up logging to a file in the worktree's .git directory."""
-    log_file = os.path.join(worktree_path, ".git", "agro-committer.log")
+    log_file = os.path.join(worktree_path, ".agswap", "agro-committer.log")
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s - %(process)d - %(levelname)s - %(message)s",
         filename=log_file,
-        filemode="a",
+        filemode="w",
     )
 
 
