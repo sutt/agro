@@ -22,7 +22,7 @@ agro = "agro.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "build>=1.2.2.post1",
     "twine>=6.1.0",
