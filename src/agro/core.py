@@ -106,10 +106,14 @@ def _get_config_template():
 # Supported values: "aider", "claude", "gemini".
 # AGENT_TYPE: {config.DEFAULTS['AGENT_TYPE']}
 
-# Agent-specific configuration including timeout settings.
+# Agent-specific configuration.
 # AGENT_CONFIG:
-#   gemini:
-#     timeout: 600  # Timeout in seconds for gemini calls (default: 10 minutes)
+#   aider:
+#     args: ["--some-new-arg"]
+
+# Agent-specific timeout settings in seconds.
+# AGENT_TIMEOUTS:
+#   gemini: 600
 
 # Default command to open spec files with 'agro task'.
 # AGRO_EDITOR_CMD: {config.DEFAULTS['AGRO_EDITOR_CMD']}
@@ -650,10 +654,11 @@ def exec_agent(
 
         # Apply timeout wrapper for gemini agent type
         if agent_type_to_use == "gemini":
-            timeout_seconds = config.AGENT_CONFIG.get("gemini", {}).get("timeout", 600)  # Default 10 minutes
-            timeout_command = ["timeout", str(timeout_seconds)] + command
-            command = timeout_command
-            logger.debug(f"Applied timeout of {timeout_seconds} seconds to gemini command")
+            timeout_seconds = config.AGENT_TIMEOUTS.get("gemini")
+            if timeout_seconds:
+                timeout_command = ["timeout", str(timeout_seconds)] + command
+                command = timeout_command
+                logger.debug(f"Applied timeout of {timeout_seconds} seconds to gemini command")
 
         with open(log_file_path, "wb") as log_file:
             popen_kwargs["stdout"] = log_file

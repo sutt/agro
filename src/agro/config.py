@@ -36,8 +36,10 @@ DEFAULTS = {
             'args': [
                 "-y",
             ],
-            'timeout': 600  # 10 minutes timeout for gemini calls
         }
+    },
+    'AGENT_TIMEOUTS': {
+        'gemini': 600  # 10 minutes timeout for gemini calls
     },
     'AGRO_EDITOR_CMD': 'code',
     'ENV_SETUP_CMDS': [
@@ -59,6 +61,8 @@ def _load_config():
             try:
                 user_config = yaml.safe_load(f)
                 if user_config:
+                    if 'AGENT_TIMEOUTS' in user_config and isinstance(user_config['AGENT_TIMEOUTS'], dict):
+                        config['AGENT_TIMEOUTS'].update(user_config.pop('AGENT_TIMEOUTS'))
                     config.update(user_config)
             except yaml.YAMLError as e:
                 print(f"Warning: Could not parse config file {config_path}. Using default values. Error: {e}", file=sys.stderr)
@@ -85,6 +89,7 @@ WORKTREE_OUTPUT_BRANCH_PREFIX = _config['WORKTREE_OUTPUT_BRANCH_PREFIX']
 EXEC_CMD_DEFAULT = _config['EXEC_CMD_DEFAULT']
 AGENT_TYPE = _config['AGENT_TYPE']
 AGENT_CONFIG = _config['AGENT_CONFIG']
+AGENT_TIMEOUTS = _config['AGENT_TIMEOUTS']
 AGRO_EDITOR_CMD = _config['AGRO_EDITOR_CMD']
 ENV_SETUP_CMDS = _config['ENV_SETUP_CMDS']
 
