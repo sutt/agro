@@ -5,7 +5,7 @@ Here we present a an interactive mutli-prompt path.
 
 We start from root: a0b6986
 
-We broke the full edit we wanted into two specs, the first step **agent-var.md** will setup the fuller implementation in the second step **.md**.
+We broke the full edit we wanted into two specs, the first step **agent-var.md** will setup the fuller implementation in the second step **clientargs-config.md**.
 
 ```md
 add a new config variable for agent type which accepts "aider", "gemini", "claude" or rejects as not found. It should default to "aider".

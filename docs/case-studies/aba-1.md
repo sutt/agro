@@ -78,8 +78,14 @@ agro exec my-feature 3 gemini
 
 #### Evolution of the feature
 
+We can see this feature continues to evolve as we can see previous version documentation. This happens in iterative development so new specs are often updates/modifications on previous requests.
 
-TODO - look at the diffs of cli help 
+```bash
+# v0.1.2 
+exec <taskfile> [num-trees] 
+# v0.1.3
+exec [args] <taskfile> [num-trees] [exec-cmd] 
+```
 
 #### Spec file context
 
@@ -392,4 +398,125 @@ This shows the power of giving the agent the ability to run commands on the repo
 Also when we ran pytest in Agent3 and passed in the results it was able to fix itself with aider by refactoring the tests. (Not true of Agent2). This shows a shortcoming of aider doesn't t ruly run in "yolo" mode with ability to run arbitrary bash commands.
 
 So this will need to be an improvement.
+
+### Other Agent Runs
+
+One interesting one was Agent3 had pytest initially fail, but when the output text from the pytest result was passed in it was able to fix itself.
+
+This shows the importance of allowing agents full ability to execute and read the result of commands. And it's currently a limitation of aider in `--yes` mode that it doesn't allow shell commands to run.
+
+**State of pytest after round1**
+
+```bash
+user@DESKTOP-1EB4G00:~/dev/agro/agro$ uv run pytest --tb=no
+      Built agro @ file:///home/user/dev/agro/agro
+Uninstalled 1 package in 12ms
+Installed 1 package in 9ms
+======================================= test session starts =======================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/agro/agro
+configfile: pyproject.toml
+testpaths: tests
+collected 20 items                                                                                
+
+tests/test_cli.py ...........FF......F                                                      [100%]
+
+===================================== short test summary info =====================================
+FAILED tests/test_cli.py::test_dispatch_exec_explicit_taskfile - AssertionError: Expected 'find_task_file' to be called once. Called 2 times.
+FAILED tests/test_cli.py::test_dispatch_exec_taskfile_and_num_trees - AssertionError: Expected 'find_task_file' to be called once. Called 2 times.
+FAILED tests/test_cli.py::test_dispatch_exec_explicit_taskfile_not_found - AssertionError: Regex pattern did not match.
+================================== 3 failed, 17 passed in 0.17s ===================================
+```
+
+**Conversation round2 with aider**
+
+```md
+
+> Git repo: ../../.git/worktrees/t3 with 46 files  
+> Repo-map: using 4096 tokens, auto refresh  
+
+#### /run uv run pytest  
+> Add 7.4k tokens of command output to the chat? (Y)es/(N)o [Yes]: y  
+> Added 220 lines of output to the chat.  
+
+#### What's wrong? Fix  
+
+The test failures indicate a logic issue in how the `exec` command arguments are parsed in `_dispatch_exec`.
+
+Specifically, `core.find_task_file` is being called twice in some scenarios, causing the first two test failures. The third failure is because a non-existent task file (like `nonexistent.md`) is being misinterpreted as an `exec_cmd`, leading to the wrong error message.
+
+To fix this, I need to modify the `_dispatch_exec` function in `src/agro/cli.py`.
+
+Please add `src/agro/cli.py` to the chat so I can provide the necessary changes.
+
+> Tokens: 12k sent, 122 received. Cost: $0.02 message, $0.02 session.  
+> src/agro/cli.py  
+> Add file to the chat? (Y)es/(N)o/(D)on't ask again [Yes]: y  
+>  
+>  
+> ^C again to exit  
+
+#### What's wrong? Fix  
+
+The test failures you're seeing are due to issues in the argument parsing logic within the `_dispatch_exec` function in `src/agro/cli.py`.
+
+Here's a breakdown of the problems:
+1.  `core.find_task_file` is called twice for some execution paths, causing two of the tests to fail their mock call assertions.
+2.  When a non-existent task file is provided (e.g., `nonexistent.md`), the logic incorrectly assumes it's an `exec-cmd` instead of a missing task file. This leads to the wrong error message and the third test failure.
+
+I will refactor `_dispatch_exec` to fix these issues by:
+1.  Ensuring `core.find_task_file` is called only once by caching its result.
+2.  Using a heuristic (checking for a `.md` extension) to better distinguish between a task file argument and an `exec-cmd` argument when only one is provided.
+
+Here are the changes for `src/agro/cli.py`:
+
+```python
+src/agro/cli.py
+<<<<<<< SEARCH
+def _dispatch_exec(args):
+    """Helper to dispatch exec command with complex argument parsing."""
+    agent_args = args.agent_args.copy()
+
+
+    core.exec_agent(
+        task_file=str(task_file),
+        fresh_env=args.fresh_env,
+        no_overrides=args.no_env_overrides,
+        agent_args=agent_args,
+        exec_cmd=exec_cmd,
+        indices_str=args.tree_indices,
+        num_trees=num_trees,
+        show_cmd_output=(args.verbose >= 2),
+    )
+=======
+
+    core.exec_agent(
+        task_file=str(task_file),
+        fresh_env=args.fresh_env,
+        no_overrides=args.no_env_overrides,
+        agent_args=agent_args,
+        exec_cmd=exec_cmd,
+        indices_str=args.tree_indices,
+        num_trees=num_trees,
+        show_cmd_output=(args.verbose >= 2),
+    )
+>>>>>>> REPLACE
+```
+
+After applying these changes, you can run the tests again to confirm the fix.
+
+```bash
+uv run pytest
+```
+
+> Tokens: 15k sent, 1.7k received. Cost: $0.04 message, $0.05 session.  
+> Applied edit to src/agro/cli.py  
+> Commit 27f1b68 fix: Refactor exec arg parsing to fix task file lookup  
+> uv run pytest  
+> Run shell command? (Y)es/(N)o/(D)on't ask again [Yes]: n  
+> You can use /undo to undo and discard each aider commit.  
+
+```
+
+The end.
 
