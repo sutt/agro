@@ -25,9 +25,10 @@ DEFAULTS = {
         'claude': {
             'task_file_arg_template': None,
             'args': [
-                "-p",
+                "-d",
                 "--allowedTools",
                 "Write Edit MultiEdit",
+                "-p",
             ]
         },
         'gemini': {
