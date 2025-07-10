@@ -42,7 +42,7 @@ DEFAULTS = {
     'AGRO_EDITOR_CMD': 'code',
     'ENV_SETUP_CMDS': [
         'uv venv',
-        'uv sync --quiet --group test',
+        'uv sync --quiet --all-extras',
     ],
     'BASE_API_PORT': 8000,
 }
