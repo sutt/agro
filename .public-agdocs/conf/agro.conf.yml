@@ -32,10 +32,10 @@
 # --- Python Environment ---
 
 # Commands to set up the Python environment in a new worktree.
-# For example, to install only the 'test' dependency group with uv:
+# For example, to install all optional dependency groups with uv:
 # ENV_SETUP_CMDS:
 #   - 'uv venv'
-#   - 'uv sync --quiet --group test'
+#   - 'uv sync --quiet --all-extras'
 
 
 # --- Agent Execution ---
