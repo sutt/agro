@@ -29,6 +29,8 @@ DEFAULTS = {
                 "--allowedTools",
                 "Write Edit MultiEdit",
                 "-p",
+                "--max-tries",
+                "30",
             ]
         },
         'gemini': {
@@ -39,7 +41,9 @@ DEFAULTS = {
         }
     },
     'AGENT_TIMEOUTS': {
-        'gemini': 600  # 10 minutes timeout for gemini calls
+        'aider': 0,  # 0 means no timeout is applied.
+        'claude': 600,
+        'gemini': 600,  # 10 minutes timeout for gemini calls
     },
     'AGRO_EDITOR_CMD': 'code',
     'ENV_SETUP_CMDS': [
@@ -63,6 +67,15 @@ def _load_config():
                 if user_config:
                     if 'AGENT_TIMEOUTS' in user_config and isinstance(user_config['AGENT_TIMEOUTS'], dict):
                         config['AGENT_TIMEOUTS'].update(user_config.pop('AGENT_TIMEOUTS'))
+
+                    if 'AGENT_CONFIG' in user_config and isinstance(user_config['AGENT_CONFIG'], dict):
+                        user_agent_config = user_config.pop('AGENT_CONFIG')
+                        for agent_name, agent_data in user_agent_config.items():
+                            if agent_name in config['AGENT_CONFIG']:
+                                config['AGENT_CONFIG'][agent_name].update(agent_data)
+                            else:
+                                config['AGENT_CONFIG'][agent_name] = agent_data
+
                     config.update(user_config)
             except yaml.YAMLError as e:
                 print(f"Warning: Could not parse config file {config_path}. Using default values. Error: {e}", file=sys.stderr)

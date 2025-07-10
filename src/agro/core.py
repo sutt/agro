@@ -109,10 +109,17 @@ def _get_config_template():
 # Agent-specific configuration.
 # AGENT_CONFIG:
 #   aider:
-#     args: ["--some-new-arg"]
+#     args: ["--yes", "--no-check-update", "--no-attribute-author", "--no-attribute-committer", "--no-attribute-co-authored-by"]
+#   claude:
+#     args: ["-d", "--allowedTools", "Write Edit MultiEdit", "-p", "--max-tries", "30"]
+#   gemini:
+#     args: ["-y"]
 
 # Agent-specific timeout settings in seconds.
+# A value of 0 means no timeout is applied, overriding any default.
 # AGENT_TIMEOUTS:
+#   aider: 0
+#   claude: 600
 #   gemini: 600
 
 # Default command to open spec files with 'agro task'.
@@ -652,13 +659,14 @@ def exec_agent(
             "start_new_session": True,  # Detach from parent
         }
 
-        # Apply timeout wrapper for gemini agent type
-        if agent_type_to_use == "gemini":
-            timeout_seconds = config.AGENT_TIMEOUTS.get("gemini")
-            if timeout_seconds:
-                timeout_command = ["timeout", str(timeout_seconds)] + command
-                command = timeout_command
-                logger.debug(f"Applied timeout of {timeout_seconds} seconds to gemini command")
+        # Apply timeout wrapper
+        timeout_seconds = config.AGENT_TIMEOUTS.get(agent_type_to_use)
+        if timeout_seconds:
+            timeout_command = ["timeout", str(timeout_seconds)] + command
+            command = timeout_command
+            logger.debug(
+                f"Applied timeout of {timeout_seconds} seconds to {agent_type_to_use} command"
+            )
 
         with open(log_file_path, "wb") as log_file:
             popen_kwargs["stdout"] = log_file
