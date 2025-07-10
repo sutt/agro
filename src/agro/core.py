@@ -505,6 +505,7 @@ def exec_agent(
     num_trees=None,
     show_cmd_output=False,
     agent_type=None,
+    commit=True,
 ):
     """Deletes, recreates, and runs detached agent processes in worktrees."""
     task_path = Path(task_file)
@@ -678,6 +679,57 @@ def exec_agent(
         logger.debug(f"   PID: {process.pid} (saved to {pid_file.resolve()})")
         logger.debug(f"   Log file: {log_file_path.resolve()}")
         logger.debug(f"   Task file copy: {task_in_swap_path.resolve()}")
+
+        if agent_type_to_use in ["gemini", "claude"]:
+            # Check if the process is still running before waiting
+            ps_result = _run_command(
+                ["ps", "-p", str(process.pid)],
+                check=False,
+                capture_output=True,
+                show_cmd_output=show_cmd_output,
+            )
+            if ps_result.returncode == 0:
+                logger.info(f"Waiting for agent process {process.pid} to complete...")
+                process.wait()
+                logger.info(f"Agent process {process.pid} finished.")
+            else:
+                logger.info(f"Agent process {process.pid} already finished.")
+
+            # Clean up the PID file immediately after the process has finished
+            try:
+                pid_file.unlink()
+                logger.debug(f"Removed PID file {pid_file}.")
+            except OSError as e:
+                logger.warning(f"Could not remove PID file {pid_file}: {e}")
+
+            if commit:
+                logger.info("Checking for changes to commit...")
+                status_result = _run_command(
+                    ["git", "status", "--porcelain"],
+                    cwd=str(worktree_path),
+                    capture_output=True,
+                    show_cmd_output=show_cmd_output,
+                )
+
+                if status_result.stdout.strip():
+                    logger.info("Changes detected. Staging and committing...")
+                    _run_command(
+                        ["git", "add", "."],
+                        cwd=str(worktree_path),
+                        show_cmd_output=show_cmd_output,
+                    )
+                    commit_message = (
+                        f"feat: auto-commit changes from {agent_type_to_use} run\n\n"
+                        f"Task file: {task_path.name}"
+                    )
+                    _run_command(
+                        ["git", "commit", "-m", commit_message],
+                        cwd=str(worktree_path),
+                        show_cmd_output=show_cmd_output,
+                    )
+                    logger.info("✅ Changes committed successfully.")
+                else:
+                    logger.info("No changes detected.")
 
 
 def muster_command(
@@ -893,6 +945,7 @@ def surrender(indices_str=None, show_cmd_output=False):
             raise
 
     procs_to_kill = []
+    stale_pids = []
     logger.info("--- Dry Run ---")
     logger.info("Checking for running agent processes...")
     for index in sorted(target_indices):
@@ -903,6 +956,7 @@ def surrender(indices_str=None, show_cmd_output=False):
         try:
             pid_str = pid_file.read_text().strip()
             if not pid_str:
+                stale_pids.append({"index": index, "pid_file": pid_file, "reason": "empty PID file"})
                 continue
             pid = int(pid_str)
         except (ValueError, IOError) as e:
@@ -921,28 +975,42 @@ def surrender(indices_str=None, show_cmd_output=False):
         if result.returncode == 0:
             procs_to_kill.append({"index": index, "pid": pid, "pid_file": pid_file})
             logger.info(f"  - Found running process for t{index}: PID {pid}")
+        else:
+            stale_pids.append({"index": index, "pid": pid, "pid_file": pid_file, "reason": "process not running"})
+            logger.info(f"  - Found stale PID for t{index}: PID {pid} (process not running)")
 
-    if not procs_to_kill:
-        logger.info("\nNo active agent processes found to surrender.")
+    if not procs_to_kill and not stale_pids:
+        logger.info("\nNo active or stale agent processes found to surrender.")
         return
 
     logger.info("--- End Dry Run ---\n")
 
-    try:
-        confirm = input(
-            f"Surrender and kill these {len(procs_to_kill)} processes? [Y/n]: "
-        )
-    except (EOFError, KeyboardInterrupt):
-        logger.warning("\nOperation cancelled.")
-        return
+    if not procs_to_kill and stale_pids:
+        try:
+            confirm = input(
+                f"No running processes found. Clean up {len(stale_pids)} stale PID file(s)? [Y/n]: "
+            )
+        except (EOFError, KeyboardInterrupt):
+            logger.warning("\nOperation cancelled.")
+            return
+    else:
+        try:
+            confirm = input(
+                f"Surrender and kill {len(procs_to_kill)} processes and clean up {len(stale_pids)} stale PID(s)? [Y/n]: "
+            )
+        except (EOFError, KeyboardInterrupt):
+            logger.warning("\nOperation cancelled.")
+            return
 
     if confirm.lower() not in ("y", ""):
         logger.warning("Operation cancelled by user.")
         return
 
-    logger.info("\nProceeding with termination...")
+    logger.info("\nProceeding with termination and cleanup...")
     killed_count = 0
     failed_count = 0
+    cleaned_count = 0
+
     for proc in procs_to_kill:
         index = proc["index"]
         pid = proc["pid"]
@@ -981,6 +1049,18 @@ def surrender(indices_str=None, show_cmd_output=False):
         except OSError as e:
             logger.warning(f"  - Could not remove PID file {pid_file}: {e}")
 
+    for stale in stale_pids:
+        index = stale["index"]
+        pid_file = stale["pid_file"]
+        logger.info(f"Cleaning up stale PID file for t{index}...")
+        try:
+            pid_file.unlink()
+            logger.info(f"  - Removed stale PID file {pid_file}.")
+            cleaned_count += 1
+        except OSError as e:
+            logger.warning(f"  - Could not remove stale PID file {pid_file}: {e}")
+
+
     logger.info(
-        f"\nSurrender complete. Terminated {killed_count} processes, {failed_count} failed."
+        f"\nSurrender complete. Terminated {killed_count} processes, cleaned {cleaned_count} stale PID(s), {failed_count} failed."
     )

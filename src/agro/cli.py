@@ -106,6 +106,7 @@ def _dispatch_exec(args):
         num_trees=num_trees,
         show_cmd_output=(args.verbose >= 2),
         agent_type=agent_type,
+        commit=args.commit,
     )
 
 
@@ -277,6 +278,14 @@ Options for 'init':
         "--agent-type",
         dest="agent_type_opt",
         help="Specify agent type to override config (e.g., 'aider', 'claude', 'gemini').",
+    )
+
+    parser_exec.add_argument(
+        "--commit",
+        dest="commit",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Commit changes after agent runs (default: True).",
     )
 
     parser_exec.add_argument(
