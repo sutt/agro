@@ -43,6 +43,7 @@ def test_dispatch_exec_simple(mock_find, mock_find_recent, mock_exec_agent):
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
+        no_auto_commit=False,
     )
     _dispatch_exec(args)
     mock_find.assert_called_once_with("task.md")
@@ -56,6 +57,7 @@ def test_dispatch_exec_simple(mock_find, mock_find_recent, mock_exec_agent):
         num_trees=None,
         show_cmd_output=False,
         agent_type=None,
+        auto_commit=True,
     )
 
 
@@ -76,6 +78,7 @@ def test_dispatch_exec_with_num_trees_positional(
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
+        no_auto_commit=False,
     )
     _dispatch_exec(args)
     mock_find.assert_called_once_with("task.md")
@@ -89,6 +92,7 @@ def test_dispatch_exec_with_num_trees_positional(
         num_trees=3,
         show_cmd_output=False,
         agent_type=None,
+        auto_commit=True,
     )
 
 
@@ -109,6 +113,7 @@ def test_dispatch_exec_with_exec_cmd_positional(
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
+        no_auto_commit=False,
     )
     _dispatch_exec(args)
     mock_find.assert_any_call("task.md")
@@ -123,6 +128,7 @@ def test_dispatch_exec_with_exec_cmd_positional(
         num_trees=None,
         show_cmd_output=False,
         agent_type=None,
+        auto_commit=True,
     )
 
 
@@ -143,6 +149,7 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional(
         fresh_env=True,
         no_env_overrides=True,
         verbose=2,
+        no_auto_commit=False,
     )
     _dispatch_exec(args)
     mock_exec_agent.assert_called_once_with(
@@ -155,6 +162,7 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional(
         num_trees=3,
         show_cmd_output=True,
         agent_type=None,
+        auto_commit=True,
     )
 
 
@@ -175,6 +183,7 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional_2(
         fresh_env=True,
         no_env_overrides=True,
         verbose=2,
+        no_auto_commit=False,
     )
     _dispatch_exec(args)
     mock_exec_agent.assert_called_once_with(
@@ -187,6 +196,7 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional_2(
         num_trees=3,
         show_cmd_output=True,
         agent_type=None,
+        auto_commit=True,
     )
 
 
@@ -207,6 +217,7 @@ def test_dispatch_exec_with_num_trees_option(
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
+        no_auto_commit=False,
     )
     _dispatch_exec(args)
     mock_exec_agent.assert_called_once_with(
@@ -219,6 +230,7 @@ def test_dispatch_exec_with_num_trees_option(
         num_trees=3,
         show_cmd_output=False,
         agent_type=None,
+        auto_commit=True,
     )
 
 
@@ -239,6 +251,7 @@ def test_dispatch_exec_with_tree_indices_option(
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
+        no_auto_commit=False,
     )
     _dispatch_exec(args)
     mock_exec_agent.assert_called_once_with(
@@ -251,6 +264,7 @@ def test_dispatch_exec_with_tree_indices_option(
         num_trees=None,
         show_cmd_output=False,
         agent_type=None,
+        auto_commit=True,
     )
 
 
@@ -271,6 +285,7 @@ def test_dispatch_exec_with_exec_cmd_option(
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
+        no_auto_commit=False,
     )
     _dispatch_exec(args)
     mock_exec_agent.assert_called_once_with(
@@ -283,6 +298,7 @@ def test_dispatch_exec_with_exec_cmd_option(
         num_trees=None,
         show_cmd_output=False,
         agent_type=None,
+        auto_commit=True,
     )
 
 
@@ -373,6 +389,7 @@ def test_dispatch_exec_no_taskfile_use_recent_confirm_yes(
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
+        no_auto_commit=False,
     )
     _dispatch_exec(args)
     mock_input.assert_called_once()
@@ -386,6 +403,7 @@ def test_dispatch_exec_no_taskfile_use_recent_confirm_yes(
         num_trees=None,
         show_cmd_output=False,
         agent_type=None,
+        auto_commit=True,
     )
 
 
@@ -429,6 +447,7 @@ def test_dispatch_exec_with_agent_type_option(
         fresh_env=False,
         no_env_overrides=False,
         verbose=0,
+        no_auto_commit=False,
     )
     _dispatch_exec(args)
     mock_exec_agent.assert_called_once_with(
@@ -441,6 +460,7 @@ def test_dispatch_exec_with_agent_type_option(
         num_trees=None,
         show_cmd_output=False,
         agent_type="gemini",
+        auto_commit=True,
     )
 
 
@@ -462,6 +482,7 @@ def test_dispatch_exec_infer_agent_type_from_exec_cmd(
             fresh_env=False,
             no_env_overrides=False,
             verbose=0,
+            no_auto_commit=False,
         )
         _dispatch_exec(args)
         mock_exec_agent.assert_called_once_with(
@@ -474,6 +495,7 @@ def test_dispatch_exec_infer_agent_type_from_exec_cmd(
             num_trees=None,
             show_cmd_output=False,
             agent_type="gemini",
+            auto_commit=True,
         )
 
 
@@ -495,6 +517,7 @@ def test_dispatch_exec_infer_agent_type_from_positional_exec_cmd(
             fresh_env=False,
             no_env_overrides=False,
             verbose=0,
+            no_auto_commit=False,
         )
         _dispatch_exec(args)
         mock_exec_agent.assert_called_once_with(
@@ -507,6 +530,7 @@ def test_dispatch_exec_infer_agent_type_from_positional_exec_cmd(
             num_trees=None,
             show_cmd_output=False,
             agent_type="gemini",
+            auto_commit=True,
         )
 
 
@@ -528,6 +552,7 @@ def test_dispatch_exec_no_inference_when_both_provided(
             fresh_env=False,
             no_env_overrides=False,
             verbose=0,
+            no_auto_commit=False,
         )
         _dispatch_exec(args)
         mock_exec_agent.assert_called_once_with(
@@ -540,4 +565,5 @@ def test_dispatch_exec_no_inference_when_both_provided(
             num_trees=None,
             show_cmd_output=False,
             agent_type="aider",
+            auto_commit=True,
         )
