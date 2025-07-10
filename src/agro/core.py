@@ -676,8 +676,11 @@ def exec_agent(
                 "agro.committer",
                 str(process.pid),
                 str(worktree_path.resolve()),
+                task_path.name,
+                agent_type_to_use,
             ]
-            subprocess.Popen(committer_cmd)
+            committer_process = subprocess.Popen(committer_cmd)
+            logger.debug(f"Committer PID: {committer_process.pid}")
 
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         logger.info(f"🏃 Agent for index {index} started successfully.")

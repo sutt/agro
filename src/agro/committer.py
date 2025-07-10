@@ -30,7 +30,7 @@ def wait_for_pid(pid):
             break
 
 
-def git_commit_changes(worktree_path):
+def git_commit_changes(worktree_path, task_file, agent_type):
     """Check for changes in the git repo and commit them if any are found."""
     logging.info(f"Checking for git changes in {worktree_path}")
     try:
@@ -57,7 +57,10 @@ def git_commit_changes(worktree_path):
             text=True,
         )
 
-        commit_message = "agro: auto-commit changes"
+        task_file_stem = os.path.splitext(task_file)[0]
+        commit_message = (
+            f"feat: impl {task_file_stem} with {agent_type} (agro auto-commit)"
+        )
         logging.info(f"Committing with message: '{commit_message}'")
         subprocess.run(
             ["git", "commit", "-m", commit_message],
@@ -78,22 +81,30 @@ def git_commit_changes(worktree_path):
 
 def main():
     """Main entry point for the committer script."""
-    if len(sys.argv) != 3:
-        print("Usage: python -m agro.committer <pid> <worktree_path>", file=sys.stderr)
+    if len(sys.argv) != 5:
+        print(
+            "Usage: python -m agro.committer <pid> <worktree_path> <task_file> <agent_type>",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     try:
         pid = int(sys.argv[1])
         worktree_path = sys.argv[2]
+        task_file = sys.argv[3]
+        agent_type = sys.argv[4]
     except (ValueError, IndexError):
         print("Invalid arguments.", file=sys.stderr)
-        print("Usage: python -m agro.committer <pid> <worktree_path>", file=sys.stderr)
+        print(
+            "Usage: python -m agro.committer <pid> <worktree_path> <task_file> <agent_type>",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     setup_logging(worktree_path)
     logging.info("Committer script started.")
     wait_for_pid(pid)
-    git_commit_changes(worktree_path)
+    git_commit_changes(worktree_path, task_file, agent_type)
     logging.info("Committer script finished.")
 
 
