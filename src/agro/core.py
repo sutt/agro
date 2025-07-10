@@ -111,7 +111,7 @@ def _get_config_template():
 #   aider:
 #     args: ["--yes", "--no-check-update", "--no-attribute-author", "--no-attribute-committer", "--no-attribute-co-authored-by"]
 #   claude:
-#     args: ["-d", "--allowedTools", "Write Edit MultiEdit", "-p", "--max-tries", "30"]
+#     args: ["-d", "--allowedTools", "Write Edit MultiEdit", "--max-turns", "30", "-p"]
 #   gemini:
 #     args: ["-y"]
 

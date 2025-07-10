@@ -28,9 +28,9 @@ DEFAULTS = {
                 "-d",
                 "--allowedTools",
                 "Write Edit MultiEdit",
-                "-p",
-                "--max-tries",
+                "--max-turns",
                 "30",
+                "-p",
             ]
         },
         'gemini': {
