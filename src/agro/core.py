@@ -662,6 +662,7 @@ def exec_agent(
 
         with open(log_file_path, "wb") as log_file:
             popen_kwargs["stdout"] = log_file
+            logger.debug(f"Running agents process: {str(command)}, {str(popen_kwargs.copy())}")
             if task_file_arg_template:
                 # Agent takes task file as command-line argument
                 process = subprocess.Popen(command, **popen_kwargs)
