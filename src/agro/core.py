@@ -505,6 +505,7 @@ def exec_agent(
     num_trees=None,
     show_cmd_output=False,
     agent_type=None,
+    auto_commit=True,
 ):
     """Deletes, recreates, and runs detached agent processes in worktrees."""
     task_path = Path(task_file)
@@ -666,6 +667,17 @@ def exec_agent(
                     process = subprocess.Popen(command, **popen_kwargs)
 
         pid_file.write_text(str(process.pid))
+
+        if auto_commit and agent_type_to_use != "aider":
+            logger.debug(f"Spawning auto-commit monitor for worktree {worktree_path}")
+            committer_cmd = [
+                sys.executable,
+                "-m",
+                "agro.committer",
+                str(process.pid),
+                str(worktree_path.resolve()),
+            ]
+            subprocess.Popen(committer_cmd)
 
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         logger.info(f"🏃 Agent for index {index} started successfully.")
