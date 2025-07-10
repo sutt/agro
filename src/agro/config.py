@@ -34,7 +34,8 @@ DEFAULTS = {
             'task_file_arg_template': None,
             'args': [
                 "-y",
-            ]
+            ],
+            'timeout': 600  # 10 minutes timeout for gemini calls
         }
     },
     'AGRO_EDITOR_CMD': 'code',
