@@ -687,7 +687,7 @@ def exec_agent(
         logger.info(f"   Worktree: {worktree_path.resolve()}")
         logger.info(f"   Task file: {task_path.resolve()}")
         logger.info(f"   Branch: {new_branch_name}")
-        logger.info(f"   Agent type: {agent_type}")
+        logger.info(f"   Agent type: {agent_type_to_use}")
         logger.info(f"   Initial commit SHA: {initial_sha[:6]}")
         logger.info(f"   Start time: {current_time}")
         logger.debug(f"   PID: {process.pid} (saved to {pid_file.resolve()})")
