@@ -1,0 +1,2 @@
+add a new config variable for agent type which accepts "aider", "gemini", "claude" or rejects as not found. It should default to "aider".
+This is similiar to EXEC_CMD but exec command is about what command actually gets run .e.g "my-aider.sh", this variable will help establish which underlying agent is actually called by the exec_cmd, and this helps determines certain procedures that need to be run in exec flo  and which built-in flags (e.g. --yes) get passed to the script.

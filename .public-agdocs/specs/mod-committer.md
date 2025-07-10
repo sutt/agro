@@ -1,0 +1,2 @@
+- modify the commit message left by commiter:git_commit_changes to be of the form: "feat: impl {taskfile} with {agent_type} (agro auto-commit)"
+- log out the PID of the committer process when started from agro (rememebr these is a separate pid for the actual agent)

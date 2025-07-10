@@ -35,13 +35,33 @@
 # For example, to install all optional dependency groups with uv:
 # ENV_SETUP_CMDS:
 #   - 'uv venv'
-#   - 'uv sync --quiet --all-extras'
+#   - 'uv sync --quiet --group test'
 
 
 # --- Agent Execution ---
 
 # Default command to execute for 'agro exec'.
 EXEC_CMD_DEFAULT: maider.sh
+
+# The type of agent being used. Determines how built-in flags are passed.
+# Supported values: "aider", "claude", "gemini".
+# AGENT_TYPE: aider
+
+# Agent-specific configuration.
+# AGENT_CONFIG:
+#   aider:
+#     args: ["--yes", "--no-check-update", "--no-attribute-author", "--no-attribute-committer", "--no-attribute-co-authored-by"]
+#   claude:
+#     args: ["-d", "--allowedTools", "Write Edit MultiEdit", "--max-turns", "30", "-p"]
+#   gemini:
+#     args: ["-y"]
+
+# Agent-specific timeout settings in seconds.
+# A value of 0 means no timeout is applied, overriding any default.
+# AGENT_TIMEOUTS:
+#   aider: 0
+#   claude: 600
+#   gemini: 600
 
 # Default command to open spec files with 'agro task'.
 # AGRO_EDITOR_CMD: code
