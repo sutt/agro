@@ -4,13 +4,13 @@ requires-python = ">=3.9"
 
 [[package]]
 name = "agro"
-version = "0.1.4"
+version = "0.1.5"
 source = { editable = "." }
 dependencies = [
     { name = "pyyaml" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 dev = [
     { name = "build" },
     { name = "twine" },
@@ -20,14 +20,13 @@ test = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pyyaml" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "build", specifier = ">=1.2.2.post1" },
-    { name = "twine", specifier = ">=6.1.0" },
+requires-dist = [
+    { name = "build", marker = "extra == 'dev'", specifier = ">=1.2.2.post1" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=8.4.1" },
+    { name = "pyyaml" },
+    { name = "twine", marker = "extra == 'dev'", specifier = ">=6.1.0" },
 ]
-test = [{ name = "pytest", specifier = ">=8.4.1" }]
+provides-extras = ["dev", "test"]
 
 [[package]]
 name = "backports-tarfile"
