@@ -67,9 +67,6 @@ def _get_config_template():
 # Directory for storing private project documentation and specifications.
 # AGDOCS_DIR: {config.DEFAULTS['AGDOCS_DIR']}
 
-# Name of the subdirectory within AGDOCS_DIR for agent guides.
-# GUIDES_SUBDIR: {config.DEFAULTS['GUIDES_SUBDIR']}
-
 # Directory for storing public project documentation.
 # PUBLIC_AGDOCS_DIR: {config.DEFAULTS['PUBLIC_AGDOCS_DIR']}
 
@@ -170,7 +167,7 @@ def init_project(conf_only=False):
     agdocs_dir.mkdir()
     (agdocs_dir / "specs").mkdir()
     (agdocs_dir / "swap").mkdir()
-    guides_dir = agdocs_dir / config.GUIDES_SUBDIR
+    guides_dir = agdocs_dir / "guides"
     guides_dir.mkdir()
     (guides_dir / "GUIDE.md").write_text(
         "# Agent Guide\n\nThis file provides guidance and conventions for the AI agent.\n"
@@ -188,8 +185,8 @@ def init_project(conf_only=False):
     logger.debug(f"Created: {agdocs_dir}/")
     logger.debug(f"Created: {agdocs_dir}/specs/")
     logger.debug(f"Created: {agdocs_dir}/swap/")
-    logger.debug(f"Created: {agdocs_dir / config.GUIDES_SUBDIR}/")
-    logger.debug(f"Created: {agdocs_dir / config.GUIDES_SUBDIR / 'GUIDE.md'}")
+    logger.debug(f"Created: {agdocs_dir}/guides/")
+    logger.debug(f"Created: {agdocs_dir}/guides/GUIDE.md")
     logger.debug(f"Created: {agdocs_dir}/conf/")
     logger.debug(f"Created: {agdocs_dir}/conf/agro.conf.yml")
     logger.debug(f"Created: {agdocs_dir}/.gitignore")
@@ -602,7 +599,7 @@ def exec_agent(
         worktree_path = Path(config.WORKTREE_DIR) / f"t{index}"
         agswap_dir = worktree_path / ".agswap"
 
-        guides_src_dir = Path(config.AGDOCS_DIR) / config.GUIDES_SUBDIR
+        guides_src_dir = Path(config.AGDOCS_DIR) / "guides"
         guide_files_in_swap = []
         if guides_src_dir.is_dir():
             guides_dest_dir = agswap_dir / "guides"
