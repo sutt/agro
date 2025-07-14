@@ -252,6 +252,7 @@ def _run_command(
     capture_output=False,
     shell=False,
     show_cmd_output=False,
+    suppress_error_logging=False,
 ):
     """Helper to run a shell command."""
     cmd_str = command if isinstance(command, str) else shlex.join(command)
@@ -271,13 +272,14 @@ def _run_command(
         )
         return result
     except subprocess.CalledProcessError as e:
-        cmd_str = command if isinstance(command, str) else shlex.join(command)
-        logger.error(f"Error executing command: {cmd_str}")
-        # If output was captured, it's in the exception.
-        if e.stdout:
-            logger.error(f"STDOUT:\n{e.stdout.strip()}")
-        if e.stderr:
-            logger.error(f"STDERR:\n{e.stderr.strip()}")
+        if not suppress_error_logging:
+            cmd_str = command if isinstance(command, str) else shlex.join(command)
+            logger.error(f"Error executing command: {cmd_str}")
+            # If output was captured, it's in the exception.
+            if e.stdout:
+                logger.error(f"STDOUT:\n{e.stdout.strip()}")
+            if e.stderr:
+                logger.error(f"STDERR:\n{e.stderr.strip()}")
         raise
     except FileNotFoundError:
         cmd_name = command if isinstance(command, str) else command[0]
@@ -821,6 +823,7 @@ def grab_branch(branch_name, show_cmd_output=False):
             ["git", "checkout", branch_name],
             capture_output=True,
             show_cmd_output=show_cmd_output,
+            suppress_error_logging=True,
         )
         logger.info(f"Successfully checked out branch '{branch_name}'.")
     except subprocess.CalledProcessError as e:
@@ -839,7 +842,13 @@ def grab_branch(branch_name, show_cmd_output=False):
             )
             logger.info(f"Successfully checked out branch '{copy_branch_name}'.")
         else:
-            # Re-raise if it's a different error
+            # Re-raise if it's a different error, but log it first
+            cmd_str = shlex.join(["git", "checkout", branch_name])
+            logger.error(f"Error executing command: {cmd_str}")
+            if e.stdout:
+                logger.error(f"STDOUT:\n{e.stdout.strip()}")
+            if e.stderr:
+                logger.error(f"STDERR:\n{e.stderr.strip()}")
             raise
 
 
