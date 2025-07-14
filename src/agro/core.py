@@ -67,6 +67,9 @@ def _get_config_template():
 # Directory for storing private project documentation and specifications.
 # AGDOCS_DIR: {config.DEFAULTS['AGDOCS_DIR']}
 
+# Name of the subdirectory within AGDOCS_DIR for agent guides.
+# GUIDES_SUBDIR: {config.DEFAULTS['GUIDES_SUBDIR']}
+
 # Directory for storing public project documentation.
 # PUBLIC_AGDOCS_DIR: {config.DEFAULTS['PUBLIC_AGDOCS_DIR']}
 
@@ -167,6 +170,11 @@ def init_project(conf_only=False):
     agdocs_dir.mkdir()
     (agdocs_dir / "specs").mkdir()
     (agdocs_dir / "swap").mkdir()
+    guides_dir = agdocs_dir / config.GUIDES_SUBDIR
+    guides_dir.mkdir()
+    (guides_dir / "GUIDE.md").write_text(
+        "# Agent Guide\n\nThis file provides guidance and conventions for the AI agent.\n"
+    )
     conf_dir.mkdir()
 
     config_file_path.write_text(_get_config_template())
@@ -180,6 +188,8 @@ def init_project(conf_only=False):
     logger.debug(f"Created: {agdocs_dir}/")
     logger.debug(f"Created: {agdocs_dir}/specs/")
     logger.debug(f"Created: {agdocs_dir}/swap/")
+    logger.debug(f"Created: {agdocs_dir / config.GUIDES_SUBDIR}/")
+    logger.debug(f"Created: {agdocs_dir / config.GUIDES_SUBDIR / 'GUIDE.md'}")
     logger.debug(f"Created: {agdocs_dir}/conf/")
     logger.debug(f"Created: {agdocs_dir}/conf/agro.conf.yml")
     logger.debug(f"Created: {agdocs_dir}/.gitignore")
@@ -592,6 +602,20 @@ def exec_agent(
         worktree_path = Path(config.WORKTREE_DIR) / f"t{index}"
         agswap_dir = worktree_path / ".agswap"
 
+        guides_src_dir = Path(config.AGDOCS_DIR) / config.GUIDES_SUBDIR
+        guide_files_in_swap = []
+        if guides_src_dir.is_dir():
+            guides_dest_dir = agswap_dir / "guides"
+            guides_dest_dir.mkdir(exist_ok=True)
+            for guide_file in guides_src_dir.glob("*.md"):
+                dest_file = guides_dest_dir / guide_file.name
+                shutil.copy(guide_file, dest_file)
+                guide_files_in_swap.append(dest_file)
+            if guide_files_in_swap:
+                logger.debug(
+                    f"Copied {len(guide_files_in_swap)} guide files to {guides_dest_dir}"
+                )
+
         task_in_swap_path = agswap_dir / task_path.name
         shutil.copy(task_path, task_in_swap_path)
         logger.debug(f"Copied task file to {task_in_swap_path}")
@@ -641,6 +665,14 @@ def exec_agent(
         command = [exec_command]
         command.extend(agent_config_data.get("args", []))
 
+        if agent_type_to_use == "aider" and guide_files_in_swap:
+            for guide_file in guide_files_in_swap:
+                rel_path = guide_file.relative_to(worktree_path)
+                command.extend(["--read", str(rel_path)])
+            logger.debug(
+                f"Added {len(guide_files_in_swap)} guide files with --read for aider."
+            )
+
         task_file_rel_path = str(task_in_swap_path.relative_to(worktree_path))
         task_file_arg_template = agent_config_data.get("task_file_arg_template")
 
@@ -677,8 +709,20 @@ def exec_agent(
             else:
                 # Agent takes task file via stdin
                 with open(task_in_swap_path, "r") as task_f:
-                    popen_kwargs["stdin"] = task_f
-                    process = subprocess.Popen(command, **popen_kwargs)
+                    task_content = task_f.read()
+
+                if agent_type_to_use == "claude" and guide_files_in_swap:
+                    guides_ref = "@.agswap/guides/* "
+                    task_content = guides_ref + task_content
+                    logger.debug(
+                        "Prepended claude guide file reference to task content."
+                    )
+
+                popen_kwargs["stdin"] = subprocess.PIPE
+                process = subprocess.Popen(command, **popen_kwargs)
+                if process.stdin:
+                    process.stdin.write(task_content.encode("utf-8"))
+                    process.stdin.close()
 
         pid_file.write_text(str(process.pid))
 

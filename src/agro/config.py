@@ -6,6 +6,7 @@ from pathlib import Path
 DEFAULTS = {
     'AGDOCS_DIR': '.agdocs',
     'PUBLIC_AGDOCS_DIR': '.public-agdocs',
+    'GUIDES_SUBDIR': 'guides',
     'WORKTREE_DIR': './trees',
     'WORKTREE_BRANCH_PREFIX': 'tree/t',
     'WORKTREE_OUTPUT_BRANCH_PREFIX': 'output/',
@@ -95,6 +96,7 @@ _config = _load_config()
 WORKTREE_DIR = _config['WORKTREE_DIR']
 AGDOCS_DIR = _config['AGDOCS_DIR']
 PUBLIC_AGDOCS_DIR = _config['PUBLIC_AGDOCS_DIR']
+GUIDES_SUBDIR = _config['GUIDES_SUBDIR']
 WORKTREE_BRANCH_PREFIX = _config['WORKTREE_BRANCH_PREFIX']
 WORKTREE_OUTPUT_BRANCH_PREFIX = _config['WORKTREE_OUTPUT_BRANCH_PREFIX']
 
