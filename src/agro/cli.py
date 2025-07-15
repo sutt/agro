@@ -113,38 +113,42 @@ def main():
     epilog_text = """Main command:
   exec [args] [taskfile] [num-trees] [exec-cmd]   
                                 
-        Run an agent in new worktree(s)
+    Run an agent in new worktree(s)
         args:
-          -n <num-trees>        Number of worktrees to create.
-          -c <exec-cmd>         Run the exec-cmd to launch agent on worktree
+          -n <num-trees>        Number of worktrees / agents to create.
+          -c <exec-cmd>         Custom command to launch agent on worktree.
           -a <agent-type>       Specify agent type to override config.
-          ...others             See below.
+                                Supported: aider, claude, gemini.
 
 Other Commands:
-  state [branch-patterns]       Show the state of existing worktrees.
-  surrender [branch-patterns]   Kill running agent processes (default: all).
   muster <command> <branch-patterns>    Run a command in specified worktrees.
+  surrender [branch-patterns]   Kill running agent processes (default: all).
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
-  fade <pattern>                Delete local branches matching a regex pattern.
+  fade <branch-patterns>        Delete local branches matching a regex pattern.
+  state [branch-patterns]       Show the worktree to branch mappings (default: all).
+  task [task-name]              Create a new task spec file and open it.
+  init                          Initialize agro project structure in .agdocs/.
+  mirror                        Mirror internal docs to public docs directory.
   make <index>                  Create a new worktree.
   delete <indices>|--all        Delete one, multiple, or all worktrees.
-  task [task-name]              Create a new task spec file and open it.
-  init                          Initialize agro project structure.
-  mirror                        Mirror internal docs to public docs directory.
-  help                          Show this help message.
+
+Branch-patterns examples (for regex like matching):
+  output/add-thing              Match output/add-thing*
+  output/add-thing.{2,5}        Match output/add-thing.2, output/add-thing.5
+  output/add-thing.{1-4}        Match output/add-thing.1, ... output/add-thing.4
 
 Common options for 'make' and 'exec':
-  --fresh-env         When creating a worktree, use .env.example as the base instead of .env.
-  --no-env-overrides  When creating a worktree, do not add port overrides to the .env file.
+  --fresh-env         Use .env.example as the base instead of .env.
+  --no-env-overrides  Do not add port overrides to the .env file.
 
 Options for 'muster':
-  -s, --server        Run command as a background server, redirecting output and saving PID.
+  -s, --server        Run command as a background server (and log server PID)
   -k, --kill-server   Kill the background server and clean up pid/log files.
     
 Options for 'init':
   --conf              Only add a template agro.conf.yml to .agdocs/conf"""
     parser = argparse.ArgumentParser(
-        description="A script to manage git worktrees for agent-based development.",
+        description="A script to manage git branches & worktrees for agent-based development.",
         prog="agro",
         epilog=epilog_text,
         formatter_class=argparse.RawDescriptionHelpFormatter,
