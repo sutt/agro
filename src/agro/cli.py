@@ -368,8 +368,16 @@ Options for 'init':
     parser_state = subparsers.add_parser(
         "state", help="Show the state of existing worktrees."
     )
+    parser_state.add_argument(
+        "branch_pattern",
+        nargs="?",
+        default=None,
+        help="Optional glob-style pattern to filter branches by name.",
+    )
     parser_state.set_defaults(
-        func=lambda args: core.state(show_cmd_output=(args.verbose >= 2))
+        func=lambda args: core.state(
+            branch_pattern=args.branch_pattern, show_cmd_output=(args.verbose >= 2)
+        )
     )
 
     # --- task command ---
