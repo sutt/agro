@@ -883,6 +883,8 @@ def muster_command(
         logger.warning("No worktrees found matching the provided patterns.")
         return
 
+    worktree_state = get_worktree_state(show_cmd_output=show_cmd_output)
+
     use_shell = False
     final_command_str = command_str
 
@@ -905,6 +907,7 @@ def muster_command(
     for index in indices:
         tree_name = f"t{index}"
         worktree_path = Path(config.WORKTREE_DIR) / tree_name
+        branch_name = worktree_state.get(tree_name, "<unknown branch>")
 
         if not worktree_path.is_dir():
             logger.warning(
@@ -912,7 +915,7 @@ def muster_command(
             )
             continue
 
-        logger.info(f"\n--- Running command in t{index} ({worktree_path}) ---")
+        logger.info(f"\n--- Running command in t{index} ({branch_name}) ---")
         logger.info(f"$ {final_command_str}")
         try:
             _run_command(
