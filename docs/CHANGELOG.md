@@ -18,4 +18,14 @@
 
 ## [0.1.5]
 
--
+- **BREAKING**: Changed `dependency-groups` to `project.optional-dependencies` in `pyproject.toml` for better compatibility
+- Added `-a/--agent-type` flag to `exec` command for specifying agent type (aider, claude, gemini)
+- Added `--no-auto-commit` flag to `exec` command to disable automatic commits
+- Added automatic agent type inference from command name when not explicitly specified
+- Added agent-specific configuration support with `AGENT_CONFIG` setting
+- Added timeout support for agents with `AGENT_TIMEOUTS` configuration
+- Added automatic commit functionality for non-aider agents via background committer process
+- Added new `committer.py` module for handling background auto-commits
+- Enhanced `exec_agent` function to support different agent types with proper argument handling
+- Updated environment setup to use `--all-extras` instead of `--group test` for uv sync
+- Improved agent command construction with support for stdin vs command-line task file passing
