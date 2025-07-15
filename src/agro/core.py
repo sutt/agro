@@ -1,4 +1,5 @@
 import fnmatch
+import json
 import logging
 import os
 import re
@@ -752,6 +753,27 @@ def exec_agent(
             logger.debug(
                 f"Added {len(guide_files_in_swap)} guide files with --read for aider."
             )
+
+        if agent_type_to_use == "gemini":
+            gemini_dir = worktree_path / ".gemini"
+            if gemini_dir.exists():
+                logger.warning(
+                    f"Directory '{gemini_dir}' already exists. Gemini agent will not have access to guide files."
+                )
+            else:
+                logger.debug(f"Creating '{gemini_dir}' for gemini agent context.")
+                gemini_dir.mkdir()
+                (gemini_dir / ".gitignore").write_text("*\n")
+                if guide_files_in_swap:
+                    relative_guide_paths = [
+                        str(p.relative_to(worktree_path)) for p in guide_files_in_swap
+                    ]
+                    settings_content = {"contextFileName": relative_guide_paths}
+                    settings_file = gemini_dir / "settings.json"
+                    settings_file.write_text(json.dumps(settings_content, indent=4))
+                    logger.debug(
+                        f"Created '{settings_file}' with {len(relative_guide_paths)} guide files."
+                    )
 
         task_file_rel_path = str(task_in_swap_path.relative_to(worktree_path))
         task_file_arg_template = agent_config_data.get("task_file_arg_template")
