@@ -364,6 +364,14 @@ Options for 'init':
         )
     )
 
+    # --- state command ---
+    parser_state = subparsers.add_parser(
+        "state", help="Show the state of existing worktrees."
+    )
+    parser_state.set_defaults(
+        func=lambda args: core.state(show_cmd_output=(args.verbose >= 2))
+    )
+
     # --- task command ---
     parser_task = subparsers.add_parser(
         "task", help="Create a new task spec file and open it in your editor."
