@@ -37,7 +37,6 @@ def test_dispatch_exec_simple(mock_find, mock_find_recent, mock_exec_agent):
     args = argparse.Namespace(
         agent_args=["task.md"],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt=None,
         fresh_env=False,
@@ -72,7 +71,6 @@ def test_dispatch_exec_with_num_trees_positional(
     args = argparse.Namespace(
         agent_args=["task.md", "3"],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt=None,
         fresh_env=False,
@@ -107,7 +105,6 @@ def test_dispatch_exec_with_exec_cmd_positional(
     args = argparse.Namespace(
         agent_args=["task.md", "my-agent"],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt=None,
         fresh_env=False,
@@ -143,7 +140,6 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional(
     args = argparse.Namespace(
         agent_args=["task.md", "3", "my-agent", "--agent-opt"],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt=None,
         fresh_env=True,
@@ -177,7 +173,6 @@ def test_dispatch_exec_with_num_trees_and_exec_cmd_positional_2(
     args = argparse.Namespace(
         agent_args=["task.md", "my-agent", "3", "--agent-opt"],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt=None,
         fresh_env=True,
@@ -211,7 +206,6 @@ def test_dispatch_exec_with_num_trees_option(
     args = argparse.Namespace(
         agent_args=["task.md", "my-agent", "--agent-opt"],
         num_trees_opt=3,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt=None,
         fresh_env=False,
@@ -234,39 +228,6 @@ def test_dispatch_exec_with_num_trees_option(
     )
 
 
-@patch("agro.cli.core.exec_agent")
-@patch("agro.cli.core.find_most_recent_task_file", return_value=None)
-@patch("agro.cli.core.find_task_file")
-def test_dispatch_exec_with_tree_indices_option(
-    mock_find, mock_find_recent, mock_exec_agent
-):
-    """Test exec with -t option for tree_indices."""
-    mock_find.side_effect = lambda arg: Path("task.md") if arg == "task.md" else None
-    args = argparse.Namespace(
-        agent_args=["task.md", "my-agent", "--agent-opt"],
-        num_trees_opt=None,
-        tree_indices="1,2,3",
-        exec_cmd_opt=None,
-        agent_type_opt=None,
-        fresh_env=False,
-        no_env_overrides=False,
-        verbose=0,
-        no_auto_commit=False,
-    )
-    _dispatch_exec(args)
-    mock_exec_agent.assert_called_once_with(
-        task_file="task.md",
-        fresh_env=False,
-        no_overrides=False,
-        agent_args=["--agent-opt"],
-        exec_cmd="my-agent",
-        indices_str="1,2,3",
-        num_trees=None,
-        show_cmd_output=False,
-        agent_type=None,
-        auto_commit=True,
-    )
-
 
 @patch("agro.cli.core.exec_agent")
 @patch("agro.cli.core.find_most_recent_task_file", return_value=None)
@@ -279,7 +240,6 @@ def test_dispatch_exec_with_exec_cmd_option(
     args = argparse.Namespace(
         agent_args=["task.md", "--agent-opt"],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt="my-agent",
         agent_type_opt=None,
         fresh_env=False,
@@ -307,7 +267,6 @@ def test_dispatch_exec_num_trees_conflict_positional():
     args = argparse.Namespace(
         agent_args=["3"],
         num_trees_opt=3,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt=None,
         fresh_env=False,
@@ -318,31 +277,12 @@ def test_dispatch_exec_num_trees_conflict_positional():
         _dispatch_exec(args)
 
 
-def test_dispatch_exec_num_trees_conflict_indices():
-    """Test ValueError when num_trees is specified with -t and positionally."""
-    args = argparse.Namespace(
-        agent_args=["3"],
-        num_trees_opt=None,
-        tree_indices="1,2",
-        exec_cmd_opt=None,
-        agent_type_opt=None,
-        fresh_env=False,
-        no_env_overrides=False,
-        verbose=0,
-    )
-    with pytest.raises(
-        ValueError,
-        match="Cannot specify number of trees positionally and with -t/--tree-indices.",
-    ):
-        _dispatch_exec(args)
-
 
 def test_dispatch_exec_exec_cmd_conflict():
     """Test ValueError when exec_cmd is specified with -c and positionally."""
     args = argparse.Namespace(
         agent_args=["my-agent"],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt="my-agent",
         agent_type_opt=None,
         fresh_env=False,
@@ -361,7 +301,6 @@ def test_dispatch_exec_no_taskfile_found(mock_find_recent, mock_find):
     args = argparse.Namespace(
         agent_args=[],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt=None,
         fresh_env=False,
@@ -383,7 +322,6 @@ def test_dispatch_exec_no_taskfile_use_recent_confirm_yes(
     args = argparse.Namespace(
         agent_args=[],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt=None,
         fresh_env=False,
@@ -418,7 +356,6 @@ def test_dispatch_exec_no_taskfile_use_recent_confirm_no(
     args = argparse.Namespace(
         agent_args=[],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt=None,
         fresh_env=False,
@@ -441,7 +378,6 @@ def test_dispatch_exec_with_agent_type_option(
     args = argparse.Namespace(
         agent_args=["task.md"],
         num_trees_opt=None,
-        tree_indices=None,
         exec_cmd_opt=None,
         agent_type_opt="gemini",
         fresh_env=False,
@@ -476,7 +412,6 @@ def test_dispatch_exec_infer_agent_type_from_exec_cmd(
         args = argparse.Namespace(
             agent_args=["task.md"],
             num_trees_opt=None,
-            tree_indices=None,
             exec_cmd_opt="my-gemini-agent",
             agent_type_opt=None,
             fresh_env=False,
@@ -511,7 +446,6 @@ def test_dispatch_exec_infer_agent_type_from_positional_exec_cmd(
         args = argparse.Namespace(
             agent_args=["task.md", "my-gemini-agent"],
             num_trees_opt=None,
-            tree_indices=None,
             exec_cmd_opt=None,
             agent_type_opt=None,
             fresh_env=False,
@@ -546,7 +480,6 @@ def test_dispatch_exec_no_inference_when_both_provided(
         args = argparse.Namespace(
             agent_args=["task.md"],
             num_trees_opt=None,
-            tree_indices=None,
             exec_cmd_opt="my-gemini-agent",
             agent_type_opt="aider",
             fresh_env=False,

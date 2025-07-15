@@ -40,10 +40,6 @@ def _dispatch_exec(args):
                 raise ValueError(
                     "Number of trees specified twice (e.g. positionally and with -n)."
                 )
-            if args.tree_indices is not None:
-                raise ValueError(
-                    "Cannot specify number of trees positionally and with -t/--tree-indices."
-                )
             num_trees = int(arg)
         else:
             remaining_pos_args.append(arg)
@@ -102,7 +98,7 @@ def _dispatch_exec(args):
         no_overrides=args.no_env_overrides,
         agent_args=agent_args,
         exec_cmd=exec_cmd,
-        indices_str=args.tree_indices,
+        indices_str=None,
         num_trees=num_trees,
         show_cmd_output=(args.verbose >= 2),
         agent_type=agent_type,
@@ -120,11 +116,12 @@ def main():
         Run an agent in new worktree(s)
         args:
           -n <num-trees>        Number of worktrees to create.
-          -t <indices>          Specified worktree indice(s) (e.g., '1,2,3').
           -c <exec-cmd>         Run the exec-cmd to launch agent on worktree
+          -a <agent-type>       Specify agent type to override config.
           ...others             See below.
 
 Other Commands:
+  state [branch-patterns]       Show the state of existing worktrees.
   surrender [branch-patterns]   Kill running agent processes (default: all).
   muster <command> <branch-patterns>    Run a command in specified worktrees.
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
@@ -252,18 +249,12 @@ Options for 'init':
         "All arguments after the taskfile and exec options are passed to the agent.",
     )
 
-    exec_group = parser_exec.add_mutually_exclusive_group()
-    exec_group.add_argument(
+    parser_exec.add_argument(
         "-n",
         "--num-trees",
         type=int,
         dest="num_trees_opt",
         help="Number of new worktrees to create.",
-    )
-    exec_group.add_argument(
-        "-t",
-        "--tree-indices",
-        help="Comma-separated list of worktree indices to use (e.g., '1,2').",
     )
 
     parser_exec.add_argument(
