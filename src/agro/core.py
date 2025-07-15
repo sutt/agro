@@ -1,3 +1,4 @@
+import fnmatch
 import logging
 import os
 import re
@@ -53,6 +54,86 @@ def find_most_recent_task_file() -> Path | None:
 
     latest_file = max(md_files, key=lambda p: p.stat().st_mtime)
     return latest_file
+
+
+def _get_all_branches(show_cmd_output=False) -> list[str]:
+    """Retrieves a list of all local branch names."""
+    result = _run_command(
+        ["git", "branch", "--format=%(refname:short)"],
+        capture_output=True,
+        check=True,
+        show_cmd_output=show_cmd_output,
+    )
+    return result.stdout.strip().split("\n") if result.stdout else []
+
+
+def _expand_branch_pattern(pattern: str) -> list[str]:
+    """
+    Expands a branch pattern with brace expressions into a list of concrete names.
+    e.g., 'feature/branch.{1-3,5}' -> ['feature/branch.1', 'feature/branch.2', 'feature/branch.3', 'feature/branch.5']
+    """
+    match = re.search(r"\{([^}]+)\}", pattern)
+    if not match:
+        return [pattern]
+
+    prefix = pattern[: match.start()]
+    suffix = pattern[match.end() :]
+    content = match.group(1)
+
+    if not content.strip():  # Handles {} and { }
+        return []
+
+    numbers = set()
+    parts = content.split(",")
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        if "-" in part:
+            try:
+                start_str, end_str = part.split("-", 1)
+                start, end = int(start_str), int(end_str)
+                if start > end:
+                    continue
+                numbers.update(range(start, end + 1))
+            except ValueError:
+                raise ValueError(f"Invalid range in pattern: '{part}'")
+        else:
+            try:
+                numbers.add(int(part))
+            except ValueError:
+                raise ValueError(f"Invalid number in pattern: '{part}'")
+
+    return [f"{prefix}{num}{suffix}" for num in sorted(list(numbers))]
+
+
+def _get_matching_branches(pattern: str, show_cmd_output=False) -> list[str]:
+    """
+    Finds branches matching a given pattern.
+    - Expands brace notation like {1-3,5}.
+    - If no brace notation and no glob chars, performs an exact match, falling back to prefix match.
+    - Allows user to provide their own glob patterns.
+    """
+    all_branches = _get_all_branches(show_cmd_output)
+
+    try:
+        expanded_patterns = _expand_branch_pattern(pattern)
+    except ValueError as e:
+        logger.error(f"Pattern error: {e}")
+        return []
+
+    if "{" in pattern:
+        return sorted([b for b in all_branches if b in expanded_patterns])
+
+    plain_pattern = expanded_patterns[0]
+
+    if plain_pattern in all_branches:
+        return [plain_pattern]
+
+    if any(c in plain_pattern for c in "*?[]"):
+        return sorted(fnmatch.filter(all_branches, plain_pattern))
+
+    return sorted(fnmatch.filter(all_branches, f"{plain_pattern}*"))
 
 
 def _get_config_template():
@@ -975,14 +1056,27 @@ def get_worktree_state(show_cmd_output=False):
     return state
 
 
-def state(show_cmd_output=False):
-    """Prints the state of the worktrees."""
+def state(branch_pattern=None, show_cmd_output=False):
+    """Prints the state of the worktrees, optionally filtered by branch pattern."""
     worktree_state = get_worktree_state(show_cmd_output=show_cmd_output)
+
+    if branch_pattern:
+        matching_branches = _get_matching_branches(
+            branch_pattern, show_cmd_output=show_cmd_output
+        )
+        if not matching_branches:
+            logger.info(f"No branches found matching pattern: '{branch_pattern}'")
+            return
+
+        worktree_state = {
+            wt: br for wt, br in worktree_state.items() if br in matching_branches
+        }
+
     if not worktree_state:
-        logger.info("No worktrees found.")
+        logger.info("No worktrees found matching the criteria.")
         return
 
-    for worktree, branch in worktree_state.items():
+    for worktree, branch in sorted(worktree_state.items()):
         logger.info(f"{worktree}: {branch}")
 
 
