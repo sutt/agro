@@ -47,7 +47,22 @@ d109172 fix: remove guides dir from configs
 
 ## v0.1.5
 
-TODO - add a table
+| Task File | Contents (truncated) | Accepted SHA |
+|------|-------------|---------|
+| [commit-after-v2.md](../.public-agdocs/specs/commit-after-v2.md) | when the agent_type aider runs, it finishes by leaving a git commit on the worktrees branch. but when gemini and claude run they don't do a commit... | [a86fd35](https://github.com/sutt/agro/commit/a86fd35) |
+| [improve-help.md](../.public-agdocs/specs/improve-help.md) | Currently copied below is what prints for help. Update this to reflect more concise and more informative and utilize best practices. | n/a |
+| [commit-after.md](../.public-agdocs/specs/commit-after.md) | when the agent_Type aider runs, it finishes by leaving a git commit on the worktrees branch. but when gemini and calude run they don't do a commit... | [a86fd35](https://github.com/sutt/agro/commit/a86fd35) |
+| [infer-model.md](../.public-agdocs/specs/infer-model.md) | allow the agent_type parameter to be infered in the absence of -a flag. We infer the agent_type from exec-cmd if passed... | [8b83ff6](https://github.com/sutt/agro/commit/8b83ff6) |
+| [fix-tests.md](../.public-agdocs/specs/fix-tests.md) | (empty file) | [89eed93](https://github.com/sutt/agro/commit/89eed93) |
+| [clientargs-config.md](../.public-agdocs/specs/clientargs-config.md) | factor out the built-ins extra args passed to aider to a config var and setup exec to pass different arg structure for each known agent type. | [e2dea27](https://github.com/sutt/agro/commit/e2dea27) |
+| [clientargs-config-2.md](../.public-agdocs/specs/clientargs-config-2.md) | factor out the built-ins extra args passed to aider to a config var and setup exec to pass different arg structure for each known agent type. | [e2dea27](https://github.com/sutt/agro/commit/e2dea27) |
+| [agent-var.md](../.public-agdocs/specs/agent-var.md) | add a new config variable for agent type which accepts "aider", "gemini", "claude" or rejects as not found. It should default to "aider". | [75e4614](https://github.com/sutt/agro/commit/75e4614) |
+| [docker-testenv-setup.md](../.public-agdocs/specs/docker-testenv-setup.md) | add a feature for tests: launch a docker container that will execute a series of tests of an install of the current agro worktree. | n/a |
+| [claude-flags.md](../.public-agdocs/specs/claude-flags.md) | allow all agent_types to be configured to have a timeout preprended to their launch command have claude be configured for a 600 s timeout default... | [d0c5a19](https://github.com/sutt/agro/commit/d0c5a19) |
+| [mod-committer.md](../.public-agdocs/specs/mod-committer.md) | modify the commit message left by commiter:git_commit_changes to be of the form: "feat: impl {taskfile} with {agent_type} (agro auto-commit)" | [c1e60f1](https://github.com/sutt/agro/commit/c1e60f1) |
+| [pkg-sync.md](../.public-agdocs/specs/pkg-sync.md) | currently we run which works for this project but fails for other simple 'uv sync --quiet --group test' which works for this project but fails... | [8d16b99](https://github.com/sutt/agro/commit/8d16b99) |
+| [test-fail.md](../.public-agdocs/specs/test-fail.md) | Fix the tests: Here's the debug log ============================= test session starts ============================== platform linux -- Python 3.12.11... | [89eed93](https://github.com/sutt/agro/commit/89eed93) |
+| [timeout-bug.md](../.public-agdocs/specs/timeout-bug.md) | when the user uncomments the AGENT_CONFIG.gemini.timeout in their conf.yml, this overrides the -y param being passed to the gemini. refactor how timeout... | [ecfe36a](https://github.com/sutt/agro/commit/ecfe36a) |
 
 ```
 0f36416 release: v0.1.5
