@@ -919,7 +919,7 @@ def muster_command(
                 command,
                 cwd=str(worktree_path),
                 shell=use_shell,
-                show_cmd_output=show_cmd_output,
+                show_cmd_output=True,
             )
         except (subprocess.CalledProcessError, FileNotFoundError):
             # _run_command already prints details.
