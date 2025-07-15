@@ -370,13 +370,13 @@ Options for 'init':
     )
     parser_state.add_argument(
         "branch_pattern",
-        nargs="?",
-        default=None,
-        help="Optional glob-style pattern to filter branches by name.",
+        nargs="*",
+        default=[],
+        help="Optional glob-style pattern(s) to filter branches by name.",
     )
     parser_state.set_defaults(
         func=lambda args: core.state(
-            branch_pattern=args.branch_pattern, show_cmd_output=(args.verbose >= 2)
+            branch_patterns=args.branch_pattern, show_cmd_output=(args.verbose >= 2)
         )
     )
 
