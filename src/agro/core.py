@@ -833,20 +833,55 @@ def exec_agent(
         logger.debug(f"   Task file copy: {task_in_swap_path.resolve()}")
 
 
+def _get_indices_from_branch_patterns(branch_patterns=None, show_cmd_output=False) -> list[int]:
+    """
+    Resolves branch patterns to a list of worktree indices.
+    If no patterns are provided, returns indices for all existing worktrees.
+    """
+    worktree_state = get_worktree_state(show_cmd_output=show_cmd_output)
+    if not worktree_state:
+        return []
+
+    if not branch_patterns:
+        # Return all indices if no pattern is given
+        all_indices = []
+        for wt_name in worktree_state.keys():
+            if wt_name.startswith("t") and wt_name[1:].isdigit():
+                all_indices.append(int(wt_name[1:]))
+        return sorted(all_indices)
+
+    all_matching_branches = set()
+    for pattern in branch_patterns:
+        matching_branches = _get_matching_branches(
+            pattern, show_cmd_output=show_cmd_output
+        )
+        all_matching_branches.update(matching_branches)
+
+    if not all_matching_branches:
+        patterns_str = " ".join(f"'{p}'" for p in branch_patterns)
+        logger.info(f"No branches found matching patterns: {patterns_str}")
+        return []
+
+    matching_indices = []
+    for wt_name, branch in worktree_state.items():
+        if branch in all_matching_branches:
+            if wt_name.startswith("t") and wt_name[1:].isdigit():
+                matching_indices.append(int(wt_name[1:]))
+
+    return sorted(matching_indices)
+
+
 def muster_command(
-    command_str, indices_str, server=False, kill_server=False, show_cmd_output=False
+    command_str, branch_patterns, server=False, kill_server=False, show_cmd_output=False
 ):
     """Runs a command in multiple worktrees."""
     if server and kill_server:
         raise ValueError("--server and --kill-server cannot be used together.")
 
-    try:
-        indices = [int(i.strip()) for i in indices_str.split(",") if i.strip()]
-    except ValueError:
-        logger.error(
-            f"Invalid indices list '{indices_str}'. Please provide a comma-separated list of numbers."
-        )
-        raise
+    indices = _get_indices_from_branch_patterns(branch_patterns, show_cmd_output)
+    if not indices:
+        logger.warning("No worktrees found matching the provided patterns.")
+        return
 
     use_shell = False
     final_command_str = command_str
@@ -1087,32 +1122,20 @@ def state(branch_patterns=None, show_cmd_output=False):
         logger.info(f"{worktree}: {branch}")
 
 
-def surrender(indices_str=None, show_cmd_output=False):
+def surrender(branch_patterns=None, show_cmd_output=False):
     """Kills running agent processes associated with worktrees."""
     pid_dir = Path(config.AGDOCS_DIR) / "swap"
     if not pid_dir.is_dir():
         logger.info("No agent processes seem to be running (PID directory not found).")
         return
 
-    target_indices = []
-    if not indices_str or indices_str.lower() == 'all':
-        for pid_file in sorted(pid_dir.glob("t*.pid")):
-            match = re.match(r"t(\d+)\.pid", pid_file.name)
-            if match:
-                target_indices.append(int(match.group(1)))
-        if not target_indices:
-            logger.info(f"No PID files found in {pid_dir}.")
-            return
-    else:
-        try:
-            target_indices = [
-                int(i.strip()) for i in indices_str.split(",") if i.strip()
-            ]
-        except ValueError:
-            logger.error(
-                f"Invalid indices list '{indices_str}'. Please provide a comma-separated list of numbers."
-            )
-            raise
+    target_indices = _get_indices_from_branch_patterns(branch_patterns, show_cmd_output)
+    if not target_indices:
+        if branch_patterns:
+            logger.warning("No worktrees found matching the provided patterns.")
+        else:
+            logger.info("No worktrees found.")
+        return
 
     procs_to_kill = []
     logger.info("--- Dry Run ---")

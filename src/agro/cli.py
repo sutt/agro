@@ -125,8 +125,8 @@ def main():
           ...others             See below.
 
 Other Commands:
-  surrender [indices]           Kill running agent processes (default: all).
-  muster <command> <indices>    Run a command in specified worktrees (e.g., '1,2,3').
+  surrender [branch-patterns]   Kill running agent processes (default: all).
+  muster <command> <branch-patterns>    Run a command in specified worktrees.
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
   fade <pattern>                Delete local branches matching a regex pattern.
   make <index>                  Create a new worktree.
@@ -302,7 +302,9 @@ Options for 'init':
         help="The command to execute. A dummy value can be used with --kill-server.",
     )
     parser_muster.add_argument(
-        "indices", help="Comma-separated list of worktree indices (e.g., '1,2')."
+        "branch_patterns",
+        nargs="+",
+        help="One or more branch patterns to select worktrees.",
     )
     parser_muster.add_argument(
         "-s",
@@ -319,7 +321,7 @@ Options for 'init':
     parser_muster.set_defaults(
         func=lambda args: core.muster_command(
             args.command_str,
-            args.indices,
+            args.branch_patterns,
             server=args.server,
             kill_server=args.kill_server,
             show_cmd_output=(args.verbose >= 2),
@@ -353,14 +355,14 @@ Options for 'init':
         "surrender", help="Kill running agent processes."
     )
     parser_surrender.add_argument(
-        "indices",
-        nargs="?",
-        default="all",
-        help="Comma-separated list of worktree indices (e.g., '1,2'). Defaults to all.",
+        "branch_patterns",
+        nargs="*",
+        default=[],
+        help="Optional branch pattern(s) to select worktrees. Defaults to all.",
     )
     parser_surrender.set_defaults(
         func=lambda args: core.surrender(
-            args.indices, show_cmd_output=(args.verbose >= 2)
+            args.branch_patterns, show_cmd_output=(args.verbose >= 2)
         )
     )
 

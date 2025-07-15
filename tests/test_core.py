@@ -91,3 +91,51 @@ def test_get_matching_branches(mock_get_branches, pattern, expected):
 if __name__ == "__main__":
     # uv run python -m tests.test_core
     print(core._expand_branch_pattern("b{}"))
+
+
+@patch("agro.core.get_worktree_state")
+@patch("agro.core._get_matching_branches")
+def test_get_indices_from_branch_patterns(mock_get_matching_branches, mock_get_worktree_state):
+    mock_get_worktree_state.return_value = {
+        "t1": "feature/one",
+        "t2": "feature/two",
+        "t3": "bugfix/short",
+        "t4": "feature/one",  # another worktree on same branch
+        "t5": "other",
+    }
+
+    # Test with no patterns (should return all)
+    assert core._get_indices_from_branch_patterns(show_cmd_output=False) == [1, 2, 3, 4, 5]
+
+    # Test with a pattern that matches multiple branches
+    mock_get_matching_branches.return_value = ["feature/one", "feature/two"]
+    assert core._get_indices_from_branch_patterns(["feature/*"], show_cmd_output=False) == [1, 2, 4]
+    mock_get_matching_branches.assert_called_once_with("feature/*", show_cmd_output=False)
+
+    # Test with a pattern that matches one branch
+    mock_get_matching_branches.reset_mock()
+    mock_get_matching_branches.return_value = ["bugfix/short"]
+    assert core._get_indices_from_branch_patterns(["bugfix/short"], show_cmd_output=False) == [3]
+    mock_get_matching_branches.assert_called_once_with("bugfix/short", show_cmd_output=False)
+
+    # Test with multiple patterns
+    mock_get_matching_branches.reset_mock()
+    def side_effect(pattern, show_cmd_output=False):
+        if pattern == "feature/two":
+            return ["feature/two"]
+        if pattern == "other":
+            return ["other"]
+        return []
+    mock_get_matching_branches.side_effect = side_effect
+    assert core._get_indices_from_branch_patterns(["feature/two", "other"], show_cmd_output=False) == [2, 5]
+    assert mock_get_matching_branches.call_count == 2
+
+    # Test with pattern that matches nothing
+    mock_get_matching_branches.reset_mock()
+    mock_get_matching_branches.side_effect = None
+    mock_get_matching_branches.return_value = []
+    assert core._get_indices_from_branch_patterns(["nonexistent"], show_cmd_output=False) == []
+
+    # Test with no worktrees
+    mock_get_worktree_state.return_value = {}
+    assert core._get_indices_from_branch_patterns(show_cmd_output=False) == []
