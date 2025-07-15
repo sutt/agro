@@ -971,31 +971,39 @@ def grab_branch(branch_name, show_cmd_output=False):
             raise
 
 
-def fade_branches(pattern, show_cmd_output=False):
-    """Deletes local git branches matching a pattern after user confirmation."""
-    logger.info(f"Searching for branches matching pattern: '{pattern}'")
+def fade_branches(patterns, show_cmd_output=False):
+    """Deletes local git branches matching patterns after user confirmation."""
+    patterns_str = " ".join(f"'{p}'" for p in patterns)
+    logger.info(f"Searching for branches matching patterns: {patterns_str}")
+
+    all_matching_branches = set()
+    for pattern in patterns:
+        matching_branches = _get_matching_branches(
+            pattern, show_cmd_output=show_cmd_output
+        )
+        all_matching_branches.update(matching_branches)
+
+    if not all_matching_branches:
+        logger.info("No branches found matching the patterns to delete.")
+        return
 
     result = _run_command(
-        ["git", "branch"],
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
         capture_output=True,
         check=True,
         show_cmd_output=show_cmd_output,
     )
-    all_branches_raw = result.stdout.strip().split("\n")
+    current_branch = result.stdout.strip()
 
     branches_to_delete = []
-    for line in all_branches_raw:
-        branch_name = line.lstrip(" *+")
-        if re.search(pattern, branch_name):
-            if line.startswith("* "):
-                logger.warning(
-                    f"Skipping currently checked out branch '{branch_name}'"
-                )
-                continue
-            branches_to_delete.append(branch_name)
+    for branch_name in sorted(list(all_matching_branches)):
+        if branch_name == current_branch:
+            logger.warning(f"Skipping currently checked out branch '{branch_name}'")
+            continue
+        branches_to_delete.append(branch_name)
 
     if not branches_to_delete:
-        logger.info("No branches found matching the pattern to delete.")
+        logger.info("No branches to delete after filtering out the current branch.")
         return
 
     logger.info("\n--- Dry Run ---")

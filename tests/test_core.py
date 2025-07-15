@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, call, MagicMock
 
 from agro import core
 
@@ -139,3 +139,123 @@ def test_get_indices_from_branch_patterns(mock_get_matching_branches, mock_get_w
     # Test with no worktrees
     mock_get_worktree_state.return_value = {}
     assert core._get_indices_from_branch_patterns(show_cmd_output=False) == []
+
+
+@patch("agro.core._get_matching_branches")
+@patch("agro.core._run_command")
+@patch("builtins.input", return_value="y")
+@patch("agro.core.logger")
+def test_fade_branches_simple(
+    mock_logger, mock_input, mock_run_command, mock_get_matching_branches
+):
+    # Mock current branch
+    mock_run_command.side_effect = [
+        MagicMock(stdout="main"),  # for getting current branch
+        MagicMock(returncode=0),  # for git branch -D
+        MagicMock(returncode=0),  # for git branch -D
+    ]
+
+    mock_get_matching_branches.return_value = ["feature/one", "feature/two"]
+
+    core.fade_branches(["feature/*"], show_cmd_output=False)
+
+    mock_get_matching_branches.assert_called_once_with(
+        "feature/*", show_cmd_output=False
+    )
+
+    # Check that we tried to delete the branches
+    delete_calls = [
+        call(
+            ["git", "branch", "-D", "feature/one"],
+            capture_output=True,
+            check=False,
+            show_cmd_output=False,
+        ),
+        call(
+            ["git", "branch", "-D", "feature/two"],
+            capture_output=True,
+            check=False,
+            show_cmd_output=False,
+        ),
+    ]
+    # First call is to get current branch
+    mock_run_command.assert_has_calls(delete_calls, any_order=True)
+    assert mock_run_command.call_count == 3  # 1 for current branch, 2 for delete
+
+    # Check logging
+    mock_logger.info.assert_any_call("Deleted branch 'feature/one'.")
+    mock_logger.info.assert_any_call("Deleted branch 'feature/two'.")
+
+
+@patch("agro.core._get_matching_branches")
+@patch("agro.core._run_command")
+@patch("builtins.input", return_value="y")
+@patch("agro.core.logger")
+def test_fade_branches_skips_current_branch(
+    mock_logger, mock_input, mock_run_command, mock_get_matching_branches
+):
+    # Mock current branch
+    mock_run_command.side_effect = [
+        MagicMock(stdout="feature/one"),  # for getting current branch
+        MagicMock(returncode=0),  # for git branch -D
+    ]
+
+    mock_get_matching_branches.return_value = ["feature/one", "feature/two"]
+
+    core.fade_branches(["feature/*"], show_cmd_output=True)
+
+    mock_get_matching_branches.assert_called_once_with(
+        "feature/*", show_cmd_output=True
+    )
+
+    # Check that we tried to delete only one branch
+    mock_run_command.assert_called_with(
+        ["git", "branch", "-D", "feature/two"],
+        capture_output=True,
+        check=False,
+        show_cmd_output=True,
+    )
+    assert mock_run_command.call_count == 2  # 1 for current branch, 1 for delete
+
+    # Check logging
+    mock_logger.warning.assert_called_with(
+        "Skipping currently checked out branch 'feature/one'"
+    )
+    mock_logger.info.assert_any_call("Deleted branch 'feature/two'.")
+
+
+@patch("agro.core._get_matching_branches")
+@patch("agro.core._run_command")
+@patch("builtins.input", return_value="n")
+@patch("agro.core.logger")
+def test_fade_branches_user_cancel(
+    mock_logger, mock_input, mock_run_command, mock_get_matching_branches
+):
+    # Mock current branch
+    mock_run_command.return_value = MagicMock(stdout="main")
+
+    mock_get_matching_branches.return_value = ["feature/one"]
+
+    core.fade_branches(["feature/one"], show_cmd_output=False)
+
+    # Check that we did not try to delete
+    delete_call = call(
+        ["git", "branch", "-D", "feature/one"],
+        capture_output=True,
+        check=False,
+        show_cmd_output=False,
+    )
+    assert delete_call not in mock_run_command.mock_calls
+
+    # Check logging
+    mock_logger.warning.assert_called_with("Operation cancelled by user.")
+
+
+@patch("agro.core._get_matching_branches")
+@patch("agro.core.logger")
+def test_fade_branches_no_match(mock_logger, mock_get_matching_branches):
+    mock_get_matching_branches.return_value = []
+    core.fade_branches(["nonexistent"], show_cmd_output=False)
+    mock_logger.info.assert_called_with(
+        "No branches found matching the patterns to delete."
+    )

@@ -341,12 +341,14 @@ Options for 'init':
 
     # --- fade command ---
     parser_fade = subparsers.add_parser(
-        "fade", help="Delete local branches matching a regex pattern after confirmation."
+        "fade", help="Delete local branches matching pattern(s) after confirmation."
     )
-    parser_fade.add_argument("pattern", help="The regex pattern to match branch names against.")
+    parser_fade.add_argument(
+        "patterns", nargs="+", help="One or more patterns to match branch names against."
+    )
     parser_fade.set_defaults(
         func=lambda args: core.fade_branches(
-            args.pattern, show_cmd_output=(args.verbose >= 2)
+            args.patterns, show_cmd_output=(args.verbose >= 2)
         )
     )
 
