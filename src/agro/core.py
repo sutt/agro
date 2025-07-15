@@ -944,6 +944,48 @@ def mirror_docs(show_cmd_output=False):
     logger.info("✅ Mirroring complete.")
 
 
+def get_worktree_state(show_cmd_output=False):
+    """
+    Retrieves the state of all worktrees, mapping worktree name to its current branch.
+    """
+    worktree_dir = Path(config.WORKTREE_DIR)
+    if not worktree_dir.is_dir():
+        return {}
+
+    state = {}
+    worktree_paths = sorted(
+        [p for p in worktree_dir.iterdir() if p.is_dir() and p.name.startswith("t")]
+    )
+    for worktree_path in worktree_paths:
+        try:
+            result = _run_command(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                cwd=worktree_path,
+                capture_output=True,
+                check=True,
+                show_cmd_output=show_cmd_output,
+                suppress_error_logging=True,
+            )
+            branch = result.stdout.strip()
+            state[worktree_path.name] = branch
+        except subprocess.CalledProcessError:
+            state[worktree_path.name] = "<error: unable to get branch>"
+        except FileNotFoundError:
+            state[worktree_path.name] = "<error: git not found>"
+    return state
+
+
+def state(show_cmd_output=False):
+    """Prints the state of the worktrees."""
+    worktree_state = get_worktree_state(show_cmd_output=show_cmd_output)
+    if not worktree_state:
+        logger.info("No worktrees found.")
+        return
+
+    for worktree, branch in worktree_state.items():
+        logger.info(f"{worktree}: {branch}")
+
+
 def surrender(indices_str=None, show_cmd_output=False):
     """Kills running agent processes associated with worktrees."""
     pid_dir = Path(config.AGDOCS_DIR) / "swap"
