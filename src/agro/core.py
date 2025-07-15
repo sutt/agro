@@ -1056,20 +1056,27 @@ def get_worktree_state(show_cmd_output=False):
     return state
 
 
-def state(branch_pattern=None, show_cmd_output=False):
+def state(branch_patterns=None, show_cmd_output=False):
     """Prints the state of the worktrees, optionally filtered by branch pattern."""
     worktree_state = get_worktree_state(show_cmd_output=show_cmd_output)
 
-    if branch_pattern:
-        matching_branches = _get_matching_branches(
-            branch_pattern, show_cmd_output=show_cmd_output
-        )
-        if not matching_branches:
-            logger.info(f"No branches found matching pattern: '{branch_pattern}'")
+    if branch_patterns:
+        all_matching_branches = set()
+        for pattern in branch_patterns:
+            matching_branches = _get_matching_branches(
+                pattern, show_cmd_output=show_cmd_output
+            )
+            all_matching_branches.update(matching_branches)
+
+        if not all_matching_branches:
+            patterns_str = " ".join(f"'{p}'" for p in branch_patterns)
+            logger.info(f"No branches found matching patterns: {patterns_str}")
             return
 
         worktree_state = {
-            wt: br for wt, br in worktree_state.items() if br in matching_branches
+            wt: br
+            for wt, br in worktree_state.items()
+            if br in all_matching_branches
         }
 
     if not worktree_state:
