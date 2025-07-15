@@ -1,0 +1,3 @@
+when running "agro muster" tasks I want the commands dispatched to the trees to be run in full -vv mode (so that I can see the full output of the commands) but I don't want the internal functions that muster calls to display verbosely.
+
+So if i call "agro muster 'pytest' output/add-thing.{1-3}" I want this to display the full output of pytest in each tree, but not any of the verbose/debugging lines from executing other functions that called with muster. Still keep the ability to show the internal commands debug/verbose info when "agro -vv muster ..." is passed.

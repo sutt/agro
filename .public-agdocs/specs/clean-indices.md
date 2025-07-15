@@ -1,0 +1,4 @@
+- drop support for -t arg in agro exec
+- port the branch pattern matching logic from "agro state" to "agro fade"
+- update the cli help text as nec.
+- update the test as nec
