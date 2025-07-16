@@ -4,9 +4,9 @@ _July 8, 2025_
 
 ### Introduction
 
-We're prsenting a case study of using agent based workflow to create a feature. Specifically we're using `agro` to build features on `agro`. 
+We're prsenting a case study of using agent based workflow to create a feature. In this case we're using `agro` to actually build features on `agro`. 
 
-More specfically we'll default to using `aider` with with `gemini-2.5-pro-preview-06-05` for our agent generations.
+We'll default to using `aider` as our agent with `gemini-2.5-pro-preview-06-05` for our model api.
 
 #### tl;dr
 - We use multiple agents to generate potential solutions to [task](https://github.com/sutt/agro/blob/example/implicit-arg/.public-agdocs/specs/implicit-taskfile.md).
@@ -179,7 +179,7 @@ tests/test_cli.py | 297 +++++++++++++++++++++++++++++++-----------------------
 3 files changed, 288 insertions(+), 147 deletions(-)
 
 ```
-So each solution changed the same files, roughly the same amount. This is generally a good sign as it means the model is handling it well.
+So each solution changed the same files, roughly the same amount. This is generally a good sign as it means the model is handling it well. For simple tasks (or even long-winded tasks that have an easy solution), you'll often see almost exact changes across multiple agent runs which is a signal either the task is a) straightforwardly solved b) mis-specified or was mis-understood by the agent.
  
 
 ### Check Tests
@@ -282,20 +282,27 @@ Other Commands:
   ...
 ```
 
-#### Get Testing Repo
+## Get Testing Repo
 
-We'll head over to another test repo to make testing surface area smaller (and less tied into the package development itself).
+We'll head over to another test repo to make testing surface area smaller (and less tied into the package development itself). This will help us assess some manual testing with quick agent completions and with minimal code diffs.
 
 ```bash
 git clone git@github.com:sutt/agro-demo.git
 cd agro-demo
 ```
 
+Now run commands in here with the prebuilt specs on this demo / testing repo.
+
 ### Manual Testing
 
-Having a decent idea of the spec requirements we have a good idea of how to test this 
+Having a manual tsting plan in-mind when you develop the spec is important for considering how to scope them. 
 
-We don't read all the AI's tests but they help the agents reason and check if this doesn't work.
+We don't want to examine the full changes before:
+- running the immediately testable core functionality
+- running any easily runnable, and easily thought of edge cases
+
+This way we can accelerate the time to declaring a solution kaput, and switching solutions, or refining the task and regenerating a solution. It's important to not get too invested in details of the actual code updates immediately.
+
 
 ### Understanding the changes
 Now that this looks like a winning solution, let's take a look at how it was implemented:
@@ -304,6 +311,7 @@ Now that this looks like a winning solution, let's take a look at how it was imp
 - parsing logic in `_dispatch_exec`
 - updates to argparse setup and help text
 - task file match logic: fuzzy name and most-recent
+- **Overall:** it's on the verbose and clunky side but still seems to work
 
 ##### `tests` changes
 - There needs to be a refactoring of the existing tests structure
@@ -320,10 +328,11 @@ Now that this looks like a winning solution, let's take a look at how it was imp
     - missing the things i'd really check like permutation of the three optional positional args in different orders.
     - one key property they are missing: they don't really check the filesystem logic, the mocks just help bypass any need to do this.
       - This is OK and maybe the correct way to write these unittests, but means that the functionality might not be fully functional when we go to use it on an actual filesystem.
+- **Overall: We don't usually read all the AI's tests** but they help the agents reason and check if this future changes impact assumption made in this solution.
 
 ### Repeated commits from aider
 
-When we examine the git log of the correct solution we see two 
+When we examine the git log of the correct solution we see **two commits** were made by the agent:
 
 ```
 commit c2e787d00c14a16be0067c7f7972a5e35e268ed3
@@ -339,7 +348,7 @@ Date:   Tue Jul 8 19:02:27 2025 -0400
     feat: Make exec taskfile optional/positional, add discovery & -c alias
 ```
 
-If we examine the aider chat history we see:
+If we examine the aider chat history we see what happend: After the first commit was made, a commit hook ran `flake8` which surfaced several `F821 - undefined name` error with a line number, which allowed the agent to generate new edits which fixed it producing working app with the second commit.
 
 ```
 +> Commit 1c5bb98 feat: Make exec taskfile optional/positional, add discovery & -c alias  
@@ -393,13 +402,9 @@ If we examine the aider chat history we see:
 
 This shows the power of giving the agent the ability to run commands on the repo, in this case linting.
 
-#### Summary of state of pytest
 
-Also when we ran pytest in Agent3 and passed in the results it was able to fix itself with aider by refactoring the tests. (Not true of Agent2). This shows a shortcoming of aider doesn't t ruly run in "yolo" mode with ability to run arbitrary bash commands.
 
-So this will need to be an improvement.
-
-### Other Agent Runs
+### Other Agent Runs: Self fixing pytest
 
 One interesting one was Agent3 had pytest initially fail, but when the output text from the pytest result was passed in it was able to fix itself.
 
@@ -518,5 +523,7 @@ uv run pytest
 
 ```
 
-The end.
+This shows a shortcoming of aider: that it doesn't truly run in "yolo" mode with ability to run arbitrary bash commands; it can run linting hooks on commit but not shell out to pytest in agent mode. So this will need to be an improvement.
+
+**The end of case study #1.**
 
