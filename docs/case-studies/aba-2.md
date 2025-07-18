@@ -42,6 +42,8 @@ cat .agdocs/specs/agent-var.md | claude -p --allowedTools "Write Edit MultiEdit"
 Add an optional -a/--agent-type flag to exec for agent type to modify 
 ```
 
+**nota bene -** this got swapped in my records and the addition was actually added to v1 instead of v2.
+
 ### Tweaks on Top
 
 After finding a solution we are looking for manual testing made it clear the cli option was a little clunky, to call an agent that wasn't the default you either had to edit the config var or pass the same info twice on cli in `agent-type` and the `exec-cmd` args. Since these were undesirable it created the need for one more task 
@@ -114,10 +116,20 @@ So this is the pattern of:
  src/agro/core.py   |  58 ++++++++++++++------
  tests/test_cli.py  | 154 +++++++++++++++++++++++++++++++++++++++++++++++++++++
  4 files changed, 253 insertions(+), 17 deletions(-)
-
 ```
 
 **Tests:** 
 - before: 24
 - after: 28
 - added: 4
+
+### Conclusion
+
+We know that the weakness of _vide coding_ is trying to produce too large of a solution because it can approach the problem in a way that is wrong - either the intent is incorrect or the solution has bugs. The solution workflow here is to:
+- Break one task into multiple smaller specs
+    - review the first spec solutions and accept the solution before launching the second spec by checking out the branch of the accepted solution.
+- Change your prompt instead of changing the solution when the first generation misses intent.
+    - We saw this by changing `clientargs-config.md -> clientargs-config-v2.md`
+- Once the manual fixes are minimal, that's when we perform coding manually and modify the behavior after testing as we did with `infer-model.md`.
+
+Happy Coding :)
