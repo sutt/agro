@@ -1,5 +1,7 @@
 # Workflows
 
+> ⚠️ **Warning**: Everything in this section is ai-generated and not accurate. We'll refine later.
+
 Common development patterns and workflows using Agro for agent-based development.
 
 ## Overview

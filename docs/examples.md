@@ -1,5 +1,7 @@
 # Examples
 
+> ⚠️ **Warning**: Everything in this section is ai-generated and not accurate. We'll refine later.
+
 Real-world examples demonstrating Agro's capabilities across different development scenarios.
 
 ## Basic Examples

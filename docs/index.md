@@ -13,13 +13,6 @@ Welcome to the Agro documentation! Agro is a powerful CLI tool for managing git 
 - [⚙️ Configuration](configuration.md) - Setting up agro.conf.yml and environment variables
 - [🤖 Agents](agents.md) - Supported agents and their configuration
 
-### Advanced Usage
-- [🔄 Workflows](workflows.md) - Common development patterns and best practices
-- [📝 Examples](examples.md) - Practical use cases and code samples
-
-### Reference
-- [🔧 Troubleshooting](troubleshooting.md) - Common issues and solutions
-- [🤝 Contributing](contributing.md) - Development guidelines and contribution process
 
 ---
 
@@ -57,17 +50,22 @@ agro init
 
 # Create a task specification
 agro task add-feature
+# This will add a file .agdocs/specs/add-feature.md
+# It should be opened in automatically in your editor ...
 # Edit the task file with your requirements
 
 # Run 3 agents in parallel
 agro exec add-feature 3
 
 # Compare results across worktrees
-agro state
 agro muster 'npm test' output/add-feature
 ```
 
 ---
+
+### Tutorial & Demo
+
+See a simple tutorial here with prebuilt tasks for a python FastAPI server project: https://github.com/sutt/agro-demo
 
 ## Philosophy
 
@@ -91,3 +89,16 @@ Agro embraces the principle of **"no magic"** - it's built on standard git opera
 ---
 
 > ⚠️ **Warning**: This documentation is under active development. Some sections may contain TODO markers where additional information is needed.
+
+# This is all up-in-air
+
+> ⚠️ **Warning**: Everything in this section is ai-generated and not accurate. We'll refine later.
+
+
+### Advanced Usage
+- [🔄 Workflows](workflows.md) - Common development patterns and best practices
+- [📝 Examples](examples.md) - Practical use cases and code samples
+
+### Reference
+- [🔧 Troubleshooting](troubleshooting.md) - Common issues and solutions
+- [🤝 Contributing](contributing.md) - Development guidelines and contribution process

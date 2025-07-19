@@ -16,7 +16,7 @@ Complete reference for all Agro CLI commands and their options.
 | [`agro surrender`](#agro-surrender) | Kill running agents |
 | [`agro make`](#agro-make) | Create worktrees |
 | [`agro delete`](#agro-delete) | Delete worktrees |
-| [`agro mirror`](#agro-mirror) | Mirror internal docs |
+| [`agro mirror`](#agro-mirror) | Mirror internal .agdocs |
 
 ## Global Options
 
@@ -153,6 +153,8 @@ Agro resolves arguments in this order:
 3. **Agent command**: Remaining string argument or `-c` flag
 4. **Agent type**: `-a` flag or inferred from exec-cmd
 
+> 💡 **Tip**: If you don't specify a task-file argument, aider will ask you if you want to run the most recently modified spec file you and you can press Enter to run it.
+
 ### Examples
 
 ```bash
@@ -169,11 +171,12 @@ agro exec add-feature claude
 agro exec add-feature -c "aider --model gpt-4"
 
 # With agent arguments
-agro exec add-feature -- --model gpt-4 --no-auto-commits
+agro exec add-feature --model gpt-4 --no-auto-commits
 
 # All options
 agro exec add-feature -n 2 -a claude --fresh-env
 ```
+
 
 ---
 
@@ -255,16 +258,16 @@ agro muster [options] <command> <branch-patterns...>
 agro muster 'npm test' 'output/add-feature'
 
 # Check git status
-agro muster 'git status' 'output/*'
+agro muster 'git status' output
 
 # Start servers in background
-agro muster --server 'python app.py' 'output/api'
+agro muster --server 'python app.py' output/api
 
 # Kill background servers
-agro muster --kill-server '' 'output/api'
+agro muster --kill-server '' output/api
 
 # Run specific command in selected worktrees
-agro muster 'pytest tests/test_auth.py' 'output/auth.{1,2}'
+agro muster 'pytest tests/test_auth.py' output/auth.{1,2}
 ```
 
 ---
@@ -331,13 +334,13 @@ agro fade <patterns...>
 
 ```bash
 # Delete all feature branches
-agro fade 'output/add-feature.*'
+agro fade output/add-feature.
 
 # Delete specific branches
-agro fade 'output/add-feature.{1,3}'
+agro fade output/add-feature.{1,3}
 
 # Delete multiple patterns
-agro fade 'output/feature.*' 'output/bugfix.*'
+agro fade output/feature.
 ```
 
 ---
@@ -472,58 +475,26 @@ agro mirror
 
 ### Behavior
 
-> **TODO**: Document the specific mirroring behavior
+Copies documentation from `.agdocs/` to `.public-agdocs/` directory for public access.
 
-Copies documentation from `.agdocs/` to `docs/` directory for public access.
+By default, the .agdocs directory is added to .gitignore to keep your spec files detached from your source code and enable easier branch switching in the process of editing specs. But there are benefits to posting your spec files like this [one created for agro](https://github.com/sutt/agro/blob/master/docs/dev-summary-v1.md) for a reflection of your developer momentum.
+
+The mirror command runs rsync to create copies of the specs. The practice on the agro project is run this before each version release as can be seen [here](https://github.com/sutt/agro/commit/85915a6c281f7a0756e3118cf79354ca50e185c7).
 
 ---
-
-## Command Composition
-
-### Chaining Commands
-
-```bash
-# Create task and run immediately
-agro task new-feature && agro exec new-feature
-
-# Run agents, check status, then compare
-agro exec add-api 3 && agro state && agro muster 'git log --oneline -5' output/add-api
-```
 
 ### Workflow Examples
 
 ```bash
 # Complete workflow
-agro init                                    # Initialize project
+agro init                                   # Initialize agro project
 agro task add-auth                          # Create task
 agro exec add-auth 2                        # Run 2 agents
 agro muster 'npm test' output/add-auth      # Test results
 agro grab output/add-auth.1                 # Switch to best solution
 git merge output/add-auth.1                 # Merge to main
-agro fade 'output/add-auth.*'               # Clean up branches
+agro fade output/add-auth                   # Clean up branches
 ```
-
----
-
-## Exit Codes
-
-| Code | Description |
-|------|-------------|
-| 0 | Success |
-| 1 | General error |
-| 2 | Invalid arguments |
-| 3 | File not found |
-| 4 | Git operation failed |
-
----
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `AGRO_EDITOR` | Editor for task files (overrides `$EDITOR`) |
-| `AGRO_CONFIG` | Path to configuration file |
-| `AGRO_VERBOSE` | Set to `1` for verbose output |
 
 ---
 

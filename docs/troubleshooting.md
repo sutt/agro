@@ -1,5 +1,7 @@
 # Troubleshooting
 
+> ⚠️ **Warning**: Everything in this section is ai-generated and not accurate. We'll refine later.
+
 Common issues and solutions when using Agro for agent-based development.
 
 ## Quick Diagnostics

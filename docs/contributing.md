@@ -1,5 +1,7 @@
 # Contributing to Agro
 
+> ⚠️ **Warning**: Everything in this section is ai-generated and not accurate. We'll refine later.
+
 Thank you for your interest in contributing to Agro! This guide will help you get started with development and contribution.
 
 ## Quick Start for Contributors
