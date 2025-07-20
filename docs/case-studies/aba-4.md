@@ -46,5 +46,11 @@ This will give us:
 
 This is just one example of how understanding your product / understanding how users use it, will help you steer the prompt in a valuable direction, more so than the ai could ever on its own.
 
+---
 
+## Navigation
+
+- [← Previous: ABA-3 - Documentation Generation with AI](aba-3.md)
+- [Case Studies Index](index.md)
+- [Next: ABA-5 - YOLO Mode and Command Execution →](aba-5.md)
 

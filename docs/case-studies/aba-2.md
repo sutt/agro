@@ -133,3 +133,11 @@ We know that the weakness of _vide coding_ is trying to produce too large of a s
 - Once the manual fixes are minimal, that's when we perform coding manually and modify the behavior after testing as we did with `infer-model.md`.
 
 Happy Coding :)
+
+---
+
+## Navigation
+
+- [← Previous: ABA-1 - Using Multiple Agents for Feature Development](aba-1.md)
+- [Case Studies Index](index.md)
+- [Next: ABA-3 - Documentation Generation with AI →](aba-3.md)

@@ -191,3 +191,10 @@ Overall we've generated very useful information at minimal cost.
 
 ##### Footnotes
 [0]: well, I guess it could look into `.git/` contents and construct this information somehow. But assuming there will be other situations where this info lives off the filesystem, like a remote database, and will need command execution to access.
+
+---
+
+## Navigation
+
+- [← Previous: ABA-4 - UX Considerations in AI Development](aba-4.md)
+- [Case Studies Index](index.md)

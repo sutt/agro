@@ -98,4 +98,10 @@ Does it work? Spot-checking looks good, including recognizing `do-docs-1` was no
 [summary-3.md](../../.public-agdocs/specs/summary-3.md)
 > add a field that links to a 6-char git sha entry  on the github repo: github.com/sutt/agro. Do your best guess to find the corresponding commit (available with commit message below). If your guess is too uncertain, or it appears there is no commit for it, place an n/a for this entry.
 
+---
 
+## Navigation
+
+- [← Previous: ABA-2 - Interactive Multi-prompt Development](aba-2.md)
+- [Case Studies Index](index.md)
+- [Next: ABA-4 - UX Considerations in AI Development →](aba-4.md)

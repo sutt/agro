@@ -527,3 +527,10 @@ This shows a shortcoming of aider: that it doesn't truly run in "yolo" mode with
 
 **The end of case study #1.**
 
+---
+
+## Navigation
+
+- [← Case Studies Index](index.md)
+- [Next: ABA-2 - Interactive Multi-prompt Development →](aba-2.md)
+
