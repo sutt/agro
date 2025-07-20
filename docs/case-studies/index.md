@@ -1,6 +1,6 @@
 # Case Studies Index
 
-This section contains case studies demonstrating how `agro` is used to build and enhance itself through AI-assisted development workflows.
+This section contains case studies in using `agro`. Specifically in this case how to use _**A**gro to **B**uild **A**gro (**"ABA"**)_. But the ideas and techniques can be transferred to other coding projects and even other agent frameworks.
 
 ## Table of Contents
 
@@ -11,6 +11,7 @@ This section contains case studies demonstrating how `agro` is used to build and
 | [ABA-3: Documentation Generation with AI](aba-3.md) | Covers using agents for documentation tasks like generating changelogs from git diffs and creating development summaries. Shows how AI can handle both structured documentation and content analysis. | July 14, 2025 |
 | [ABA-4: UX Considerations in AI Development](aba-4.md) | Examines the role of human intelligence in AI-assisted development, particularly around UX decisions and product design. Shows how understanding user workflows informs better task specifications. | July 15, 2025 |
 | [ABA-5: YOLO Mode and Command Execution](aba-5.md) | Compares different AI agents (Claude, Gemini, Aider) in "YOLO mode" for tasks requiring command execution. Demonstrates agent performance differences and the power of unrestricted command access. | July 16, 2025 |
+| [ABA-6: Docs Generation with AI](aba-6.md) | Generating a version1 docs section with agents, and a look at the required manual interventions to get something accurate. | July 20, 2025 |
 
 ## Navigation
 

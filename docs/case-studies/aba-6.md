@@ -220,3 +220,8 @@ Date:   Fri Jul 18 20:44:45 2025 -0400
 It will be interesting to see what having this information in the code repo to supplement prompts like an `llm.txt` / `llm-full.txt`.
 
 It will be interesting to see the next round of document generation when we add or modify features iv `v0.1.7` to see if it can map those changes into the docs.
+
+## Navigation
+
+- [← Previous: ABA-5 - YOLO Mode and Command Execution](aba-5.md)
+- [Case Studies Index](index.md)

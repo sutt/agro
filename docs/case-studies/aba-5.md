@@ -198,3 +198,4 @@ Overall we've generated very useful information at minimal cost.
 
 - [← Previous: ABA-4 - UX Considerations in AI Development](aba-4.md)
 - [Case Studies Index](index.md)
+- [Next: ABA-6 - Docs Generation with AI →](aba-6.md)
