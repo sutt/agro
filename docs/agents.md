@@ -67,8 +67,6 @@ Follow the instruction here ot install with npm: https://docs.anthropic.com/en/d
 
 ### Common Arguments
 
-> **TODO**: Document claude-code specific arguments
-
 | Argument | Description | Example |
 |----------|-------------|---------|
 | `--allowedTools` | Specify Claude model | `--allowedTools", "Write Edit MultiEdit"` |
@@ -89,8 +87,6 @@ Follow insturctions here to install with npm: https://github.com/google-gemini/g
 
 
 ### Common Arguments
-
-> **TODO**: Document gemini CLI specific arguments
 
 | Argument | Description | Example |
 |----------|-------------|---------|

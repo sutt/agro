@@ -13,6 +13,11 @@ Welcome to the Agro documentation! Agro is a powerful CLI tool for managing git 
 - [⚙️ Configuration](configuration.md) - Setting up agro.conf.yml and environment variables
 - [🤖 Agents](agents.md) - Supported agents and their configuration
 
+### Resources
+- [Dev Log](./dev-summary-v1.md) - View each prompt and taskfile and the associated solution for it.
+- [Case Studies](./case-studies/) - For viewing how Agro can be used on real-world tasks.
+- [Change Log](./CHANGELOG.md) - View changes for each release.
+
 
 ---
 
@@ -80,20 +85,9 @@ Agro embraces the principle of **"no magic"** - it's built on standard git opera
 
 ---
 
-## Need Help?
-
-- Check the [troubleshooting guide](troubleshooting.md) for common issues
-- Review the [examples](examples.md) for practical use cases
-- See the [contributing guide](contributing.md) to help improve Agro
-
----
-
-> ⚠️ **Warning**: This documentation is under active development. Some sections may contain TODO markers where additional information is needed.
-
 # This is all up-in-air
 
 > ⚠️ **Warning**: Everything in this section is ai-generated and not accurate. We'll refine later.
-
 
 ### Advanced Usage
 - [🔄 Workflows](workflows.md) - Common development patterns and best practices

@@ -84,6 +84,12 @@ Agro determines which agent to use based on:
 3. **Auto-detection**: Inferred from the optional `[exec-cmd]` or `-c` argument if the there is a string subset match. For example running `agro exec my-task wrapper-claude.sh` will run the claude agent type because "claude" is in the exec-cmd.
 4. **Fallback**: `aider` (default)
 
+### Agent Guide Documents
+
+Add instructions and best-practices for your repo you want to pass to your agents in `.agdocs/guides/GUIDE.md`. Or add any other markdown files (with the `.md` extension) to the `.agdocs/guides/` directory.
+
+Agro has functionality to pass this information into either aider, claude or gemini when you leaunch the ganet
+
 ## Task Specifications
 
 ### What are Task Specifications?

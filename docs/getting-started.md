@@ -235,4 +235,4 @@ Now that you have Agro running, explore:
 
 ---
 
-> ⚠️ **Warning**: If you encounter issues, check the [troubleshooting guide](troubleshooting.md) for common solutions, or please submit as an issue on the repo: https://github.com/sutt/agro/issues
+> ⚠️ **Warning**: If you encounter issues, please submit as an issue on the repo: https://github.com/sutt/agro/issues

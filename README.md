@@ -4,6 +4,11 @@ A script to manage git worktrees for agent-based development. This tool simplifi
 
 [![PyPI version](https://img.shields.io/pypi/v/agro)](https://pypi.org/project/agro/)
 
+- **View [Docs](./docs)**
+- **View [Case Studies](./docs/case-studies/)**
+- **View [AI Dev Log](./docs/dev-summary-v1.md)**
+
+---
 
 **Agro is** *simple*, *powerful*, *flexible* and *open-source*.
 
@@ -12,7 +17,7 @@ A script to manage git worktrees for agent-based development. This tool simplifi
     - Works in your terminal with git, no new tools to learn.
 - **Powerful:** compare the results of different coding agents.
     - Run agents in parallel with built in support for environment reproduction and unique env vars.
-- **Flexible:** 
+- **Flexible:** works with multiple different cli agents, models, and IDE / editors.
     - Works with all IDE's including: VSCode, Vim, Emacs, Cursor, and others.
 - **Open-source:** avoid lock-in and subscriptions for your development environment.
     - Agro is command line and always opensource. You can modify at will and share with others.
@@ -30,13 +35,11 @@ So you can take agro to your nineteen side-projects and four remote jobs, and it
 **Supported Agents:** _aider, claude code, gemini cli_
 - Shared context files
 - Customizable agent behavior
-- TODO make a table + icons
 
 **Supported Models:** _Anthropic, OpenAI, Google, Grok4 and more_
-- TODO: explain how to integrate with 
 
 ---
-**Agro-Builds-Agro:** If you think vibe-coding can't stand-up to multiple iterations, this is your chance to think again. Agro is 150 commits and going strong (roughly 80% ai generated). See the [Dev Log](./docs/dev-summary-v1.md) and [Case Studies](./docs/dev-summary-v1) to see a record of all the prompts and their accepted solutions.
+**Agro-Builds-Agro:** If you think vibe-coding can't stand-up to multiple iterations, this is your chance to think again. Agro is 150 commits and going strong (roughly 80% ai generated). See the [Dev Log](./docs/dev-summary-v1.md) and [Case Studies](./docs/case-studies) to see a record of all the prompts and their accepted solutions.
 
 ---
 
@@ -422,6 +425,8 @@ Three functionalities needed for the ai-generated workflow:
 
 
 ### Docs
+
+Check out the full docs here: [Agro Docs](./docs/index.md)
 
 ### Tutorials
 
