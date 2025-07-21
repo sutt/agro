@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.7]
+
+- Added `diff` command to show git diffs across worktrees with optional `--stat` flag
+- Added `clean` command to delete worktrees and/or branches with `--soft`/`--hard` options
+- Added `-c/--common-cmd` flag to `muster` command for executing pre-defined commands from configuration
+- Added `MUSTER_COMMON_CMDS` configuration option with default commands (`testq`, `server-start`, `server-kill`)
+- Enhanced `muster` command to automatically detect shell requirements and use default branch patterns when none specified
+- Improved configuration template generation with dynamically formatted sections for all config options
+- Major documentation expansion with comprehensive guides, examples, case studies, and API documentation
+- Extensive README updates with improved quickstart, feature descriptions, and usage examples
+- Removed deprecated `syncdocs` script in favor of built-in mirror functionality
+- Added comprehensive test coverage for new diff, clean, and muster functionality
+
 ## [0.1.6]
 
 - **BREAKING**: Removed `-t/--tree-indices` flag from `exec` command - use branch patterns with other commands instead
