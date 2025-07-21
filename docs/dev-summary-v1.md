@@ -1,6 +1,22 @@
 # Dev Summary
 Looks at tasks and associated commit solutions generated each release.
 
+## v0.1.7
+
+| Task File | Contents (truncated) | Accepted SHA |
+|------|-------------|---------|
+| [update-docs-1.7.md](../.public-agdocs/specs/update-docs-1.7.md) | Your task is to update the existing documentation in ./docs/ to account for changes to expected behavior of agro cli tool. You'll be given a diff of... | [94e783](https://github.com/sutt/agro/commit/94e783) |
+| [changelog-1.7.md](../.public-agdocs/specs/changelog-1.7.md) | Below is a diff from v0.1.6 to v0.1.7. Add entries to docs/CHANGELOG.md to describe the changes One thing to note is there was many changes to docs/... | [2655c3](https://github.com/sutt/agro/commit/2655c3) |
+| [defaults-config-flow.md](../.public-agdocs/specs/defaults-config-flow.md) | refactor the config file init generation logic for the following request: in core._get_config_template() utilize values supplied from config.DEFAULTS... | [0555fb](https://github.com/sutt/agro/commit/0555fb) |
+| [rm-kill-server.md](../.public-agdocs/specs/rm-kill-server.md) | refactor the --server and --kill-server cli flags and functionality: make these work off the pattern establish in MUSTER_COMMON_CMDS where the command... | [dff6bf](https://github.com/sutt/agro/commit/dff6bf) |
+| [v2-muster-common.md](../.public-agdocs/specs/v2-muster-common.md) | Make the following args optional in agro muster: agro muster [command] [branch-pattern] Add an opt to "agro muster": -c/--common-cmd which accepts a str... | [4bcafd](https://github.com/sutt/agro/commit/4bcafd) |
+| [muster-cmd-opt.md](../.public-agdocs/specs/muster-cmd-opt.md) | make the command_str/command arg optional and not valid in "agro muster" when the -c flag is passed. For examples: agro muster -c my_command 'git log'... | [4bcafd](https://github.com/sutt/agro/commit/4bcafd) |
+| [muster-common-cmds.md](../.public-agdocs/specs/muster-common-cmds.md) | add an opt to "agro muster": -c/--common-cmd used as e.g. "agro muster -c testq output/add.about.{1,2}" When the -c flag is used with an argument, agro... | [b21eb0](https://github.com/sutt/agro/commit/b21eb0) |
+| [clean-cmd.md](../.public-agdocs/specs/clean-cmd.md) | add an "agro clean" command: agro clean [opts] [branch-pattern] opts: --soft, --hard (default) This command will act as compound command for the exist... | [3a3957](https://github.com/sutt/agro/commit/3a3957) |
+| [diff-cmd.md](../.public-agdocs/specs/diff-cmd.md) | create an "agro diff" command: > agro diff [opts] [branch-pattern] This command will call "git diff [args]" command on each worktree that matches branch... | [c9f2a6](https://github.com/sutt/agro/commit/c9f2a6) |
+| [index-casestudies.md](../.public-agdocs/specs/index-casestudies.md) | add an index.md for ./docs/case-studies and link each of the case studies. provide a quick summary of each of these articles in this table of contents... | [cc1348](https://github.com/sutt/agro/commit/cc1348) |
+| [summary-3.md](../.public-agdocs/specs/summary-3.md) | Add the updated files to a markdown table in docs/dev-summary-v1.md for v0.1.5 with a row containing: - just the filename and have it be linked with rel... | [1f788d](https://github.com/sutt/agro/commit/1f788d) |
+
 ## v0.1.6
 
 | Task File | Contents (truncated) | Accepted SHA | Non-test Diffs | Test Diffs |
