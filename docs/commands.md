@@ -11,8 +11,10 @@ Complete reference for all Agro CLI commands and their options.
 | [`agro exec`](#agro-exec) | Run agents in worktrees |
 | [`agro state`](#agro-state) | Show worktree status |
 | [`agro muster`](#agro-muster) | Run commands in worktrees |
+| [`agro diff`](#agro-diff) | Show git diffs for worktrees |
 | [`agro grab`](#agro-grab) | Switch to a branch |
 | [`agro fade`](#agro-fade) | Delete branches |
+| [`agro clean`](#agro-clean) | Delete worktrees and branches |
 | [`agro surrender`](#agro-surrender) | Kill running agents |
 | [`agro make`](#agro-make) | Create worktrees |
 | [`agro delete`](#agro-delete) | Delete worktrees |
@@ -226,22 +228,21 @@ Run commands across multiple worktrees.
 ### Usage
 
 ```bash
-agro muster [options] <command> <branch-patterns...>
+agro muster [options] [command] [branch-patterns...]
 ```
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `-s, --server` | Run as background server |
-| `-k, --kill-server` | Kill background server |
+| `-c, --common-cmd <key>` | Run a pre-defined command from configuration |
 
 ### Parameters
 
 | Parameter | Description |
 |-----------|-------------|
-| `command` | Command to execute in each worktree |
-| `branch-patterns` | Patterns to match worktrees |
+| `command` | Command to execute in each worktree (optional if using -c) |
+| `branch-patterns` | Patterns to match worktrees (defaults to output branches) |
 
 ### Branch Patterns
 
@@ -260,14 +261,76 @@ agro muster 'npm test' 'output/add-feature'
 # Check git status
 agro muster 'git status' output
 
-# Start servers in background
-agro muster --server 'python app.py' output/api
+# Run quick tests using common command
+agro muster -c testq output/add-feature
 
-# Kill background servers
-agro muster --kill-server '' output/api
+# Start servers using common command
+agro muster -c server-start output/api
+
+# Kill servers using common command  
+agro muster -c server-kill output/api
 
 # Run specific command in selected worktrees
 agro muster 'pytest tests/test_auth.py' output/auth.{1,2}
+
+# Run command in all output branches (default pattern)
+agro muster 'git status'
+```
+
+### Common Commands
+
+Use `-c` flag to run pre-defined commands from your configuration:
+
+| Key | Default Command | Description |
+|-----|-----------------|-------------|
+| `testq` | `uv run pytest --tb=no -q` | Run quick tests |
+| `server-start` | `uv run python app/main.py > server.log 2>&1 & echo $! > server.pid` | Start server in background |
+| `server-kill` | `kill $(cat server.pid) && rm -f server.pid server.log` | Kill server and cleanup |
+
+> **Note**: Common commands can be customized in your `.agdocs/conf/agro.conf.yml` configuration file.
+
+---
+
+## agro diff
+
+Show git diff for specified worktrees.
+
+### Usage
+
+```bash
+agro diff [options] [branch-patterns...]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--stat` | Show diffstat instead of full diff |
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `branch-patterns` | Optional patterns to filter worktrees (defaults to all) |
+
+### Behavior
+
+Shows the git diff between the original worktree branch (tree/tN) and the current HEAD for each matching worktree. This allows you to see what changes each agent made.
+
+### Examples
+
+```bash
+# Show diff for all worktrees
+agro diff
+
+# Show diffstat for specific pattern
+agro diff --stat output/add-feature
+
+# Show diff for multiple patterns
+agro diff output/feature output/bugfix
+
+# Show diff for specific worktrees
+agro diff output/add-feature.{1,3}
 ```
 
 ---
@@ -341,6 +404,58 @@ agro fade output/add-feature.{1,3}
 
 # Delete multiple patterns
 agro fade output/feature.
+```
+
+---
+
+## agro clean
+
+Delete worktrees and/or associated branches matching patterns.
+
+### Usage
+
+```bash
+agro clean [options] [branch-patterns...]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--soft` | Only delete worktrees, not the branches |
+| `--hard` | Delete both worktrees and branches (default) |
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `branch-patterns` | Optional patterns to select what to clean (defaults to output branches) |
+
+### Behavior
+
+1. Shows a dry run preview of what will be deleted
+2. Prompts for confirmation  
+3. Deletes matching worktrees
+4. In hard mode (default), also deletes the associated branches
+5. Skips branches currently checked out
+
+### Examples
+
+```bash
+# Clean all output branches (hard delete - both worktrees and branches)
+agro clean
+
+# Clean specific feature branches
+agro clean output/add-feature
+
+# Only delete worktrees, keep branches
+agro clean --soft output/feature
+
+# Clean multiple patterns
+agro clean output/feature output/bugfix
+
+# Clean specific worktrees
+agro clean output/add-feature.{1,3}
 ```
 
 ---
@@ -490,10 +605,11 @@ The mirror command runs rsync to create copies of the specs. The practice on the
 agro init                                   # Initialize agro project
 agro task add-auth                          # Create task
 agro exec add-auth 2                        # Run 2 agents
-agro muster 'npm test' output/add-auth      # Test results
+agro muster -c testq output/add-auth        # Test results using common command
+agro diff --stat output/add-auth            # Review changes made by agents
 agro grab output/add-auth.1                 # Switch to best solution
 git merge output/add-auth.1                 # Merge to main
-agro fade output/add-auth                   # Clean up branches
+agro clean output/add-auth                  # Clean up worktrees and branches
 ```
 
 ---

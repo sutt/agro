@@ -122,8 +122,8 @@ _Note: this will start at tree 2 since we've already created 1 in the first exam
 Use the `muster` command to run commands across all worktrees:
 
 ```bash
-# Run tests in all worktrees
-agro muster 'git show --stat' output/hello.world
+# Run tests in all worktrees  
+agro muster -c testq output/hello-world
 ```
 
 ### 3. Select the Best Solution
@@ -142,11 +142,11 @@ After reviewing the outputs, you can:
 
 2. **Clean up branches**:
    ```bash
-   # First, delete all worktrees
-   agro delete --all
-
-   # Delete specific branches
-   agro fade output/hello-world.{1-4}
+   # Clean up worktrees and branches in one command
+   agro clean output/hello-world
+   
+   # Or delete all worktrees and branches
+   agro clean
    ```
 
 ## Demo Project
@@ -164,7 +164,7 @@ agro exec add-about claude   # 1 claude agent
 agro exec add-about gemini   # 1 gemini agent
 
 # Run servers in parallel
-agro muster --server 'uv run python app/main.py' output
+agro muster -c server-start output
 
 # Test the results
 curl http://localhost:8001/about
@@ -173,7 +173,7 @@ curl http://localhost:8003/about
 curl http://localhost:8004/about
 
 # Clean up
-agro muster --kill-server '' output
+agro muster -c server-kill output
 ```
 
 ## Common Commands
@@ -184,9 +184,10 @@ agro muster --kill-server '' output
 | `agro task <name>` | Create a new task specification |
 | `agro exec <task> [count]` | Run agents on a task |
 | `agro muster '<cmd>' <pattern>` | Run command in matching worktrees |
+| `agro muster -c <key> <pattern>` | Run common command in matching worktrees |
+| `agro diff [pattern]` | Show changes made by agents |
 | `agro grab <branch>` | Switch to a branch |
-| `agro delete --all` | Delete all worktrees |
-| `agro fade <pattern>` | Delete branches matching pattern |
+| `agro clean [pattern]` | Delete worktrees and branches |
 | `agro state` | Show worktree status |
 
 ## Environment Setup

@@ -54,6 +54,34 @@ AGENT_TIMEOUTS:
   gemini: 600
 ```
 
+### Muster Common Commands
+
+Define reusable commands for the `agro muster -c` functionality:
+
+```yaml
+MUSTER_COMMON_CMDS:
+  testq: 'uv run pytest --tb=no -q'
+  server-start: 'uv run python app/main.py > server.log 2>&1 & echo $! > server.pid'
+  server-kill: 'kill $(cat server.pid) && rm -f server.pid server.log'
+  build: 'npm run build'
+  lint: 'npm run lint'
+```
+
+These commands can then be executed across worktrees using:
+
+```bash
+# Run quick tests in all output branches
+agro muster -c testq
+
+# Start servers in specific branches
+agro muster -c server-start output/api
+
+# Custom build command
+agro muster -c build output/frontend.{1,2}
+```
+
+> **Tip**: Common commands support shell features like pipes, redirects, and background processes. Agro automatically detects when shell execution is needed.
+
 ### Env & Port Management
 
 Configure how ports are assigned to worktrees:
