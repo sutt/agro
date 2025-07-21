@@ -34,8 +34,8 @@
 # Commands to set up the Python environment in a new worktree.
 # For example, to install all optional dependency groups with uv:
 # ENV_SETUP_CMDS:
-#   - "uv venv"
-#   - "uv sync --quiet --all-extras"
+#   - 'uv venv'
+#   - 'uv sync --quiet --group test'
 
 
 # --- Agent Execution ---
@@ -50,13 +50,10 @@ EXEC_CMD_DEFAULT: maider.sh
 # Agent-specific configuration.
 # AGENT_CONFIG:
 #   aider:
-#     task_file_arg_template: ["-f", "{task_file}"]
 #     args: ["--yes", "--no-check-update", "--no-attribute-author", "--no-attribute-committer", "--no-attribute-co-authored-by"]
 #   claude:
-#     task_file_arg_template: null
 #     args: ["-d", "--allowedTools", "Write Edit MultiEdit", "--max-turns", "30", "-p"]
 #   gemini:
-#     task_file_arg_template: null
 #     args: ["-y"]
 
 # Agent-specific timeout settings in seconds.
@@ -69,12 +66,11 @@ EXEC_CMD_DEFAULT: maider.sh
 # Default command to open spec files with 'agro task'.
 # AGRO_EDITOR_CMD: code
 
-
 # --- Muster ---
 
 # Pre-defined commands for 'agro muster -c'.
 MUSTER_COMMON_CMDS:
-  testq: "uv run pytest --tb=no -q"
-  server-start: "uv run python app/main.py > server.log 2>&1 & echo $! > server.pid"
-  server-kill: "kill $(cat server.pid) && rm -f server.pid server.log"
-  gitone: "git log -n 1 --oneline"
+  testq: 'uv run pytest --tb=no -q'
+  gitlog: 'git log -n 1'
+#   server-start: 'uv run python app/main.py > server.log 2>&1 & echo $! > server.pid'
+#   server-kill: 'kill $(cat server.pid) && rm -f server.pid server.log'
