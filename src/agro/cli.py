@@ -117,24 +117,15 @@ def _dispatch_muster(args):
             # Positional command_str is treated as a branch pattern when -c is used
             branch_patterns.insert(0, command_str)
         command_str = None  # Command will be looked up from config
-    elif args.kill_server:
-        if command_str:
-            branch_patterns.insert(0, command_str)
-        command_str = None  # It will be ignored by muster_command
     elif not command_str:
         raise ValueError(
             "Muster command requires a command string or -c/--common-cmd option."
         )
 
-    if args.server and not command_str and not common_cmd_key:
-        raise ValueError("--server requires a command string or -c/--common-cmd.")
-
     core.muster_command(
         command_str=command_str,
         branch_patterns=branch_patterns,
         common_cmd_key=common_cmd_key,
-        server=args.server,
-        kill_server=args.kill_server,
         show_cmd_output=(args.verbose >= 2),
     )
 
@@ -178,8 +169,6 @@ Common options for 'make' and 'exec':
 
 Options for 'muster':
   -c, --common-cmd <key> Run a pre-defined command from config.
-  -s, --server        Run command as a background server (and log server PID)
-  -k, --kill-server   Kill the background server and clean up pid/log files.
 
 Options for 'diff':
   --stat              Show diffstat instead of full diff.
@@ -352,18 +341,6 @@ Options for 'init':
         nargs="*",
         default=[],
         help="One or more branch patterns. Defaults to output branches.",
-    )
-    parser_muster.add_argument(
-        "-s",
-        "--server",
-        action="store_true",
-        help="Run command as a background server, redirecting output and saving PID.",
-    )
-    parser_muster.add_argument(
-        "-k",
-        "--kill-server",
-        action="store_true",
-        help="Kill the background server and clean up pid/log files.",
     )
     parser_muster.set_defaults(func=_dispatch_muster)
 

@@ -475,8 +475,6 @@ def test_dispatch_muster(mock_muster_command):
         command_str="ls",
         branch_patterns=["p1"],
         common_cmd_key=None,
-        server=False,
-        kill_server=False,
         verbose=0,
     )
     _dispatch_muster(args)
@@ -484,8 +482,6 @@ def test_dispatch_muster(mock_muster_command):
         command_str="ls",
         branch_patterns=["p1"],
         common_cmd_key=None,
-        server=False,
-        kill_server=False,
         show_cmd_output=False,
     )
     mock_muster_command.reset_mock()
@@ -495,8 +491,6 @@ def test_dispatch_muster(mock_muster_command):
         command_str="p1",
         branch_patterns=[],
         common_cmd_key="testq",
-        server=False,
-        kill_server=False,
         verbose=0,
     )
     _dispatch_muster(args)
@@ -504,8 +498,6 @@ def test_dispatch_muster(mock_muster_command):
         command_str=None,
         branch_patterns=["p1"],
         common_cmd_key="testq",
-        server=False,
-        kill_server=False,
         show_cmd_output=False,
     )
     mock_muster_command.reset_mock()
@@ -515,8 +507,6 @@ def test_dispatch_muster(mock_muster_command):
         command_str=None,
         branch_patterns=[],
         common_cmd_key="testq",
-        server=False,
-        kill_server=False,
         verbose=0,
     )
     _dispatch_muster(args)
@@ -524,8 +514,6 @@ def test_dispatch_muster(mock_muster_command):
         command_str=None,
         branch_patterns=[],
         common_cmd_key="testq",
-        server=False,
-        kill_server=False,
         show_cmd_output=False,
     )
     mock_muster_command.reset_mock()
@@ -535,32 +523,10 @@ def test_dispatch_muster(mock_muster_command):
         command_str=None,
         branch_patterns=[],
         common_cmd_key=None,
-        server=False,
-        kill_server=False,
         verbose=0,
     )
     with pytest.raises(ValueError):
         _dispatch_muster(args)
-
-    # kill server with pattern
-    args = argparse.Namespace(
-        command_str="p1",
-        branch_patterns=[],
-        common_cmd_key=None,
-        server=False,
-        kill_server=True,
-        verbose=0,
-    )
-    _dispatch_muster(args)
-    mock_muster_command.assert_called_once_with(
-        command_str=None,
-        branch_patterns=["p1"],
-        common_cmd_key=None,
-        server=False,
-        kill_server=True,
-        show_cmd_output=False,
-    )
-    mock_muster_command.reset_mock()
 
 
 @patch("agro.cli.core.exec_agent")

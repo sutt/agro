@@ -213,6 +213,8 @@ def _get_config_template():
 # Pre-defined commands for 'agro muster -c'.
 # MUSTER_COMMON_CMDS:
 #   testq: 'uv run pytest --tb=no -q'
+#   server-start: 'uv run python -m http.server > server.log 2>&1 & echo $! > server.pid'
+#   server-kill: 'kill $(cat server.pid) && rm -f server.pid server.log'
 """
 
 
@@ -946,15 +948,10 @@ def diff_worktrees(branch_patterns, stat=False, show_cmd_output=False):
 def muster_command(
     command_str,
     branch_patterns,
-    server=False,
-    kill_server=False,
     show_cmd_output=False,
     common_cmd_key=None,
 ):
     """Runs a command in multiple worktrees."""
-    if server and kill_server:
-        raise ValueError("--server and --kill-server cannot be used together.")
-
     if common_cmd_key:
         final_command_str = config.MUSTER_COMMON_CMDS.get(common_cmd_key)
         if not final_command_str:
@@ -988,25 +985,16 @@ def muster_command(
 
     worktree_state = get_worktree_state(show_cmd_output=show_cmd_output)
 
-    use_shell = False
+    if not final_command_str:
+        raise ValueError("Empty command provided.")
 
-    if kill_server:
-        final_command_str = "kill $(cat server.pid) && rm -f server.pid server.log"
-        use_shell = True
-    elif server:
-        if not final_command_str or not final_command_str.strip():
-            raise ValueError("Empty command provided for --server.")
-        final_command_str = f"{final_command_str} > server.log 2>&1 & echo $! > server.pid"
-        use_shell = True
+    # Detect if shell is needed for complex commands (e.g., with pipes, redirects)
+    shell_chars = ['|', '&', ';', '<', '>', '(', ')', '$', '`']
+    use_shell = any(char in final_command_str for char in shell_chars)
 
     if use_shell:
         command = final_command_str
     else:
-        if not final_command_str:
-            # This can happen with `agro muster --kill-server`
-            if kill_server:
-                return # It's handled by use_shell=True path
-            raise ValueError("Empty command provided.")
         command = shlex.split(final_command_str)
         if not command:
             raise ValueError("Empty command provided.")

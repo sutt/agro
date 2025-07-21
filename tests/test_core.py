@@ -516,11 +516,15 @@ def test_muster_command(
     mock_get_indices.return_value = [1]
     mock_get_worktree_state.return_value = {"t1": "output/branch.1"}
     mock_path.return_value.is_dir.return_value = True
-    mock_config.MUSTER_COMMON_CMDS = {"testq": "uv run pytest -q"}
+    mock_config.MUSTER_COMMON_CMDS = {
+        "testq": "uv run pytest -q",
+        "server-start": "my-app --daemon > server.log 2>&1 &",
+        "server-kill": "kill $(cat server.pid)",
+    }
     mock_config.WORKTREE_OUTPUT_BRANCH_PREFIX = "output/"
     mock_config.AGDOCS_DIR = ".agdocs"
 
-    # Test with common command
+    # Test with common command (no shell)
     core.muster_command(
         command_str=None,
         branch_patterns=["output/branch.1"],
@@ -535,7 +539,7 @@ def test_muster_command(
     )
     mock_run_command.reset_mock()
 
-    # Test with positional command
+    # Test with positional command (no shell)
     core.muster_command(
         command_str="ls -l",
         branch_patterns=["output/branch.1"],
@@ -545,6 +549,36 @@ def test_muster_command(
         ["ls", "-l"],
         cwd=str(mock_path.return_value / "t1"),
         shell=False,
+        show_cmd_output=True,
+    )
+    mock_run_command.reset_mock()
+
+    # Test with server-start common command (needs shell)
+    core.muster_command(
+        command_str=None,
+        branch_patterns=["output/branch.1"],
+        common_cmd_key="server-start",
+        show_cmd_output=True,
+    )
+    mock_run_command.assert_called_once_with(
+        "my-app --daemon > server.log 2>&1 &",
+        cwd=str(mock_path.return_value / "t1"),
+        shell=True,
+        show_cmd_output=True,
+    )
+    mock_run_command.reset_mock()
+
+    # Test with server-kill common command (needs shell)
+    core.muster_command(
+        command_str=None,
+        branch_patterns=["output/branch.1"],
+        common_cmd_key="server-kill",
+        show_cmd_output=True,
+    )
+    mock_run_command.assert_called_once_with(
+        "kill $(cat server.pid)",
+        cwd=str(mock_path.return_value / "t1"),
+        shell=True,
         show_cmd_output=True,
     )
     mock_run_command.reset_mock()

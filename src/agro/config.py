@@ -47,6 +47,7 @@ DEFAULTS = {
     },
     'MUSTER_COMMON_CMDS': {
         'testq': 'uv run pytest --tb=no -q',
+        'server-kill': 'kill $(cat server.pid) && rm -f server.pid server.log',
     },
     'AGRO_EDITOR_CMD': 'code',
     'ENV_SETUP_CMDS': [
