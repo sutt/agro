@@ -106,6 +106,39 @@ def _dispatch_exec(args):
     )
 
 
+def _dispatch_muster(args):
+    """Helper to dispatch muster command with complex argument parsing."""
+    command_str = args.command_str
+    branch_patterns = args.branch_patterns
+    common_cmd_key = args.common_cmd_key
+
+    if common_cmd_key:
+        if command_str:
+            # Positional command_str is treated as a branch pattern when -c is used
+            branch_patterns.insert(0, command_str)
+        command_str = None  # Command will be looked up from config
+    elif args.kill_server:
+        if command_str:
+            branch_patterns.insert(0, command_str)
+        command_str = None  # It will be ignored by muster_command
+    elif not command_str:
+        raise ValueError(
+            "Muster command requires a command string or -c/--common-cmd option."
+        )
+
+    if args.server and not command_str and not common_cmd_key:
+        raise ValueError("--server requires a command string or -c/--common-cmd.")
+
+    core.muster_command(
+        command_str=command_str,
+        branch_patterns=branch_patterns,
+        common_cmd_key=common_cmd_key,
+        server=args.server,
+        kill_server=args.kill_server,
+        show_cmd_output=(args.verbose >= 2),
+    )
+
+
 def main():
     """
     Main entry point for the agro command-line interface.
