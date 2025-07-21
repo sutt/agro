@@ -280,7 +280,7 @@ def test_diff_worktrees(
         "t2": "output/branch.2",
     }
     # Mock Path(...).is_dir() to return True
-    mock_path.return_value.is_dir.return_value = True
+    mock_path.return_value.__truediv__.return_value.is_dir.return_value = True
 
     # test without stat
     core.diff_worktrees([], stat=False, show_cmd_output=False)
@@ -332,9 +332,8 @@ def test_diff_worktrees(
     mock_logger.reset_mock()
     mock_run_command.reset_mock()
     mock_get_indices.return_value = [1]
-    mock_path.return_value.is_dir.return_value = False
+    mock_path.return_value.__truediv__.return_value.is_dir.return_value = False
     core.diff_worktrees([], stat=False, show_cmd_output=False)
-    pytest.xfail("fix later")
     mock_run_command.assert_not_called()
     mock_logger.warning.assert_called_with(
         f"Worktree t1 at '{mock_path.return_value / 't1'}' not found. Skipping."
