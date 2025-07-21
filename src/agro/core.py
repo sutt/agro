@@ -139,6 +139,33 @@ def _get_matching_branches(pattern: str, show_cmd_output=False) -> list[str]:
 
 def _get_config_template():
     """Returns the content for the default agro.conf.yml."""
+
+    # Format ENV_SETUP_CMDS
+    env_setup_cmds_lines = ["# ENV_SETUP_CMDS:"]
+    for cmd in config.DEFAULTS.get("ENV_SETUP_CMDS", []):
+        env_setup_cmds_lines.append(f"#   - {json.dumps(cmd)}")
+    env_setup_cmds_str = "\n".join(env_setup_cmds_lines)
+
+    # Format AGENT_CONFIG
+    agent_config_lines = ["# AGENT_CONFIG:"]
+    for agent, settings in config.DEFAULTS.get("AGENT_CONFIG", {}).items():
+        agent_config_lines.append(f"#   {agent}:")
+        for key, value in settings.items():
+            agent_config_lines.append(f"#     {key}: {json.dumps(value)}")
+    agent_config_str = "\n".join(agent_config_lines)
+
+    # Format AGENT_TIMEOUTS
+    agent_timeouts_lines = ["# AGENT_TIMEOUTS:"]
+    for agent, timeout in config.DEFAULTS.get("AGENT_TIMEOUTS", {}).items():
+        agent_timeouts_lines.append(f"#   {agent}: {timeout}")
+    agent_timeouts_str = "\n".join(agent_timeouts_lines)
+
+    # Format MUSTER_COMMON_CMDS
+    muster_common_cmds_lines = ["# MUSTER_COMMON_CMDS:"]
+    for key, cmd in config.DEFAULTS.get("MUSTER_COMMON_CMDS", {}).items():
+        muster_common_cmds_lines.append(f"#   {key}: {json.dumps(cmd)}")
+    muster_common_cmds_str = "\n".join(muster_common_cmds_lines)
+
     return f"""# Agro Configuration File
 #
 # This file allows you to customize the behavior of Agro.
@@ -174,9 +201,7 @@ def _get_config_template():
 
 # Commands to set up the Python environment in a new worktree.
 # For example, to install all optional dependency groups with uv:
-# ENV_SETUP_CMDS:
-#   - 'uv venv'
-#   - 'uv sync --quiet --all-extras'
+{env_setup_cmds_str}
 
 
 # --- Agent Execution ---
@@ -189,20 +214,11 @@ def _get_config_template():
 # AGENT_TYPE: {config.DEFAULTS['AGENT_TYPE']}
 
 # Agent-specific configuration.
-# AGENT_CONFIG:
-#   aider:
-#     args: ["--yes", "--no-check-update", "--no-attribute-author", "--no-attribute-committer", "--no-attribute-co-authored-by"]
-#   claude:
-#     args: ["-d", "--allowedTools", "Write Edit MultiEdit", "--max-turns", "30", "-p"]
-#   gemini:
-#     args: ["-y"]
+{agent_config_str}
 
 # Agent-specific timeout settings in seconds.
 # A value of 0 means no timeout is applied, overriding any default.
-# AGENT_TIMEOUTS:
-#   aider: 0
-#   claude: 600
-#   gemini: 600
+{agent_timeouts_str}
 
 # Default command to open spec files with 'agro task'.
 # AGRO_EDITOR_CMD: {config.DEFAULTS['AGRO_EDITOR_CMD']}
@@ -211,10 +227,7 @@ def _get_config_template():
 # --- Muster ---
 
 # Pre-defined commands for 'agro muster -c'.
-# MUSTER_COMMON_CMDS:
-#   testq: 'uv run pytest --tb=no -q'
-#   server-start: 'uv run python app/main.py > server.log 2>&1 & echo $! > server.pid'
-#   server-kill: 'kill $(cat server.pid) && rm -f server.pid server.log'
+{muster_common_cmds_str}
 """
 
 
