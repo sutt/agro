@@ -893,6 +893,49 @@ def _get_indices_from_branch_patterns(branch_patterns=None, show_cmd_output=Fals
     return sorted(matching_indices)
 
 
+def diff_worktrees(branch_patterns, stat=False, show_cmd_output=False):
+    """Runs 'git diff' in multiple worktrees."""
+    indices = _get_indices_from_branch_patterns(branch_patterns, show_cmd_output)
+    if not indices:
+        logger.warning("No worktrees found matching the provided patterns.")
+        return
+
+    worktree_state = get_worktree_state(show_cmd_output=show_cmd_output)
+
+    for index in indices:
+        tree_name = f"t{index}"
+        worktree_path = Path(config.WORKTREE_DIR) / tree_name
+        branch_name = worktree_state.get(tree_name, "<unknown branch>")
+
+        if not worktree_path.is_dir():
+            logger.warning(
+                f"Worktree t{index} at '{worktree_path}' not found. Skipping."
+            )
+            continue
+
+        logger.info(f"\n--- Diff for t{index} ({branch_name}) ---")
+
+        original_branch = f"{config.WORKTREE_BRANCH_PREFIX}{index}"
+        command = ["git", "diff"]
+        if stat:
+            command.append("--stat")
+        command.extend([original_branch, "HEAD"])
+
+        cmd_str = shlex.join(command)
+        logger.info(f"$ {cmd_str}")
+
+        try:
+            _run_command(
+                command,
+                cwd=str(worktree_path),
+                show_cmd_output=True,
+            )
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            # _run_command already prints details.
+            logger.error(f"--- Command failed in t{index}. Continuing... ---")
+            continue
+
+
 def muster_command(
     command_str, branch_patterns, server=False, kill_server=False, show_cmd_output=False
 ):

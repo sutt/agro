@@ -122,6 +122,7 @@ def main():
 
 Other Commands:
   muster <command> <branch-patterns>    Run a command in specified worktrees.
+  diff [branch-patterns]        Show git diff for specified worktrees.
   surrender [branch-patterns]   Kill running agent processes (default: all).
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
   fade <branch-patterns>        Delete local branches matching a regex pattern.
@@ -144,6 +145,9 @@ Common options for 'make' and 'exec':
 Options for 'muster':
   -s, --server        Run command as a background server (and log server PID)
   -k, --kill-server   Kill the background server and clean up pid/log files.
+
+Options for 'diff':
+  --stat              Show diffstat instead of full diff.
     
 Options for 'init':
   --conf              Only add a template agro.conf.yml to .agdocs/conf"""
@@ -319,6 +323,29 @@ Options for 'init':
             args.branch_patterns,
             server=args.server,
             kill_server=args.kill_server,
+            show_cmd_output=(args.verbose >= 2),
+        )
+    )
+
+    # --- diff command ---
+    parser_diff = subparsers.add_parser(
+        "diff", help="Show git diff for specified worktrees."
+    )
+    parser_diff.add_argument(
+        "branch_patterns",
+        nargs="*",
+        default=[],
+        help="Optional branch pattern(s) to select worktrees. Defaults to all.",
+    )
+    parser_diff.add_argument(
+        "--stat",
+        action="store_true",
+        help="Show diffstat instead of full diff.",
+    )
+    parser_diff.set_defaults(
+        func=lambda args: core.diff_worktrees(
+            args.branch_patterns,
+            stat=args.stat,
             show_cmd_output=(args.verbose >= 2),
         )
     )

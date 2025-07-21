@@ -259,3 +259,82 @@ def test_fade_branches_no_match(mock_logger, mock_get_matching_branches):
     mock_logger.info.assert_called_with(
         "No branches found matching the patterns to delete."
     )
+
+
+@patch("agro.core.Path")
+@patch("agro.core._get_indices_from_branch_patterns")
+@patch("agro.core.get_worktree_state")
+@patch("agro.core._run_command")
+@patch("agro.core.logger")
+def test_diff_worktrees(
+    mock_logger,
+    mock_run_command,
+    mock_get_worktree_state,
+    mock_get_indices,
+    mock_path,
+):
+    # setup
+    mock_get_indices.return_value = [1, 2]
+    mock_get_worktree_state.return_value = {
+        "t1": "output/branch.1",
+        "t2": "output/branch.2",
+    }
+    # Mock Path(...).is_dir() to return True
+    mock_path.return_value.is_dir.return_value = True
+
+    # test without stat
+    core.diff_worktrees([], stat=False, show_cmd_output=False)
+
+    mock_get_indices.assert_called_once_with([], show_cmd_output=False)
+    mock_get_worktree_state.assert_called_once_with(show_cmd_output=False)
+
+    expected_calls = [
+        call(
+            ["git", "diff", "tree/t1", "HEAD"],
+            cwd=str(mock_path.return_value / "t1"),
+            show_cmd_output=True,
+        ),
+        call(
+            ["git", "diff", "tree/t2", "HEAD"],
+            cwd=str(mock_path.return_value / "t2"),
+            show_cmd_output=True,
+        ),
+    ]
+    mock_run_command.assert_has_calls(expected_calls)
+    assert mock_run_command.call_count == 2
+
+    # test with stat
+    mock_run_command.reset_mock()
+    core.diff_worktrees([], stat=True, show_cmd_output=False)
+    expected_calls_stat = [
+        call(
+            ["git", "diff", "--stat", "tree/t1", "HEAD"],
+            cwd=str(mock_path.return_value / "t1"),
+            show_cmd_output=True,
+        ),
+        call(
+            ["git", "diff", "--stat", "tree/t2", "HEAD"],
+            cwd=str(mock_path.return_value / "t2"),
+            show_cmd_output=True,
+        ),
+    ]
+    mock_run_command.assert_has_calls(expected_calls_stat)
+    assert mock_run_command.call_count == 2
+
+    # test no indices
+    mock_run_command.reset_mock()
+    mock_get_indices.return_value = []
+    core.diff_worktrees([], stat=False, show_cmd_output=False)
+    mock_run_command.assert_not_called()
+    mock_logger.warning.assert_called_with("No worktrees found matching the provided patterns.")
+
+    # test worktree dir not found
+    mock_logger.reset_mock()
+    mock_run_command.reset_mock()
+    mock_get_indices.return_value = [1]
+    mock_path.return_value.is_dir.return_value = False
+    core.diff_worktrees([], stat=False, show_cmd_output=False)
+    mock_run_command.assert_not_called()
+    mock_logger.warning.assert_called_with(
+        f"Worktree t1 at '{mock_path.return_value / 't1'}' not found. Skipping."
+    )
