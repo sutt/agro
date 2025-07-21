@@ -339,3 +339,161 @@ def test_diff_worktrees(
     mock_logger.warning.assert_called_with(
         f"Worktree t1 at '{mock_path.return_value / 't1'}' not found. Skipping."
     )
+
+
+@patch("agro.core.logger")
+@patch("builtins.input", return_value="y")
+@patch("agro.core._run_command")
+@patch("agro.core.delete_tree")
+@patch("agro.core._get_matching_branches")
+@patch("agro.core.get_worktree_state")
+def test_clean_worktrees_hard(
+    mock_get_worktree_state,
+    mock_get_matching_branches,
+    mock_delete_tree,
+    mock_run_command,
+    mock_input,
+    mock_logger,
+):
+    # Arrange
+    mock_get_worktree_state.return_value = {
+        "t1": "output/feat.1",
+        "t2": "output/feat.2",
+        "t3": "another/branch",
+    }
+    mock_get_matching_branches.return_value = ["output/feat.1", "output/feat.2"]
+    # for git rev-parse HEAD
+    mock_run_command.return_value = MagicMock(stdout="main")
+
+    # Act
+    core.clean_worktrees(branch_patterns=["output/feat.*"], mode="hard", show_cmd_output=False)
+
+    # Assert
+    mock_get_matching_branches.assert_called_once_with("output/feat.*", show_cmd_output=False)
+
+    # Dry run logs
+    mock_logger.info.assert_any_call("The following worktrees will be deleted:")
+    mock_logger.info.assert_any_call("  - t1 (branch: output/feat.1)")
+    mock_logger.info.assert_any_call("  - t2 (branch: output/feat.2)")
+    mock_logger.info.assert_any_call("The following branches will be deleted (hard clean):")
+    mock_logger.info.assert_any_call("  - output/feat.1")
+    mock_logger.info.assert_any_call("  - output/feat.2")
+
+    mock_input.assert_called_once()
+
+    # delete_tree calls
+    mock_delete_tree.assert_has_calls(
+        [
+            call("1", show_cmd_output=False),
+            call("2", show_cmd_output=False),
+        ],
+        any_order=True,
+    )
+    assert mock_delete_tree.call_count == 2
+
+    # branch deletion calls
+    # 1 for git rev-parse, 2 for git branch -D
+    assert mock_run_command.call_count == 3
+    mock_run_command.assert_any_call(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True,
+        check=True,
+        show_cmd_output=False,
+    )
+    mock_run_command.assert_any_call(
+        ["git", "branch", "-D", "output/feat.1"],
+        capture_output=True,
+        check=False,
+        show_cmd_output=False,
+    )
+    mock_run_command.assert_any_call(
+        ["git", "branch", "-D", "output/feat.2"],
+        capture_output=True,
+        check=False,
+        show_cmd_output=False,
+    )
+
+
+@patch("agro.core.logger")
+@patch("builtins.input", return_value="y")
+@patch("agro.core._run_command")
+@patch("agro.core.delete_tree")
+@patch("agro.core._get_matching_branches")
+@patch("agro.core.get_worktree_state")
+def test_clean_worktrees_soft(
+    mock_get_worktree_state,
+    mock_get_matching_branches,
+    mock_delete_tree,
+    mock_run_command,
+    mock_input,
+    mock_logger,
+):
+    # Arrange
+    mock_get_worktree_state.return_value = {"t1": "output/feat.1"}
+    mock_get_matching_branches.return_value = ["output/feat.1"]
+
+    # Act
+    core.clean_worktrees(branch_patterns=["output/feat.1"], mode="soft", show_cmd_output=False)
+
+    # Assert
+    mock_logger.info.assert_any_call("The following worktrees will be deleted:")
+    mock_logger.info.assert_any_call("  - t1 (branch: output/feat.1)")
+    # Ensure hard clean message is NOT present
+    for call_args in mock_logger.info.call_args_list:
+        assert "branches will be deleted" not in call_args[0][0]
+
+    mock_input.assert_called_once()
+    mock_delete_tree.assert_called_once_with("1", show_cmd_output=False)
+    mock_run_command.assert_not_called()  # No branch deletion
+
+
+@patch("agro.core.config")
+@patch("agro.core.logger")
+@patch("builtins.input", return_value="y")
+@patch("agro.core.delete_tree")
+@patch("agro.core._get_matching_branches")
+@patch("agro.core.get_worktree_state")
+def test_clean_worktrees_no_pattern(
+    mock_get_worktree_state,
+    mock_get_matching_branches,
+    mock_delete_tree,
+    mock_input,
+    mock_logger,
+    mock_config,
+):
+    # Arrange
+    mock_config.WORKTREE_OUTPUT_BRANCH_PREFIX = "output/"
+    mock_get_worktree_state.return_value = {"t1": "output/feat.1"}
+    mock_get_matching_branches.return_value = ["output/feat.1"]
+
+    # Act
+    core.clean_worktrees(branch_patterns=[], mode="soft", show_cmd_output=False)
+
+    # Assert
+    mock_get_matching_branches.assert_called_once_with("output/", show_cmd_output=False)
+    mock_delete_tree.assert_called_once_with("1", show_cmd_output=False)
+
+
+@patch("agro.core.logger")
+@patch("builtins.input", return_value="n")
+@patch("agro.core.delete_tree")
+@patch("agro.core._get_matching_branches")
+@patch("agro.core.get_worktree_state")
+def test_clean_worktrees_cancel(
+    mock_get_worktree_state,
+    mock_get_matching_branches,
+    mock_delete_tree,
+    mock_input,
+    mock_logger,
+):
+    # Arrange
+    mock_get_worktree_state.return_value = {"t1": "output/feat.1"}
+    mock_get_matching_branches.return_value = ["output/feat.1"]
+
+    # Act
+    core.clean_worktrees(branch_patterns=["output/feat.1"], mode="hard", show_cmd_output=False)
+
+    # Assert
+    mock_input.assert_called_once()
+    mock_logger.warning.assert_called_with("Operation cancelled by user.")
+    mock_delete_tree.assert_not_called()

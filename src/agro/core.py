@@ -1111,6 +1111,108 @@ def fade_branches(patterns, show_cmd_output=False):
     )
 
 
+def clean_worktrees(branch_patterns=None, mode="hard", show_cmd_output=False):
+    """Deletes worktrees and optionally their branches based on patterns."""
+    worktree_state = get_worktree_state(show_cmd_output=show_cmd_output)
+    if not worktree_state and not branch_patterns:
+        logger.info("No worktrees found to clean.")
+        return
+
+    if not branch_patterns:
+        patterns_to_use = [config.WORKTREE_OUTPUT_BRANCH_PREFIX]
+        logger.info(
+            f"No branch pattern specified. Using default pattern for output branches: '{config.WORKTREE_OUTPUT_BRANCH_PREFIX}*'"
+        )
+    else:
+        patterns_to_use = branch_patterns
+
+    all_matching_branches = set()
+    for pattern in patterns_to_use:
+        matching_branches = _get_matching_branches(
+            pattern, show_cmd_output=show_cmd_output
+        )
+        all_matching_branches.update(matching_branches)
+
+    worktrees_to_delete = {}  # 't1': 'output/branch.1'
+    for wt_name, branch in worktree_state.items():
+        if branch in all_matching_branches:
+            worktrees_to_delete[wt_name] = branch
+
+    branches_to_delete = all_matching_branches if mode == "hard" else set()
+
+    if not worktrees_to_delete and not branches_to_delete:
+        logger.info("No worktrees or branches found matching the criteria to clean.")
+        return
+
+    logger.info("\n--- Dry Run ---")
+    if worktrees_to_delete:
+        logger.info("The following worktrees will be deleted:")
+        for wt_name, branch in sorted(worktrees_to_delete.items()):
+            logger.info(f"  - {wt_name} (branch: {branch})")
+
+    if branches_to_delete:
+        logger.info("The following branches will be deleted (hard clean):")
+        for branch in sorted(list(branches_to_delete)):
+            logger.info(f"  - {branch}")
+    logger.info("--- End Dry Run ---\n")
+
+    try:
+        confirm = input("Proceed with cleaning? [Y/n]: ")
+    except (EOFError, KeyboardInterrupt):
+        logger.warning("\nOperation cancelled.")
+        return
+    if confirm.lower() not in ("y", ""):
+        logger.warning("Operation cancelled by user.")
+        return
+
+    if worktrees_to_delete:
+        indices_to_delete = [int(wt_name[1:]) for wt_name in worktrees_to_delete]
+        logger.info("\nDeleting worktrees...")
+        for index in sorted(indices_to_delete):
+            try:
+                # This will not trigger confirmation prompt in delete_tree
+                delete_tree(str(index), show_cmd_output=show_cmd_output)
+            except Exception as e:
+                logger.error(f"Failed to delete worktree for index {index}: {e}")
+
+    if branches_to_delete:
+        logger.info("\nDeleting branches (hard clean)...")
+        result = _run_command(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            check=True,
+            show_cmd_output=show_cmd_output,
+        )
+        current_branch = result.stdout.strip()
+
+        deleted_count = 0
+        failed_count = 0
+        for branch in sorted(list(branches_to_delete)):
+            if branch == current_branch:
+                logger.warning(f"Skipping currently checked out branch '{branch}'")
+                continue
+
+            result = _run_command(
+                ["git", "branch", "-D", branch],
+                capture_output=True,
+                check=False,
+                show_cmd_output=show_cmd_output,
+            )
+            if result.returncode == 0:
+                logger.info(f"Deleted branch '{branch}'.")
+                deleted_count += 1
+            else:
+                logger.error(f"Failed to delete branch '{branch}':")
+                if result.stderr:
+                    logger.error(result.stderr.strip())
+                failed_count += 1
+        logger.info(
+            f"\nBranch cleanup complete. Deleted {deleted_count} branches, {failed_count} failed."
+        )
+
+    logger.info("\n✅ Clean complete.")
+
+
 def mirror_docs(show_cmd_output=False):
     """Mirrors the documentation directory to its public counterpart."""
     source_dir_str = config.AGDOCS_DIR

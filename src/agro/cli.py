@@ -126,6 +126,7 @@ Other Commands:
   surrender [branch-patterns]   Kill running agent processes (default: all).
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
   fade <branch-patterns>        Delete local branches matching a regex pattern.
+  clean [opts] [branch-patterns]    Clean up worktrees and/or branches.
   state [branch-patterns]       Show the worktree to branch mappings (default: all).
   task [task-name]              Create a new task spec file and open it.
   init                          Initialize agro project structure in .agdocs/.
@@ -148,6 +149,10 @@ Options for 'muster':
 
 Options for 'diff':
   --stat              Show diffstat instead of full diff.
+
+Options for 'clean':
+  --soft              Only delete worktrees, not branches.
+  --hard              Delete both worktrees and branches (default).
     
 Options for 'init':
   --conf              Only add a template agro.conf.yml to .agdocs/conf"""
@@ -371,6 +376,36 @@ Options for 'init':
     parser_fade.set_defaults(
         func=lambda args: core.fade_branches(
             args.patterns, show_cmd_output=(args.verbose >= 2)
+        )
+    )
+
+    # --- clean command ---
+    parser_clean = subparsers.add_parser(
+        "clean",
+        help="Delete worktrees and/or associated branches matching pattern(s).",
+    )
+    parser_clean.add_argument(
+        "branch_patterns",
+        nargs="*",
+        default=[],
+        help="Optional branch pattern(s) to select what to clean. Defaults to all output branches.",
+    )
+    clean_group = parser_clean.add_mutually_exclusive_group()
+    clean_group.add_argument(
+        "--soft",
+        action="store_true",
+        help="Only delete worktrees, not the branches.",
+    )
+    clean_group.add_argument(
+        "--hard",
+        action="store_true",
+        help="Delete both worktrees and branches (default).",
+    )
+    parser_clean.set_defaults(
+        func=lambda args: core.clean_worktrees(
+            branch_patterns=args.branch_patterns,
+            mode="soft" if args.soft else "hard",
+            show_cmd_output=(args.verbose >= 2),
         )
     )
 
