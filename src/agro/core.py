@@ -206,6 +206,13 @@ def _get_config_template():
 
 # Default command to open spec files with 'agro task'.
 # AGRO_EDITOR_CMD: {config.DEFAULTS['AGRO_EDITOR_CMD']}
+
+
+# --- Muster ---
+
+# Pre-defined commands for 'agro muster -c'.
+# MUSTER_COMMON_CMDS:
+#   testq: 'uv run pytest --tb=no -q'
 """
 
 
@@ -937,13 +944,44 @@ def diff_worktrees(branch_patterns, stat=False, show_cmd_output=False):
 
 
 def muster_command(
-    command_str, branch_patterns, server=False, kill_server=False, show_cmd_output=False
+    command_str,
+    branch_patterns,
+    server=False,
+    kill_server=False,
+    show_cmd_output=False,
+    common_cmd_key=None,
 ):
     """Runs a command in multiple worktrees."""
     if server and kill_server:
         raise ValueError("--server and --kill-server cannot be used together.")
 
-    indices = _get_indices_from_branch_patterns(branch_patterns, show_cmd_output)
+    if common_cmd_key:
+        final_command_str = config.MUSTER_COMMON_CMDS.get(common_cmd_key)
+        if not final_command_str:
+            config_path = Path(config.AGDOCS_DIR) / "conf" / "agro.conf.yml"
+            msg = f"Common command '{common_cmd_key}' not found in 'MUSTER_COMMON_CMDS'."
+            if config_path.is_file():
+                msg += f" Check your config file at '{config_path}'."
+            else:
+                msg += f" No config file found at '{config_path}'."
+
+            available_cmds = ", ".join(sorted(config.MUSTER_COMMON_CMDS.keys()))
+            if available_cmds:
+                msg += f" Available commands are: {available_cmds}."
+
+            raise ValueError(msg)
+    else:
+        final_command_str = command_str
+
+    if not branch_patterns:
+        patterns_to_use = [config.WORKTREE_OUTPUT_BRANCH_PREFIX]
+        logger.info(
+            f"No branch pattern specified. Using default pattern for output branches: '{config.WORKTREE_OUTPUT_BRANCH_PREFIX}*'"
+        )
+    else:
+        patterns_to_use = branch_patterns
+
+    indices = _get_indices_from_branch_patterns(patterns_to_use, show_cmd_output)
     if not indices:
         logger.warning("No worktrees found matching the provided patterns.")
         return
@@ -951,20 +989,24 @@ def muster_command(
     worktree_state = get_worktree_state(show_cmd_output=show_cmd_output)
 
     use_shell = False
-    final_command_str = command_str
 
     if kill_server:
         final_command_str = "kill $(cat server.pid) && rm -f server.pid server.log"
         use_shell = True
     elif server:
-        if not command_str.strip():
+        if not final_command_str or not final_command_str.strip():
             raise ValueError("Empty command provided for --server.")
-        final_command_str = f"{command_str} > server.log 2>&1 & echo $! > server.pid"
+        final_command_str = f"{final_command_str} > server.log 2>&1 & echo $! > server.pid"
         use_shell = True
 
     if use_shell:
         command = final_command_str
     else:
+        if not final_command_str:
+            # This can happen with `agro muster --kill-server`
+            if kill_server:
+                return # It's handled by use_shell=True path
+            raise ValueError("Empty command provided.")
         command = shlex.split(final_command_str)
         if not command:
             raise ValueError("Empty command provided.")

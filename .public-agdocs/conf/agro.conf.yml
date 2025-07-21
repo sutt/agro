@@ -65,3 +65,10 @@ EXEC_CMD_DEFAULT: maider.sh
 
 # Default command to open spec files with 'agro task'.
 # AGRO_EDITOR_CMD: code
+
+
+# --- Muster ---
+
+# Pre-defined commands for 'agro muster -c'.
+# MUSTER_COMMON_CMDS:
+#   testq: 'uv run pytest --tb=no -q'

@@ -496,3 +496,66 @@ def test_clean_worktrees_cancel(
     mock_input.assert_called_once()
     mock_logger.warning.assert_called_with("Operation cancelled by user.")
     mock_delete_tree.assert_not_called()
+
+
+@patch("agro.core.Path")
+@patch("agro.core.config")
+@patch("agro.core._get_indices_from_branch_patterns")
+@patch("agro.core.get_worktree_state")
+@patch("agro.core._run_command")
+@patch("agro.core.logger")
+def test_muster_command(
+    mock_logger,
+    mock_run_command,
+    mock_get_worktree_state,
+    mock_get_indices,
+    mock_config,
+    mock_path,
+):
+    # Arrange
+    mock_get_indices.return_value = [1]
+    mock_get_worktree_state.return_value = {"t1": "output/branch.1"}
+    mock_path.return_value.is_dir.return_value = True
+    mock_config.MUSTER_COMMON_CMDS = {"testq": "uv run pytest -q"}
+    mock_config.WORKTREE_OUTPUT_BRANCH_PREFIX = "output/"
+    mock_config.AGDOCS_DIR = ".agdocs"
+
+    # Test with common command
+    core.muster_command(
+        command_str=None,
+        branch_patterns=["output/branch.1"],
+        common_cmd_key="testq",
+        show_cmd_output=True,
+    )
+    mock_run_command.assert_called_once_with(
+        ["uv", "run", "pytest", "-q"],
+        cwd=str(mock_path.return_value / "t1"),
+        shell=False,
+        show_cmd_output=True,
+    )
+    mock_run_command.reset_mock()
+
+    # Test with positional command
+    core.muster_command(
+        command_str="ls -l",
+        branch_patterns=["output/branch.1"],
+        show_cmd_output=True,
+    )
+    mock_run_command.assert_called_once_with(
+        ["ls", "-l"],
+        cwd=str(mock_path.return_value / "t1"),
+        shell=False,
+        show_cmd_output=True,
+    )
+    mock_run_command.reset_mock()
+
+    # Test with no branch pattern (uses default)
+    core.muster_command(command_str="ls", branch_patterns=[], show_cmd_output=False)
+    mock_get_indices.assert_called_with(["output/"], False)
+    mock_logger.info.assert_any_call(
+        "No branch pattern specified. Using default pattern for output branches: 'output/*'"
+    )
+
+    # Test common command not found
+    with pytest.raises(ValueError, match="Common command 'nonexistent' not found"):
+        core.muster_command(command_str=None, branch_patterns=[], common_cmd_key="nonexistent")

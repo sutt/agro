@@ -121,7 +121,7 @@ def main():
                                 Supported: aider, claude, gemini.
 
 Other Commands:
-  muster <command> <branch-patterns>    Run a command in specified worktrees.
+  muster [opts] [command] [branch-patterns]    Run a command in specified worktrees.
   diff [branch-patterns]        Show git diff for specified worktrees.
   surrender [branch-patterns]   Kill running agent processes (default: all).
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
@@ -144,6 +144,7 @@ Common options for 'make' and 'exec':
   --no-env-overrides  Do not add port overrides to the .env file.
 
 Options for 'muster':
+  -c, --common-cmd <key> Run a pre-defined command from config.
   -s, --server        Run command as a background server (and log server PID)
   -k, --kill-server   Kill the background server and clean up pid/log files.
 
@@ -302,13 +303,22 @@ Options for 'init':
         "muster", help="Run a command in specified worktrees."
     )
     parser_muster.add_argument(
+        "-c",
+        "--common-cmd",
+        dest="common_cmd_key",
+        help="Run a pre-defined command from config.",
+    )
+    parser_muster.add_argument(
         "command_str",
-        help="The command to execute. A dummy value can be used with --kill-server.",
+        nargs="?",
+        default=None,
+        help="The command to execute. Optional if -c is used.",
     )
     parser_muster.add_argument(
         "branch_patterns",
-        nargs="+",
-        help="One or more branch patterns to select worktrees.",
+        nargs="*",
+        default=[],
+        help="One or more branch patterns. Defaults to output branches.",
     )
     parser_muster.add_argument(
         "-s",
@@ -322,15 +332,7 @@ Options for 'init':
         action="store_true",
         help="Kill the background server and clean up pid/log files.",
     )
-    parser_muster.set_defaults(
-        func=lambda args: core.muster_command(
-            args.command_str,
-            args.branch_patterns,
-            server=args.server,
-            kill_server=args.kill_server,
-            show_cmd_output=(args.verbose >= 2),
-        )
-    )
+    parser_muster.set_defaults(func=_dispatch_muster)
 
     # --- diff command ---
     parser_diff = subparsers.add_parser(

@@ -45,6 +45,9 @@ DEFAULTS = {
         'claude': 600,
         'gemini': 600,  # 10 minutes timeout for gemini calls
     },
+    'MUSTER_COMMON_CMDS': {
+        'testq': 'uv run pytest --tb=no -q',
+    },
     'AGRO_EDITOR_CMD': 'code',
     'ENV_SETUP_CMDS': [
         'uv venv',
@@ -76,6 +79,9 @@ def _load_config():
                             else:
                                 config['AGENT_CONFIG'][agent_name] = agent_data
 
+                    if 'MUSTER_COMMON_CMDS' in user_config and isinstance(user_config['MUSTER_COMMON_CMDS'], dict):
+                        config['MUSTER_COMMON_CMDS'].update(user_config.pop('MUSTER_COMMON_CMDS'))
+
                     config.update(user_config)
             except yaml.YAMLError as e:
                 print(f"Warning: Could not parse config file {config_path}. Using default values. Error: {e}", file=sys.stderr)
@@ -103,6 +109,7 @@ EXEC_CMD_DEFAULT = _config['EXEC_CMD_DEFAULT']
 AGENT_TYPE = _config['AGENT_TYPE']
 AGENT_CONFIG = _config['AGENT_CONFIG']
 AGENT_TIMEOUTS = _config['AGENT_TIMEOUTS']
+MUSTER_COMMON_CMDS = _config['MUSTER_COMMON_CMDS']
 AGRO_EDITOR_CMD = _config['AGRO_EDITOR_CMD']
 ENV_SETUP_CMDS = _config['ENV_SETUP_CMDS']
 

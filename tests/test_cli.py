@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from agro.cli import _dispatch_exec, _is_indices_list
+from agro.cli import _dispatch_exec, _is_indices_list, _dispatch_muster
 
 
 @pytest.mark.parametrize(
@@ -466,6 +466,101 @@ def test_dispatch_exec_infer_agent_type_from_positional_exec_cmd(
             agent_type="gemini",
             auto_commit=True,
         )
+
+
+@patch("agro.cli.core.muster_command")
+def test_dispatch_muster(mock_muster_command):
+    # Basic case: command and pattern
+    args = argparse.Namespace(
+        command_str="ls",
+        branch_patterns=["p1"],
+        common_cmd_key=None,
+        server=False,
+        kill_server=False,
+        verbose=0,
+    )
+    _dispatch_muster(args)
+    mock_muster_command.assert_called_once_with(
+        command_str="ls",
+        branch_patterns=["p1"],
+        common_cmd_key=None,
+        server=False,
+        kill_server=False,
+        show_cmd_output=False,
+    )
+    mock_muster_command.reset_mock()
+
+    # Common command and pattern
+    args = argparse.Namespace(
+        command_str="p1",
+        branch_patterns=[],
+        common_cmd_key="testq",
+        server=False,
+        kill_server=False,
+        verbose=0,
+    )
+    _dispatch_muster(args)
+    mock_muster_command.assert_called_once_with(
+        command_str=None,
+        branch_patterns=["p1"],
+        common_cmd_key="testq",
+        server=False,
+        kill_server=False,
+        show_cmd_output=False,
+    )
+    mock_muster_command.reset_mock()
+
+    # Common command, no pattern
+    args = argparse.Namespace(
+        command_str=None,
+        branch_patterns=[],
+        common_cmd_key="testq",
+        server=False,
+        kill_server=False,
+        verbose=0,
+    )
+    _dispatch_muster(args)
+    mock_muster_command.assert_called_once_with(
+        command_str=None,
+        branch_patterns=[],
+        common_cmd_key="testq",
+        server=False,
+        kill_server=False,
+        show_cmd_output=False,
+    )
+    mock_muster_command.reset_mock()
+
+    # No command and no common command -> error
+    args = argparse.Namespace(
+        command_str=None,
+        branch_patterns=[],
+        common_cmd_key=None,
+        server=False,
+        kill_server=False,
+        verbose=0,
+    )
+    with pytest.raises(ValueError):
+        _dispatch_muster(args)
+
+    # kill server with pattern
+    args = argparse.Namespace(
+        command_str="p1",
+        branch_patterns=[],
+        common_cmd_key=None,
+        server=False,
+        kill_server=True,
+        verbose=0,
+    )
+    _dispatch_muster(args)
+    mock_muster_command.assert_called_once_with(
+        command_str=None,
+        branch_patterns=["p1"],
+        common_cmd_key=None,
+        server=False,
+        kill_server=True,
+        show_cmd_output=False,
+    )
+    mock_muster_command.reset_mock()
 
 
 @patch("agro.cli.core.exec_agent")
