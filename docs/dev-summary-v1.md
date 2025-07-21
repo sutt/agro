@@ -17,6 +17,36 @@ Looks at tasks and associated commit solutions generated each release.
 | [index-casestudies.md](../.public-agdocs/specs/index-casestudies.md) | add an index.md for ./docs/case-studies and link each of the case studies. provide a quick summary of each of these articles in this table of contents... | [cc1348](https://github.com/sutt/agro/commit/cc1348) | +53/-2 | +0/-0 |
 | [summary-3.md](../.public-agdocs/specs/summary-3.md) | Add the updated files to a markdown table in docs/dev-summary-v1.md for v0.1.5 with a row containing: - just the filename and have it be linked with rel... | [1f788d](https://github.com/sutt/agro/commit/1f788d) | +16/-1 | +0/-0 |
 
+```
+376b9b0 release: v0.1.7
+e4e4b0f specs: v0.1.7
+94e7830 feat: impl update-docs-1.7 with claude (agro auto-commit)
+2655c32 feat: impl changelog-1.7 with claude (agro auto-commit)
+0555fb5 refactor: generate config template dynamically from DEFAULTS
+443ce7e fix: server-start default cmd
+dff6bfe refactor: replace muster --server/--kill-server with common commands
+4bcafde feat: add CLI handler for muster command
+b21eb02 feat: add configurable common commands to muster
+b8176fb fix: test failure for faulty path mock
+3a3957c feat: add clean command to remove worktrees and branches
+292555b fix: failing tests (wip)
+c9f2a63 feat: add 'agro diff' command to show worktree changes
+e3ca89c docs: manual fixups for index-casestudies
+cc13487 feat: impl index-casestudies with claude (agro auto-commit)
+1cec134 docs: fixes on docs, readme + aba-6
+a62f615 docs: major refinements on ai-generated docs
+9828614 feat: impl do-docs-1 with claude (agro auto-commit)
+095f2f9 chore: remove old scripts
+1abdf28 docs: update of readme content for v0.1.6
+a132495 docs: aba-3 + aba-4 + aba-5
+901ba6b feat: impl summary-ag-1 with claude (agro auto-commit)
+cd3abff docs: fixup formatting for aba-1 aba-2
+1f788df feat: impl summary-3 with claude (agro auto-commit)
+4fc2eea docs: dev-summary has solution links
+3939862 feat: impl summary-2 with claude (agro auto-commit)
+6bfdd22 docs: add dev-summary-v1
+```
+
 ## v0.1.6
 
 | Task File | Contents (truncated) | Accepted SHA | Non-test Diffs | Test Diffs |
