@@ -4,8 +4,8 @@ A script to manage git worktrees for agent-based development. This tool simplifi
 
 [![PyPI version](https://img.shields.io/pypi/v/agro)](https://pypi.org/project/agro/)
 
-- **View [Docs](./docs)**
-- **View [Case Studies](./docs/case-studies/)**
+- **View [Docs](./docs/index.md)**
+- **View [Case Studies](./docs/case-studies/index.md)**
 - **View [AI Dev Log](./docs/dev-summary-v1.md)**
 
 ---
@@ -39,7 +39,7 @@ So you can take agro to your nineteen side-projects and four remote jobs, and it
 **Supported Models:** _Anthropic, OpenAI, Google, Grok4 and more_
 
 ---
-**Agro-Builds-Agro:** If you think vibe-coding can't stand-up to multiple iterations, this is your chance to think again. Agro is 150 commits and going strong (roughly 80% ai generated). See the [Dev Log](./docs/dev-summary-v1.md) and [Case Studies](./docs/case-studies) to see a record of all the prompts and their accepted solutions.
+**Agro-Builds-Agro:** If you think vibe-coding can't stand-up to multiple iterations, this is your chance to think again. Agro is 150 commits and going strong (roughly 80% ai generated). See the [Dev Log](./docs/dev-summary-v1.md) and [Case Studies](./docs/case-studies/index.md) to see a record of all the prompts and their accepted solutions.
 
 ---
 
@@ -68,7 +68,7 @@ For local dev updates run the `./redeploy` script to reinstall the local repo as
 
 ### At a Glance - Hello, World!
 
-**Also see the [case studies](./docs/case-studies/aba-1.md) for more advanced guidance on using this tool**
+**Also see the [case studies](./docs/case-studies/index.md) for more advanced guidance on using this tool**
 
 **0. Clone the Demo Repo**
 

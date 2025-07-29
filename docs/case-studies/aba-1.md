@@ -435,7 +435,7 @@ FAILED tests/test_cli.py::test_dispatch_exec_explicit_taskfile_not_found - Asser
 
 **Conversation round2 with aider**
 
-```md
+```markdown
 
 > Git repo: ../../.git/worktrees/t3 with 46 files  
 > Repo-map: using 4096 tokens, auto refresh  
@@ -507,12 +507,11 @@ def _dispatch_exec(args):
     )
 >>>>>>> REPLACE
 ```
-
+```
+```markdown
 After applying these changes, you can run the tests again to confirm the fix.
 
-```bash
-uv run pytest
-```
+`uv run pytest`
 
 > Tokens: 15k sent, 1.7k received. Cost: $0.04 message, $0.05 session.  
 > Applied edit to src/agro/cli.py  
@@ -522,6 +521,8 @@ uv run pytest
 > You can use /undo to undo and discard each aider commit.  
 
 ```
+
+### Conclusion
 
 This shows a shortcoming of aider: that it doesn't truly run in "yolo" mode with ability to run arbitrary bash commands; it can run linting hooks on commit but not shell out to pytest in agent mode. So this will need to be an improvement.
 
