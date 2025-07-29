@@ -66,29 +66,61 @@ For local dev updates run the `./redeploy` script to reinstall the local repo as
 
 ---
 
-### At a Glance - Hello, World!
+### Agro at a glance - Hello, World!
 
 **Also see the [case studies](./docs/case-studies/index.md) for more advanced guidance on using this tool**
 
-**0. Clone the Demo Repo**
+**0A. Clone the Demo Repo**
 
 ```bash
-git clone git@github.com:sutt/agro-demo.git
+git clone https://github.com/sutt/agro-demo
 cd agro-demo
 
+# setup environment and run server
 uv sync
+uv run python app/main.py
+# hit ctrl+c to shutdown server, and let's start...
 ```
+
+**0B. Copy the supplied docs**
+
+Copy the public git-tracked `.public-agdocs` directory to an internal git-ignored repo `.agdocs`
+
+```bash
+cp -r .public-agdocs .agdocs
+```
+
+The `.agdocs` directory is the default lookup for where **agro** will attempt to access configurations, guidance, and 
+
+This repo comes with tasks (.md files in /specs/ subdirectory). These should now be available if you copied it correctly in the step above.
+
+```
+.agdocs/
+├── conf
+│   └── agro.conf.yml
+├── guides
+│   └── GUIDE.md
+├── specs
+│   ├── add-about.md
+│   ├── infer-model.md
+│   └── query-web.md
+└── swap
+```
+
 
 **1. Launch four agents in parallel**
 
-_Agro is configured to use aider by default. Add the name of the coding agent you have installed as the argument to use the one you have installed._
 
 ```bash
 $ agro exec add-about 2       # launch two agents of aider 
 $ agro exec add-about claude  # if you have claude-code installed
 $ agro exec add-about gemini  # if you have gemini installed
 ```
-This repo comes with tasks in `.agdocs/specs` including the spec
+_Agro is configured to use aider by default. Add the name of the coding agent you have installed as the argument to use the one you have installed, see [docs for more info on this](./docs/configuration.md#default-agent)._
+
+_For the purposes of this tutorial, you don't need to launch all three different type of agents, simple use one or two that you have installed. If you don't have any installed, find instructions of how to install [here](./docs/agents.md#agent-installation)._
+
+These commands launched agents on a pre-written task in `.agdocs/specs/add-about.md`. _(Ultimately you will write your own but let's start with a simple pre-written one.)_
 
 **add-about.md**
 >add an about page and route
@@ -150,14 +182,14 @@ $ git branch
 **2. Launch Server on each worktree**
 
 ```bash
-agro muster --server 'uv run python app/main.py' output
+agro muster -c server-start
 ```
-- The argument `--server` allows detach mode to run multiple servers out of one shell.
+- The argument `-c` / `--common-cmd` arg allows us to pass an alias for common commands we'll use. See [docs on common commands](./docs/configuration.md#muster-common-commands) for more info.
 
 **Output**
 
 ```bash
-agro muster --server 'uv run python app/main.py' output
+agro muster -c server-start output
 
 --- Running command in t1 (output/add-about.1) ---
 $ uv run python app/main.py > server.log 2>&1 & echo $! > server.pid
@@ -197,8 +229,8 @@ curl http://localhost:8004/about
 Now clean up the server:
 
 ```bash
-# run muster with --kill-server to take it down each worktree
-$ agro muster --kill-server '' output
+# run muster with server-kill (builtin common command) to take it down each worktree
+$ agro muster -c server-kill
 
 --- Running command in t1 (output/add-about.1) ---
 $ kill $(cat server.pid) && rm -f server.pid server.log
@@ -229,7 +261,7 @@ $ uv run pytest -q
 So we see have 3 existing tests, now let's check the output of our agents:
 
 ```bash
-$ agro muster 'uv run pytest -q' output
+$ agro muster -c testq output
 
 --- Running command in t1 (output/add-about.1) ---
 $ uv run pytest -q
@@ -247,13 +279,21 @@ $ uv run pytest -q
 $ uv run pytest -q
 3 passed in 0.24s
 ```
+Cool, so we see all Agents left the tests green, and Agents 1-3 added a new unit test (since they now have 4 tests and we started with 3 tests).
+
+**Check the code changes from each agent**
+
+TODO - add the agro diff command
+
+TODO - add the branch-patterns example
+
 ### Or add your own spec to a project
 
 For example:
 
 **Create and commit a spec file and pass to an agent**
 ```bash
-agro init # add .agdocs/ to repo
+agro init # if you don't already have an `.agdocs` at root
 
 # create a spec
 agro task hello-world  
@@ -261,9 +301,11 @@ agro task hello-world
 # equivalent to:
 echo "add hello world to the readme of this project" > .agdocs/specs/hello-world.md
 
-agro exec
-# equivalent to:
-agro exec add-about 1 aider
+agro exec  
+# when not supplying an argument for the task name, 
+# agro will chose the most recently modified .md file in specs/, so 
+# this is equivalent to:
+agro exec hello-world 1 aider
 ```
 
 ### Full Walk-Through
@@ -275,35 +317,30 @@ TODO - add a full tutorial here
 
 TODO
 
-### Full Help
+### Help
 
 ```
-
-usage: agro [-h] [--version] [-v] [-q]
+usage: agro [-v / -vv] <subcommand> [subcommand-args]
 
 A script to manage git branches & worktrees for agent-based development.
-
-options:
-  -h, --help     show this help message and exit
-  --version      Show program's version number and exit.
-  -v, --verbose  Increase verbosity. -v for debug, -vv for command output.
-  -q, --quiet    Suppress all output except warnings and errors.
 
 Main command:
   exec [args] [taskfile] [num-trees] [exec-cmd]   
                                 
     Run an agent in new worktree(s)
         args:
-          -n <num-trees>        Number of worktrees to create.
-          -c <exec-cmd>         Run the exec-cmd to launch agent on worktree.
+          -n <num-trees>        Number of worktrees / agents to create.
+          -c <exec-cmd>         Custom command to launch agent on worktree.
           -a <agent-type>       Specify agent type to override config.
                                 Supported: aider, claude, gemini.
 
 Other Commands:
-  muster <command> <branch-patterns>    Run a command in specified worktrees.
+  muster [opts] [command] [branch-patterns]    Run a command in specified worktrees.
+  diff [branch-patterns] [diff-opts]   Show git diff for specified worktrees.
   surrender [branch-patterns]   Kill running agent processes (default: all).
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
   fade <branch-patterns>        Delete local branches matching a regex pattern.
+  clean [opts] [branch-patterns]    Clean up worktrees and/or branches.
   state [branch-patterns]       Show the worktree to branch mappings (default: all).
   task [task-name]              Create a new task spec file and open it.
   init                          Initialize agro project structure in .agdocs/.
@@ -321,8 +358,11 @@ Common options for 'make' and 'exec':
   --no-env-overrides  Do not add port overrides to the .env file.
 
 Options for 'muster':
-  -s, --server        Run command as a background server (and log server PID)
-  -k, --kill-server   Kill the background server and clean up pid/log files.
+  -c, --common-cmd <key> Run a pre-defined command from config.
+
+Options for 'clean':
+  --soft              Only delete worktrees, not branches.
+  --hard              Delete both worktrees and branches (default).
     
 Options for 'init':
   --conf              Only add a template agro.conf.yml to .agdocs/conf
