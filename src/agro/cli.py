@@ -132,19 +132,9 @@ def _dispatch_muster(args):
 
 def _dispatch_diff(args):
     """Helper to dispatch diff command with complex argument parsing."""
-    all_args = args.args
-    branch_patterns = []
-    diff_opts = []
-
-    for arg in all_args:
-        if arg.startswith("-"):
-            diff_opts.append(arg)
-        else:
-            branch_patterns.append(arg)
-
     core.diff_worktrees(
-        branch_patterns=branch_patterns,
-        diff_opts=diff_opts,
+        branch_patterns=args.branch_patterns,
+        diff_opts=args.diff_opts,
         show_cmd_output=(args.verbose >= 2),
     )
 
@@ -365,9 +355,10 @@ Options for 'init':
         "diff", help="Show git diff for specified worktrees."
     )
     parser_diff.add_argument(
-        "args",
-        nargs=argparse.REMAINDER,
-        help="Optional branch pattern(s) and options to pass to 'git diff'.",
+        "branch_patterns",
+        nargs="*",
+        default=[],
+        help="Optional branch pattern(s).",
     )
     parser_diff.set_defaults(func=_dispatch_diff)
 
@@ -478,7 +469,12 @@ Options for 'init':
     parser_help.set_defaults(func=lambda args: parser.print_help())
 
     try:
-        args = parser.parse_args()
+        args, unknown_args = parser.parse_known_args()
+
+        if args.command == "diff":
+            args.diff_opts = unknown_args
+        elif unknown_args:
+            parser.error(f"unrecognized arguments: {' '.join(unknown_args)}")
 
         # Setup logging
         if args.quiet:
