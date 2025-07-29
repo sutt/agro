@@ -130,6 +130,25 @@ def _dispatch_muster(args):
     )
 
 
+def _dispatch_diff(args):
+    """Helper to dispatch diff command with complex argument parsing."""
+    all_args = args.args
+    branch_patterns = []
+    diff_opts = []
+
+    for arg in all_args:
+        if arg.startswith("-"):
+            diff_opts.append(arg)
+        else:
+            branch_patterns.append(arg)
+
+    core.diff_worktrees(
+        branch_patterns=branch_patterns,
+        diff_opts=diff_opts,
+        show_cmd_output=(args.verbose >= 2),
+    )
+
+
 def main():
     """
     Main entry point for the agro command-line interface.
@@ -146,7 +165,7 @@ def main():
 
 Other Commands:
   muster [opts] [command] [branch-patterns]    Run a command in specified worktrees.
-  diff [branch-patterns]        Show git diff for specified worktrees.
+  diff [branch-patterns] [diff-opts]   Show git diff for specified worktrees.
   surrender [branch-patterns]   Kill running agent processes (default: all).
   grab <branch-name>            Checkout a branch, creating a copy if it's in use.
   fade <branch-patterns>        Delete local branches matching a regex pattern.
@@ -169,9 +188,6 @@ Common options for 'make' and 'exec':
 
 Options for 'muster':
   -c, --common-cmd <key> Run a pre-defined command from config.
-
-Options for 'diff':
-  --stat              Show diffstat instead of full diff.
 
 Options for 'clean':
   --soft              Only delete worktrees, not branches.
@@ -349,23 +365,11 @@ Options for 'init':
         "diff", help="Show git diff for specified worktrees."
     )
     parser_diff.add_argument(
-        "branch_patterns",
-        nargs="*",
-        default=[],
-        help="Optional branch pattern(s) to select worktrees. Defaults to all.",
+        "args",
+        nargs=argparse.REMAINDER,
+        help="Optional branch pattern(s) and options to pass to 'git diff'.",
     )
-    parser_diff.add_argument(
-        "--stat",
-        action="store_true",
-        help="Show diffstat instead of full diff.",
-    )
-    parser_diff.set_defaults(
-        func=lambda args: core.diff_worktrees(
-            args.branch_patterns,
-            stat=args.stat,
-            show_cmd_output=(args.verbose >= 2),
-        )
-    )
+    parser_diff.set_defaults(func=_dispatch_diff)
 
     # --- grab command ---
     parser_grab = subparsers.add_parser(
