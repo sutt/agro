@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from agro.cli import _dispatch_exec, _is_indices_list, _dispatch_muster
+from agro.cli import _dispatch_diff, _dispatch_exec, _is_indices_list, _dispatch_muster
 
 
 @pytest.mark.parametrize(
@@ -527,6 +527,30 @@ def test_dispatch_muster(mock_muster_command):
     )
     with pytest.raises(ValueError):
         _dispatch_muster(args)
+
+
+@patch("agro.cli.core.diff_worktrees")
+@pytest.mark.parametrize(
+    "branch_patterns, diff_opts",
+    [
+        (["p1"], ["--stat"]),
+        ([], ["--stat"]),
+        (["p1", "p2"], ["--stat", "--color"]),
+    ],
+)
+def test_dispatch_diff(mock_diff_worktrees, branch_patterns, diff_opts):
+    """Test dispatch_diff passes patterns and opts correctly."""
+    args = argparse.Namespace(
+        branch_patterns=branch_patterns,
+        diff_opts=diff_opts,
+        verbose=0,
+    )
+    _dispatch_diff(args)
+    mock_diff_worktrees.assert_called_once_with(
+        branch_patterns=branch_patterns,
+        diff_opts=diff_opts,
+        show_cmd_output=False,
+    )
 
 
 @patch("agro.cli.core.exec_agent")
