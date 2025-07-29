@@ -282,8 +282,8 @@ def test_diff_worktrees(
     # Mock Path(...).is_dir() to return True
     mock_path.return_value.__truediv__.return_value.is_dir.return_value = True
 
-    # test without stat
-    core.diff_worktrees([], stat=False, show_cmd_output=False)
+    # test with no diff_opts
+    core.diff_worktrees([], diff_opts=None, show_cmd_output=False)
 
     mock_get_indices.assert_called_once()
     mock_get_worktree_state.assert_called_once()
@@ -303,9 +303,9 @@ def test_diff_worktrees(
     mock_run_command.assert_has_calls(expected_calls)
     assert mock_run_command.call_count == 2
 
-    # test with stat
+    # test with one diff_opt
     mock_run_command.reset_mock()
-    core.diff_worktrees([], stat=True, show_cmd_output=False)
+    core.diff_worktrees([], diff_opts=["--stat"], show_cmd_output=False)
     expected_calls_stat = [
         call(
             ["git", "diff", "--stat", "tree/t1", "HEAD"],
@@ -321,10 +321,28 @@ def test_diff_worktrees(
     mock_run_command.assert_has_calls(expected_calls_stat)
     assert mock_run_command.call_count == 2
 
+    # test with multiple diff_opts
+    mock_run_command.reset_mock()
+    core.diff_worktrees([], diff_opts=["--stat", "--cached"], show_cmd_output=False)
+    expected_calls_multiple = [
+        call(
+            ["git", "diff", "--stat", "--cached", "tree/t1", "HEAD"],
+            cwd=str(mock_path.return_value / "t1"),
+            show_cmd_output=True,
+        ),
+        call(
+            ["git", "diff", "--stat", "--cached", "tree/t2", "HEAD"],
+            cwd=str(mock_path.return_value / "t2"),
+            show_cmd_output=True,
+        ),
+    ]
+    mock_run_command.assert_has_calls(expected_calls_multiple)
+    assert mock_run_command.call_count == 2
+
     # test no indices
     mock_run_command.reset_mock()
     mock_get_indices.return_value = []
-    core.diff_worktrees([], stat=False, show_cmd_output=False)
+    core.diff_worktrees([], diff_opts=None, show_cmd_output=False)
     mock_run_command.assert_not_called()
     mock_logger.warning.assert_called_with("No worktrees found matching the provided patterns.")
 
@@ -333,7 +351,7 @@ def test_diff_worktrees(
     mock_run_command.reset_mock()
     mock_get_indices.return_value = [1]
     mock_path.return_value.__truediv__.return_value.is_dir.return_value = False
-    core.diff_worktrees([], stat=False, show_cmd_output=False)
+    core.diff_worktrees([], diff_opts=None, show_cmd_output=False)
     mock_run_command.assert_not_called()
     mock_logger.warning.assert_called_with(
         f"Worktree t1 at '{mock_path.return_value / 't1'}' not found. Skipping."

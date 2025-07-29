@@ -915,7 +915,7 @@ def _get_indices_from_branch_patterns(branch_patterns=None, show_cmd_output=Fals
     return sorted(matching_indices)
 
 
-def diff_worktrees(branch_patterns, stat=False, show_cmd_output=False):
+def diff_worktrees(branch_patterns, diff_opts=None, show_cmd_output=False):
     """Runs 'git diff' in multiple worktrees."""
     indices = _get_indices_from_branch_patterns(branch_patterns, show_cmd_output)
     if not indices:
@@ -939,8 +939,8 @@ def diff_worktrees(branch_patterns, stat=False, show_cmd_output=False):
 
         original_branch = f"{config.WORKTREE_BRANCH_PREFIX}{index}"
         command = ["git", "diff"]
-        if stat:
-            command.append("--stat")
+        if diff_opts:
+            command.extend(diff_opts)
         command.extend([original_branch, "HEAD"])
 
         cmd_str = shlex.join(command)
