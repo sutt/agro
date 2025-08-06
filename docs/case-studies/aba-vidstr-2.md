@@ -9,8 +9,6 @@ We'll explore multiple rounds of prompt augmentations and other resources and tr
 - No documentation for ext libraries.
 - Not agentic enough for the task.
 
-TODO - tl/dr on solution + agent that won
-
 ---
 
 ### Challenge
@@ -161,31 +159,42 @@ Now let's compare multiple runs of different combinations of with vs without gui
 
 #### Results Output v1 - v2
 These are the results generated out of combinations of:
-- prompt v1 / v2
-- guides: none for moviepy, all three movie py, 
+- **prompt:** v1 / v2
+- **guides:** none for moviepy, all three guides for moviepy, two guides for moviepy no including the large moviepy.docs.md file.
 
-The main property we're looking for is the solution generated doesn't run into this problem and secondarily if it creates new tests that pass when run.
+All agents are running in non-yolo mode here. We'll change that v3 below.
+
+The main property we're looking for is the solution generated doesn't run into this problem and secondarily if it creates new tests that pass when run. 
 ```python
 from moviepy.editor import VideoFileClip
 E   ModuleNotFoundError: No module named 'moviepy.editor'
 ```
+Solutions which avoid this mistake are indicated in the table below of "MoviePy v2 Import" witha green check mark.
+
+**Summary of results:**
+- Without any Guide Files or any call out of the moviepy version in the spec (as occurs in prompt v2) the agents always generate the wrong code.
+- As can be seen with v1 prompts, the util filename keeps changing between solutions, but remains the same in v2 (where we specify it).
+- Aider looks to do best when it has minimal guide files, and only using prompt v1. It appears prompt v2 and v3 were very tricky for aider and end up having it produce no output (which is unusual in our experience).
+- Claude does best on the opposite of where Aider excels: it produces an excellent solution when given full Guide Files and the v2 prompt with extra specificity.
+
+
 
 | Solution | Agent | YOLO | Guides | Prompt | Utility File | MoviePy v2 Import | Diff Stats | New Tests Created/Pass | Notes |
 |----------|-------|------|--------|--------|--------------|------------------|-----------|----------------------|-------|
-| 1 | Aider | ❌ | None | v1 | mp_util.py | ❌ | mp_util.py +49, tests/test_mp_util.py +99 | 0/0 (import error) | |
-| 2 | Aider | ❌ | None | v1 | mp_util.py | ❌ | mp_util.py +49, tests/test_mp_util.py +67 | 0/0 (import error) | |
-| 3 | Claude | ❌ | None | v1 | utils/mp4_to_gif.py | ❌ | tests/test_mp4_to_gif.py +193, utils/__init__.py +0, utils/__main__.py +4, utils/mp4_to_gif.py +117 | 0/0 (import error) | |
-| 4 | Claude | ❌ | None | v1 | mp4_to_gif.py | ❌ | mp4_to_gif.py +73, tests/test_mp4_to_gif.py +140 | 0/0 (import error) | |
-| 5 | Aider | ❌ | Full | v1 | mp4_to_gif.py | ❌ | mp4_to_gif.py +49, tests/test_mp4_to_gif.py +53 | 0/0 (import error) | |
-| 6 | Aider | ❌ | Full | v1 | No files | ❌ | No output | 0/0 | TODO: No code generated |
-| 7 | Claude | ❌ | Full | v1 | mp4_to_gif.py | ❌ | mp4_to_gif.py +85, tests/test_mp4_to_gif.py +198 | 0/0 (import error) | |
-| 8 | Claude | ❌ | Full | v1 | utils/gif_converter.py | ❌ | pyproject.toml +3, tests/test_gif_converter.py +170, utils/__init__.py +1, utils/gif_converter.py +107 | 0/0 (import error) | |
-| 9 | Aider | ❌ | Some (no docs) | v1 | utils/mp_to_gif.py | ✅ | pyproject.toml +2, tests/test_mp_to_gif.py +55, utils/__init__.py +0, utils/mp_to_gif.py +35 | 4/4 | |
-| 10 | Claude | ❌ | Some (no docs) | v1 | utils/mp4_to_gif.py | ❌ | mp4_to_gif.py +10, tests/test_cli.py +105, tests/test_mp4_to_gif.py +166, utils/__init__.py +0, utils/cli.py +85, utils/mp4_to_gif.py +68 | 0/0 (import error) | |
-| 11 | Aider | ❌ | Some (no docs) | v2 | No files | ❌ | No output | 0/0 | TODO: No code generated |
-| 12 | Claude | ❌ | Some (no docs) | v2 | mp4_to_gif.py | ❌ | mp4_to_gif.py +109, test_conversion.py +34, tests/test_mp4_to_gif.py +222 | 0/0 (import error) | |
-| 13 | Aider | ❌ | Full | v2 | No files | ❌ | No output | 0/0 | TODO: No code generated |
-| 14 | Claude | ❌ | Full | v2 | mp4_to_gif.py | ✅ | mp4_to_gif.py +235, test_mp4_to_gif.py +335 | 20/20 (after manual move) | TODO: Tests not in tests/ dir initially |
+| 1 | Aider | N | None | v1 | mp_util.py | ❌ | mp_util.py +49, tests/test_mp_util.py +99 | 0/0 (import error) | |
+| 2 | Aider | N | None | v1 | mp_util.py | ❌ | mp_util.py +49, tests/test_mp_util.py +67 | 0/0 (import error) | |
+| 3 | Claude | N | None | v1 | utils/mp4_to_gif.py | ❌ | tests/test_mp4_to_gif.py +193, utils/__init__.py +0, utils/__main__.py +4, utils/mp4_to_gif.py +117 | 0/0 (import error) | |
+| 4 | Claude | N | None | v1 | mp4_to_gif.py | ❌ | mp4_to_gif.py +73, tests/test_mp4_to_gif.py +140 | 0/0 (import error) | |
+| 5 | Aider | N | Full | v1 | mp4_to_gif.py | ❌ | mp4_to_gif.py +49, tests/test_mp4_to_gif.py +53 | 0/0 (import error) | |
+| 6 | Aider | N | Full | v1 | No files | n/a | No output | 0/0 | No code generated |
+| 7 | Claude | N | Full | v1 | mp4_to_gif.py | ❌ | mp4_to_gif.py +85, tests/test_mp4_to_gif.py +198 | 0/0 (import error) | |
+| 8 | Claude | N | Full | v1 | utils/gif_converter.py | ❌ | pyproject.toml +3, tests/test_gif_converter.py +170, utils/__init__.py +1, utils/gif_converter.py +107 | 0/0 (import error) | |
+| 9 | Aider | N | Some (no docs) | v1 | utils/mp_to_gif.py | ✅ | pyproject.toml +2, tests/test_mp_to_gif.py +55, utils/__init__.py +0, utils/mp_to_gif.py +35 | 4/4 | |
+| 10 | Claude | N | Some (no docs) | v1 | utils/mp4_to_gif.py | ❌ | mp4_to_gif.py +10, tests/test_cli.py +105, tests/test_mp4_to_gif.py +166, utils/__init__.py +0, utils/cli.py +85, utils/mp4_to_gif.py +68 | 0/0 (import error) | |
+| 11 | Aider | N | Some (no docs) | v2 | No files | n/a | No output | 0/0 | No code generated |
+| 12 | Claude | N | Some (no docs) | v2 | mp4_to_gif.py | ❌ | mp4_to_gif.py +109, test_conversion.py +34, tests/test_mp4_to_gif.py +222 | 0/0 (import error) | |
+| 13 | Aider | N | Full | v2 | No files | n/a | No output | 0/0 | No code generated |
+| 14 | Claude | N | Full | v2 | mp4_to_gif.py | ✅ | mp4_to_gif.py +235, test_mp4_to_gif.py +335 | 20/20 (after manual move) | Tests not in tests/ dir initially |
 
 <details>
     <summary>
@@ -699,10 +708,12 @@ tests/test_mp4_to_gif.py ....................                                   
 
 #### Results Output v3
 
+At this point we've some techniques for getting the agents to generate code based off the v2 version of the moveipy library, but let's take a look at adding full YOLO mode capabilties to these agents as well as the v3 prompt to see if we can make
+
 Overview of results:
 - Claude performed almost perfectly here. 
 - Gemini was wild but had some wins. 
-- Aider was hung up by multi-turn behavior and failed to generate code.
+- Aider was hung up by multi-turn behavior and failed to generate code. See [section below](#appendix---aider-problem) for more info on this.
 
 | Solution | Agent | Yolo | Guides | Prompt | Tests Pass/Xfail | Diff Stats | Creates GIF | Util w/ FPS | GIF Loops | Unique FN | Vidstr Path | Notes |
 |----------|-------|------|--------|--------|------------------|------------|-------------|-------------|-----------|-----------|-------------|-------|
@@ -834,14 +845,38 @@ $ git diff --stat tree/t4 HEAD
  docs/test-assets/demo-001.gif | Bin 0 -> 1679861 bytes
 ```
 
-Another interesting trick was to check out the CLI argument generated by each solution with: `agro muster 'uv run mp4_to_gif.py -h'` which produced interesting results:
+Another interesting trick was to check out the CLI argument generated by each solution with: `agro muster 'uv run mp4_to_gif.py -h'` which produced this output:
 
+```
+--- Running command in t6 (output/mp-output-gif-v3.6) ---
+$ uv run mp4_to_gif.py -h | head -n 2
+usage: mp4_to_gif.py [-h] [--output OUTPUT] [--fps FPS] video_path
+
+--- Running command in t7 (output/mp-output-gif-v3.7) ---
+$ uv run mp4_to_gif.py -h | head -n 2
+usage: mp4_to_gif.py [-h] [-o OUTPUT] [--fps FPS] video_path
+
+--- Running command in t8 (output/mp-output-gif-v3.8) ---
+$ uv run mp4_to_gif.py -h | head -n 2
+usage: mp4_to_gif.py [-h] [--fps FPS] input_file
+```
+This allows us to quickly look at the CLI api without having to checkout the branch and start working with it. This allows us to prefer quantity of generation over quality of code review. This is important when you are trying to maximize the potential of generative-ai to increase developer productivity.
 
 ##### Motivation for `agro muster -c safetest`
 
-As mentioned earlier, the fact that this was a slow and heavy data processing task requested means some tests may operate slowly or even get stuck. This 
+As mentioned earlier, the fact that this was a slow and heavy data processing task requested means some tests may operate slowly or even get stuck. When running tests interactively in the terminal this isn't a huge problem since we can't just Keyboard Interupt them when they do get stuck. But running them as background processes is a problem because the test will end up running forever and might throttle cpu hard. 
 
-### Solution
+This happend several times while doing these experiments, which forced me to restart the VPS and re-ssh into it which was a pain-point that Agro should be solving. For this reason, Agro is now adding a timeout command to the default common commands for muster, as shown below and this should be available in Agro v0.1.8:
+
+```diff
++  testq:
++    cmd: "uv run pytest --tb=no -q"
++  safetest:
++    cmd: "uv run pytest --tb=no -q"
++    timeout: 20
+```
+
+### Solution Gnerated
 
 The ultimate solution is actually pretty small, the core of it looks like this:
 
@@ -854,9 +889,17 @@ with VideoFileClip(input_path) as clip:
     clip.write_gif(unique_output_path, fps=fps, loop=0)
 ```
 
-There are other aspect to this like setting up the CLI parameters and parsing, 
+There are other aspect to this like setting up the CLI parameters and parsing, and mocking and creating tests. Check out the Vidstr Repo for the full solution that was accepted.
 
-#### aider problem
+### Conclusion
+
+So we've examine how to **augment prompts**, **add test-case data**, **add guide files**, and **increase agentic permission** in order to improve solution generation on functionality that depends on external libraries, especially those with recent breaking changes. 
+
+We've also taken a look at workflow tricks in Agro like custom muster commands to help quickly qualify or disqualify generated solutions from manual review.
+
+This will provide a path forward for patterns to increase the solutions
+
+#### Appendix - Aider problem
 
 The following is where the agentic-aider got stuck everytime. It looks like it kept trying to load an .mp4 file into the agen't context like it was a text file. This caused an error and semmingly caused the agent to repeat a loop of what it just did, and got stuck looping.
 
@@ -880,4 +923,3 @@ pytest tests/test_mp4_to_gif.py
 
 - [← Previous: ABA-Vidstr-1: External Packages Example](aba-vidster-1.md)
 - [Case Studies Index](index.md)
-- [TODO
