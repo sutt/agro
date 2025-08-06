@@ -170,20 +170,22 @@ from moviepy.editor import VideoFileClip
 E   ModuleNotFoundError: No module named 'moviepy.editor'
 ```
 
-TODO - create table
-Columns: Output properties + Input properties
-Output properties:
-- name + filepath of the utility
-- uses moviepy v2 import style
-- Diff amounts
-- Number of new tests created / new tests that pass
-- Notes section (left blank for manual fill in)
-Input Properites:
-- agent type
-- YOLO property: No for all
-- prompt version
-- guides presented
-Rows: Generated solutions
+| Solution | Agent | YOLO | Guides | Prompt | Utility File | MoviePy v2 Import | Diff Stats | New Tests Created/Pass | Notes |
+|----------|-------|------|--------|--------|--------------|------------------|-----------|----------------------|-------|
+| 1 | Aider | ❌ | None | v1 | mp_util.py | ❌ | mp_util.py +49, tests/test_mp_util.py +99 | 0/0 (import error) | |
+| 2 | Aider | ❌ | None | v1 | mp_util.py | ❌ | mp_util.py +49, tests/test_mp_util.py +67 | 0/0 (import error) | |
+| 3 | Claude | ❌ | None | v1 | utils/mp4_to_gif.py | ❌ | tests/test_mp4_to_gif.py +193, utils/__init__.py +0, utils/__main__.py +4, utils/mp4_to_gif.py +117 | 0/0 (import error) | |
+| 4 | Claude | ❌ | None | v1 | mp4_to_gif.py | ❌ | mp4_to_gif.py +73, tests/test_mp4_to_gif.py +140 | 0/0 (import error) | |
+| 5 | Aider | ❌ | Full | v1 | mp4_to_gif.py | ❌ | mp4_to_gif.py +49, tests/test_mp4_to_gif.py +53 | 0/0 (import error) | |
+| 6 | Aider | ❌ | Full | v1 | No files | ❌ | No output | 0/0 | TODO: No code generated |
+| 7 | Claude | ❌ | Full | v1 | mp4_to_gif.py | ❌ | mp4_to_gif.py +85, tests/test_mp4_to_gif.py +198 | 0/0 (import error) | |
+| 8 | Claude | ❌ | Full | v1 | utils/gif_converter.py | ❌ | pyproject.toml +3, tests/test_gif_converter.py +170, utils/__init__.py +1, utils/gif_converter.py +107 | 0/0 (import error) | |
+| 9 | Aider | ❌ | Some (no docs) | v1 | utils/mp_to_gif.py | ✅ | pyproject.toml +2, tests/test_mp_to_gif.py +55, utils/__init__.py +0, utils/mp_to_gif.py +35 | 4/4 | |
+| 10 | Claude | ❌ | Some (no docs) | v1 | utils/mp4_to_gif.py | ❌ | mp4_to_gif.py +10, tests/test_cli.py +105, tests/test_mp4_to_gif.py +166, utils/__init__.py +0, utils/cli.py +85, utils/mp4_to_gif.py +68 | 0/0 (import error) | |
+| 11 | Aider | ❌ | Some (no docs) | v2 | No files | ❌ | No output | 0/0 | TODO: No code generated |
+| 12 | Claude | ❌ | Some (no docs) | v2 | mp4_to_gif.py | ❌ | mp4_to_gif.py +109, test_conversion.py +34, tests/test_mp4_to_gif.py +222 | 0/0 (import error) | |
+| 13 | Aider | ❌ | Full | v2 | No files | ❌ | No output | 0/0 | TODO: No code generated |
+| 14 | Claude | ❌ | Full | v2 | mp4_to_gif.py | ✅ | mp4_to_gif.py +235, test_mp4_to_gif.py +335 | 20/20 (after manual move) | TODO: Tests not in tests/ dir initially |
 
 <details>
     <summary>
