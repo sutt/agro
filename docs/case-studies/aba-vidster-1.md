@@ -187,3 +187,9 @@ Running `agro exec` on that task file now generates this:
 ### Footnotes
 
 - [other solution summary tables](./assets/other-summaries.md)
+
+## Navigation
+
+- [← Previous: ABA-6 - Docs Generation with AI](aba-6.md)
+- [Case Studies Index](index.md)
+- [Next: Vidstr-2 - External Packages + Agentic Commands →](aba-vidstr-2.md)

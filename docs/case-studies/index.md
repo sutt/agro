@@ -12,7 +12,8 @@ This section contains case studies in using `agro`. Specifically in this case ho
 | [ABA-4: UX Considerations in AI Development](aba-4.md) | Examines the role of human intelligence in AI-assisted development, particularly around UX decisions and product design. Shows how understanding user workflows informs better task specifications. | July 15, 2025 |
 | [ABA-5: YOLO Mode and Command Execution](aba-5.md) | Compares different AI agents (Claude, Gemini, Aider) in "YOLO mode" for tasks requiring command execution. Demonstrates agent performance differences and the power of unrestricted command access. | July 16, 2025 |
 | [ABA-6: Docs Generation with AI](aba-6.md) | Generating a version1 docs section with agents, and a look at the required manual interventions to get something accurate. | July 20, 2025 |
-| [ABA-Vidstr-1: External Packages Example](aba-vidstr-1.md) | Using a realtively necent pypi package in your repo presents challenges to agent workflow; learn how to deal with it. | July 23, 2025 |
+| [ABA-Vidstr-1: External Packages Example](aba-vidster-1.md) | Using a realtively necent pypi package in your repo presents challenges to agent workflow; learn how to deal with it. | July 23, 2025 |
+| [ABA-Vidstr-2: External Packages + Agentic Commands](aba-vidstr-2.md) | Using an external package and checking results based on video processing outputs. | August 5, 2025 |
 
 ## Navigation
 
