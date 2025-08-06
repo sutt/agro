@@ -151,16 +151,551 @@ The way we allow our agents to run commands like the `uv run mp4_to_gif.py <args
 Since this mode is realtively dangerous, I'll be running this on a VPS setup for just running YOLO agents, to protect my primary dev box. 
 
 ---
+### Results
 
-### Results Output v1
-These are the results generates out of prompt v1 with no guides
+Now let's compare multiple runs of different combinations of with vs without guides, different prompt versions, and different agent permission levels. As with our previous case studies at their base agents use the following:
+- Aider: v0.82, using Gemini-2.5-Pro
+- Claude: v1.0.64, using Sonnet-4
+- Gemini-CLI: v0.1.7, using Gemini-2.5-Pro
+
+
+#### Results Output v1 - v2
+These are the results generated out of combinations of:
+- prompt v1 / v2
+- guides: none for moviepy, all three movie py, 
+
+The main property we're looking for is the solution generated doesn't run into this problem and secondarily if it creates new tests that pass when run.
+```python
+from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+```
+
+TODO - create table
+Columns: Output properties + Input properties
 Output properties:
-- name of the 
+- name + filepath of the utility
 - uses moviepy v2 import style
+- Diff amounts
+- Number of new tests created / new tests that pass
+- Notes section (left blank for manual fill in)
+Input Properites:
+- agent type
+- YOLO property: No for all
+- prompt version
+- guides presented
+Rows: Generated solutions
 
-### Results Output v2
+<details>
+    <summary>
+    Output diff stats and test runs and notes
+    </summary>
 
-### Results Output v3
+### manual notes
+
+```
+- inputs:
+    1-2: prompt=v1, guides=none, agent=aider
+    3-4: "          "            agent=claude
+    5-6: "          guides=full, agent=aider
+    7-8: "          "            agent=claude
+    9:   "          guides=some(no docs) agent=aider
+    10:  "          guides=some(no docs) agent=claude
+    11:  prompt=v2  "           agent=aider
+    12:  "          "           agent=claude
+    13:  prompt=v2  guides=full agent=aider
+    14:  "          "           agent=claude
+
+- outputs:
+    1-5,7,8: all have v1 import errors
+    11,13: appear to have not output any code
+    14: has new tests but didn't put them in tests/ dir so they don't auto run
+
+- notes:
+    21 existing pytests,
+    -> so if the output reports still 21 tests, it didn't run any new ones
+    - for t14 we manually moved test file to get them to run
+    - look for the err: "E   ModuleNotFoundError: No module named 'moviepy.editor'"
+```
+
+### diff stats
+
+```
+--- Diff for t1 (output/mp-output-gif.1) ---
+$ git diff --stat tree/t1 HEAD
+ mp_util.py            | 49 ++++++++++++++++++++++++++++++++
+ tests/test_mp_util.py | 99 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 148 insertions(+)
+
+--- Diff for t2 (output/mp-output-gif.2) ---
+$ git diff --stat tree/t2 HEAD
+ mp_util.py            | 49 +++++++++++++++++++++++++++++++++++++++++++++++
+ tests/test_mp_util.py | 67 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 116 insertions(+)
+
+--- Diff for t3 (output/mp-output-gif.3) ---
+$ git diff --stat tree/t3 HEAD
+ tests/test_mp4_to_gif.py | 193 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ utils/__init__.py        |   0
+ utils/__main__.py        |   4 ++
+ utils/mp4_to_gif.py      | 117 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 314 insertions(+)
+
+--- Diff for t4 (output/mp-output-gif.4) ---
+$ git diff --stat tree/t4 HEAD
+ mp4_to_gif.py            |  73 +++++++++++++++++++++++++++++++
+ tests/test_mp4_to_gif.py | 140 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 213 insertions(+)
+
+--- Diff for t5 (output/mp-output-gif.5) ---
+$ git diff --stat tree/t5 HEAD
+ mp4_to_gif.py            | 49 +++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/test_mp4_to_gif.py | 53 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 102 insertions(+)
+
+--- Diff for t6 (output/mp-output-gif.6) ---
+$ git diff --stat tree/t6 HEAD
+
+--- Diff for t7 (output/mp-output-gif.7) ---
+$ git diff --stat tree/t7 HEAD
+ mp4_to_gif.py            |  85 ++++++++++++++++++++++++++
+ tests/test_mp4_to_gif.py | 198 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 283 insertions(+)
+
+--- Diff for t8 (output/mp-output-gif.8) ---
+$ git diff --stat tree/t8 HEAD
+ pyproject.toml              |   3 +
+ tests/test_gif_converter.py | 170 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ utils/__init__.py           |   1 +
+ utils/gif_converter.py      | 107 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 281 insertions(+)
+
+--- Diff for t9 (output/mp-output-gif.9) ---
+$ git diff --stat tree/t9 HEAD
+ pyproject.toml          |  2 ++
+ tests/test_mp_to_gif.py | 55 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ utils/__init__.py       |  0
+ utils/mp_to_gif.py      | 35 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 92 insertions(+)
+
+--- Diff for t10 (output/mp-output-gif.10) ---
+$ git diff --stat tree/t10 HEAD
+ mp4_to_gif.py            |  10 ++++
+ tests/test_cli.py        | 105 ++++++++++++++++++++++++++++++++++++++
+ tests/test_mp4_to_gif.py | 166 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ utils/__init__.py        |   0
+ utils/cli.py             |  85 +++++++++++++++++++++++++++++++
+ utils/mp4_to_gif.py      |  68 +++++++++++++++++++++++++
+ 6 files changed, 434 insertions(+)
+
+--- Diff for t11 (output/mp-output-gif-v2.1) ---
+$ git diff --stat tree/t11 HEAD
+
+--- Diff for t12 (output/mp-output-gif-v2.2) ---
+$ git diff --stat tree/t12 HEAD
+ mp4_to_gif.py            | 109 +++++++++++++++++++++++++++++
+ test_conversion.py       |  34 ++++++++++
+ tests/test_mp4_to_gif.py | 222 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 365 insertions(+)
+
+--- Diff for t13 (output/mp-output-gif-v2.3) ---
+$ git diff --stat tree/t13 HEAD
+
+--- Diff for t14 (output/mp-output-gif-v2.4) ---
+$ git diff --stat tree/t14 HEAD
+ mp4_to_gif.py      | 235 ++++++++++++++++++++++++++++++++++++++++++++++
+ test_mp4_to_gif.py | 335 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 570 insertions(+)
+```
+
+### pytest runs
+
+```
+user@DESKTOP-1EB4G00:~/dev/smol-projs/vidstr$ agro muster 'uv run pytest'
+No branch pattern specified. Using default pattern for output branches: 'output/*'
+
+--- Running command in t1 (output/mp-output-gif.1) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t1
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items / 1 error                                                                
+
+========================================== ERRORS ===========================================
+__________________________ ERROR collecting tests/test_mp_util.py ___________________________
+ImportError while importing test module '/home/user/dev/smol-projs/vidstr/trees/t1/tests/test_mp_util.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/user/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_mp_util.py:5: in <module>
+    import mp_util
+mp_util.py:4: in <module>
+    from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+================================== short test summary info ==================================
+ERROR tests/test_mp_util.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!
+===================================== 1 error in 0.96s ======================================
+Error executing command: uv run pytest
+--- Command failed in t1. Continuing... ---
+
+--- Running command in t2 (output/mp-output-gif.2) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t2
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items / 1 error                                                                
+
+========================================== ERRORS ===========================================
+__________________________ ERROR collecting tests/test_mp_util.py ___________________________
+ImportError while importing test module '/home/user/dev/smol-projs/vidstr/trees/t2/tests/test_mp_util.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/user/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_mp_util.py:6: in <module>
+    from mp_util import main, mp4_to_gif
+mp_util.py:5: in <module>
+    from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+================================== short test summary info ==================================
+ERROR tests/test_mp_util.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!
+===================================== 1 error in 0.85s ======================================
+Error executing command: uv run pytest
+--- Command failed in t2. Continuing... ---
+
+--- Running command in t3 (output/mp-output-gif.3) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t3
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items / 1 error                                                                
+
+========================================== ERRORS ===========================================
+_________________________ ERROR collecting tests/test_mp4_to_gif.py _________________________
+ImportError while importing test module '/home/user/dev/smol-projs/vidstr/trees/t3/tests/test_mp4_to_gif.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/user/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_mp4_to_gif.py:6: in <module>
+    from utils.mp4_to_gif import convert_mp4_to_gif
+utils/mp4_to_gif.py:4: in <module>
+    from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+================================== short test summary info ==================================
+ERROR tests/test_mp4_to_gif.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!
+===================================== 1 error in 0.85s ======================================
+Error executing command: uv run pytest
+--- Command failed in t3. Continuing... ---
+
+--- Running command in t4 (output/mp-output-gif.4) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t4
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items / 1 error                                                                
+
+========================================== ERRORS ===========================================
+_________________________ ERROR collecting tests/test_mp4_to_gif.py _________________________
+ImportError while importing test module '/home/user/dev/smol-projs/vidstr/trees/t4/tests/test_mp4_to_gif.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/user/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_mp4_to_gif.py:6: in <module>
+    import mp4_to_gif
+mp4_to_gif.py:4: in <module>
+    from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+================================== short test summary info ==================================
+ERROR tests/test_mp4_to_gif.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!
+===================================== 1 error in 0.87s ======================================
+Error executing command: uv run pytest
+--- Command failed in t4. Continuing... ---
+
+--- Running command in t5 (output/mp-output-gif.5) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t5
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items / 1 error                                                                
+
+========================================== ERRORS ===========================================
+_________________________ ERROR collecting tests/test_mp4_to_gif.py _________________________
+ImportError while importing test module '/home/user/dev/smol-projs/vidstr/trees/t5/tests/test_mp4_to_gif.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/user/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_mp4_to_gif.py:4: in <module>
+    from mp4_to_gif import convert_mp4_to_gif, main
+mp4_to_gif.py:4: in <module>
+    from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+================================== short test summary info ==================================
+ERROR tests/test_mp4_to_gif.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!
+===================================== 1 error in 0.85s ======================================
+Error executing command: uv run pytest
+--- Command failed in t5. Continuing... ---
+
+--- Running command in t6 (output/mp-output-gif.6) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t6
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items                                                                          
+
+tests/test_concat_vid.py .................                                            [ 80%]
+tests/test_config.py ....                                                             [100%]
+
+==================================== 21 passed in 0.81s =====================================
+
+--- Running command in t7 (output/mp-output-gif.7) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t7
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items / 1 error                                                                
+
+========================================== ERRORS ===========================================
+_________________________ ERROR collecting tests/test_mp4_to_gif.py _________________________
+ImportError while importing test module '/home/user/dev/smol-projs/vidstr/trees/t7/tests/test_mp4_to_gif.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/user/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_mp4_to_gif.py:9: in <module>
+    from mp4_to_gif import convert_mp4_to_gif, main
+mp4_to_gif.py:6: in <module>
+    from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+================================== short test summary info ==================================
+ERROR tests/test_mp4_to_gif.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!
+===================================== 1 error in 0.89s ======================================
+Error executing command: uv run pytest
+--- Command failed in t7. Continuing... ---
+
+--- Running command in t8 (output/mp-output-gif.8) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t8
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items / 1 error                                                                
+
+========================================== ERRORS ===========================================
+_______________________ ERROR collecting tests/test_gif_converter.py ________________________
+ImportError while importing test module '/home/user/dev/smol-projs/vidstr/trees/t8/tests/test_gif_converter.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/user/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_gif_converter.py:9: in <module>
+    from utils.gif_converter import convert_mp4_to_gif
+utils/gif_converter.py:7: in <module>
+    from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+================================== short test summary info ==================================
+ERROR tests/test_gif_converter.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!
+===================================== 1 error in 0.88s ======================================
+Error executing command: uv run pytest
+--- Command failed in t8. Continuing... ---
+
+--- Running command in t9 (output/mp-output-gif.9) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t9
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 25 items                                                                          
+
+tests/test_concat_vid.py .................                                            [ 68%]
+tests/test_config.py ....                                                             [ 84%]
+tests/test_mp_to_gif.py ....                                                          [100%]
+
+==================================== 25 passed in 1.86s =====================================
+
+--- Running command in t10 (output/mp-output-gif.10) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t10
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items / 2 errors                                                               
+
+========================================== ERRORS ===========================================
+____________________________ ERROR collecting tests/test_cli.py _____________________________
+ImportError while importing test module '/home/user/dev/smol-projs/vidstr/trees/t10/tests/test_cli.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/user/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_cli.py:11: in <module>
+    from utils.cli import main
+utils/cli.py:10: in <module>
+    from .mp4_to_gif import convert_mp4_to_gif
+utils/mp4_to_gif.py:9: in <module>
+    from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+_________________________ ERROR collecting tests/test_mp4_to_gif.py _________________________
+ImportError while importing test module '/home/user/dev/smol-projs/vidstr/trees/t10/tests/test_mp4_to_gif.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/user/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_mp4_to_gif.py:12: in <module>
+    from utils.mp4_to_gif import convert_mp4_to_gif
+utils/mp4_to_gif.py:9: in <module>
+    from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+================================== short test summary info ==================================
+ERROR tests/test_cli.py
+ERROR tests/test_mp4_to_gif.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!!!!!!!
+===================================== 2 errors in 1.89s =====================================
+Error executing command: uv run pytest
+--- Command failed in t10. Continuing... ---
+
+--- Running command in t11 (output/mp-output-gif-v2.1) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t11
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items                                                                          
+
+tests/test_concat_vid.py .................                                            [ 80%]
+tests/test_config.py ....                                                             [100%]
+
+==================================== 21 passed in 1.76s =====================================
+
+--- Running command in t12 (output/mp-output-gif-v2.2) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t12
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items / 1 error                                                                
+
+========================================== ERRORS ===========================================
+_________________________ ERROR collecting tests/test_mp4_to_gif.py _________________________
+ImportError while importing test module '/home/user/dev/smol-projs/vidstr/trees/t12/tests/test_mp4_to_gif.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/user/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_mp4_to_gif.py:6: in <module>
+    from mp4_to_gif import mp4_to_gif, get_unique_filepath, main
+mp4_to_gif.py:4: in <module>
+    from moviepy.editor import VideoFileClip
+E   ModuleNotFoundError: No module named 'moviepy.editor'
+================================== short test summary info ==================================
+ERROR tests/test_mp4_to_gif.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!
+===================================== 1 error in 1.85s ======================================
+Error executing command: uv run pytest
+--- Command failed in t12. Continuing... ---
+
+--- Running command in t13 (output/mp-output-gif-v2.3) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t13
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items                                                                          
+
+tests/test_concat_vid.py .................                                            [ 80%]
+tests/test_config.py ....                                                             [100%]
+
+==================================== 21 passed in 1.80s =====================================
+
+--- Running command in t14 (output/mp-output-gif-v2.4) ---
+$ uv run pytest
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr/trees/t14
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 21 items                                                                          
+
+tests/test_concat_vid.py .................                                            [ 80%]
+tests/test_config.py ....                                                             [100%]
+
+==================================== 21 passed in 1.81s =====================================
+user@DESKTOP-1EB4G00:~/dev/smol-projs/vidstr$ 
+```
+
+### test run appendix
+for t14:
+```
+==================================== test session starts ====================================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/user/dev/smol-projs/vidstr
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0
+collected 41 items                                                                          
+
+tests/test_concat_vid.py .................                                            [ 41%]
+tests/test_config.py ....                                                             [ 51%]
+tests/test_mp4_to_gif.py ....................                                         [100%]
+
+==================================== 41 passed in 0.96s =====================================
+```
+</details>
+
+#### Results Output v3
 
 Overview of results:
 - Claude performed almost perfectly here. 
@@ -169,14 +704,14 @@ Overview of results:
 
 | Solution | Agent | Yolo | Guides | Prompt | Tests Pass/Xfail | Diff Stats | Creates GIF | Util w/ FPS | GIF Loops | Unique FN | Vidstr Path | Notes |
 |----------|-------|------|--------|--------|------------------|------------|-------------|-------------|-----------|-----------|-------------|-------|
-| 1 | Aider | ✅ | Full | v3 | 0/0 | No files | ❌ | ❌ | ❌ | ❌ | ❌ | TODO: Null result (aider problem) |
-| 2 | Aider | ✅ | Full | v3 | 0/0 | No files | ❌ | ❌ | ❌ | ❌ | ❌ | TODO: Null result (aider problem) |
-| 3 | Claude | ✅ | Full | v3 | 19/1 | mp4_to_gif.py +199, tests/test_mp4_to_gif.py +338, pyproject.toml +5, uv.lock +8 | ✅ | ✅ | ✅ | ✅ | ✅ | TODO: Almost perfect, defensive xfail |
-| 4 | Claude | ✅ | Full | v3 | 17/1 | mp4_to_gif.py +197, tests/test_mp4_to_gif.py +327 | ✅ | ✅ | ✅ | ✅ | ✅ | TODO: 1 xfail should be skip (hangs) |
-| 5 | Aider | ✅ | Sans docs | v3 | 0/0 | No files | ❌ | ❌ | ❌ | ❌ | ❌ | TODO: Null result (aider problem) |
-| 6 | Gemini | ✅ | Sans docs | v3 | 0/All | mp4_to_gif.py +111, tests/test_mp4_to_gif.py +87 | ❌ | ✅ | ❌ | ❌ | ❌ | TODO: All tests xfail, util works |
-| 7 | Gemini | ✅ | Sans docs | v3 | 4/0 | No output | ✅ | ✅ | ❌ | ❌ | ❌ | TODO: GIF not looping, weird venv2 |
-| 8 | Gemini | ✅ | Sans docs | v3 | 1/0 | mp4_to_gif.py +46, tests/test_mp4_to_gif.py +47 | ✅ | ✅ | ❌ | ❌ | ❌ | TODO: Basic functionality works |
+| 1 | Aider | Y | Full | v3 | n/a | No files | ❌ | ❌ | ❌ | ❌ | ❌ | Null result (aider problem) |
+| 2 | Aider | Y | Full | v3 | n/a | No files | ❌ | ❌ | ❌ | ❌ | ❌ | Null result (aider problem) |
+| 3 | Claude | Y | Full | v3 | 19/1 | mp4_to_gif.py +199, tests/test_mp4_to_gif.py +338, pyproject.toml +5, uv.lock +8 | ✅ | ✅ | ✅ | ✅ | ✅ | Almost perfect, defensive xfail |
+| 4 | Claude | Y | Full | v3 | 17/1 | mp4_to_gif.py +197, tests/test_mp4_to_gif.py +327 | ✅ | ✅ | ✅ | ✅ | ✅ | 1 xfail should be skip (hangs) |
+| 5 | Aider | Y | no moviepy.docs | v3 | n/a | No files | ❌ | ❌ | ❌ | ❌ | ❌ | Null result (aider problem) |
+| 6 | Gemini | Y | no moviepy.docs | v3 | 0/2 | mp4_to_gif.py +111, tests/test_mp4_to_gif.py +87 | ❌ | ✅ | ❌ | ❌ | ❌ | All tests xfail, util works |
+| 7 | Gemini | Y | no moviepy.docs | v3 | 4/0 | mp4_to_gif.py +114, tests/test_mp4_to_gif.py +111, .venv2/pyvenv.cfg +5, .venv2/bin/python +1 | ✅ | ✅ | ❌ | ❌ | ❌ | GIF not looping, weird venv2 output artifacts |
+| 8 | Gemini | Y | no moviepy.docs | v3 | 1/0 | mp4_to_gif.py +46, tests/test_mp4_to_gif.py +47 | ✅ | ✅ | ❌ | ❌ | ❌ | Basic functionality works, adv reqs dont |
 
 
 <details>
