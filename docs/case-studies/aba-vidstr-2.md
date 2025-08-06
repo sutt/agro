@@ -167,23 +167,16 @@ Overview of results:
 - Gemini was wild but had some wins. 
 - Aider was hung up by multi-turn behavior and failed to generate code.
 
-TODO - create table
-columns: Solution Input Properites + Output Properites
-Input Properties:
-- agent type (calude, aider, gemini)
-- agent properties (yolo vs non-yolo)
-- guides passed
-- prompt version passed
-Output properties:
-- tests added: number created that pass, number created set to Xfail.
-- diff numbers for files created / modified
-- creates the gif in output (yes/no)
-- req #0: utility produced which converts a gif, has fps param (yes/no)
-- req #1: gif is a loop (yes/no)
-- req #2: output is unique_fn (yes/no)
-- req #3: vidstr path works (yes/no)
-- notes (manual filled later)
-rows: Solutions generated (see manual notes section below in the detail item)
+| Solution | Agent | Yolo | Guides | Prompt | Tests Pass/Xfail | Diff Stats | Creates GIF | Util w/ FPS | GIF Loops | Unique FN | Vidstr Path | Notes |
+|----------|-------|------|--------|--------|------------------|------------|-------------|-------------|-----------|-----------|-------------|-------|
+| 1 | Aider | ✅ | Full | v3 | 0/0 | No files | ❌ | ❌ | ❌ | ❌ | ❌ | TODO: Null result (aider problem) |
+| 2 | Aider | ✅ | Full | v3 | 0/0 | No files | ❌ | ❌ | ❌ | ❌ | ❌ | TODO: Null result (aider problem) |
+| 3 | Claude | ✅ | Full | v3 | 19/1 | mp4_to_gif.py +199, tests/test_mp4_to_gif.py +338, pyproject.toml +5, uv.lock +8 | ✅ | ✅ | ✅ | ✅ | ✅ | TODO: Almost perfect, defensive xfail |
+| 4 | Claude | ✅ | Full | v3 | 17/1 | mp4_to_gif.py +197, tests/test_mp4_to_gif.py +327 | ✅ | ✅ | ✅ | ✅ | ✅ | TODO: 1 xfail should be skip (hangs) |
+| 5 | Aider | ✅ | Sans docs | v3 | 0/0 | No files | ❌ | ❌ | ❌ | ❌ | ❌ | TODO: Null result (aider problem) |
+| 6 | Gemini | ✅ | Sans docs | v3 | 0/All | mp4_to_gif.py +111, tests/test_mp4_to_gif.py +87 | ❌ | ✅ | ❌ | ❌ | ❌ | TODO: All tests xfail, util works |
+| 7 | Gemini | ✅ | Sans docs | v3 | 4/0 | No output | ✅ | ✅ | ❌ | ❌ | ❌ | TODO: GIF not looping, weird venv2 |
+| 8 | Gemini | ✅ | Sans docs | v3 | 1/0 | mp4_to_gif.py +46, tests/test_mp4_to_gif.py +47 | ✅ | ✅ | ❌ | ❌ | ❌ | TODO: Basic functionality works |
 
 
 <details>
