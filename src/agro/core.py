@@ -1022,8 +1022,8 @@ def muster_command(
     # Determine timeout: CLI > common_cmd config > global config > default
     if timeout is not None:
         effective_timeout = timeout if timeout > 0 else None
-    elif cmd_timeout is not None:
-        effective_timeout = cmd_timeout if cmd_timeout > 0 else None
+    elif cmd_timeout is not None and cmd_timeout > 0:
+        effective_timeout = cmd_timeout
     else:
         effective_timeout = (
             config.MUSTER_DEFAULT_TIMEOUT if config.MUSTER_DEFAULT_TIMEOUT > 0 else None
