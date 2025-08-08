@@ -923,3 +923,4 @@ pytest tests/test_mp4_to_gif.py
 
 - [← Previous: ABA-Vidstr-1: External Packages Example](aba-vidster-1.md)
 - [Case Studies Index](index.md)
+- [Next: ABA-7 - One Spec, Two Different Solutions →](aba-7.md)

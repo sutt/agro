@@ -14,6 +14,7 @@ This section contains case studies in using `agro`. Specifically in this case ho
 | [ABA-6: Docs Generation with AI](aba-6.md) | Generating a version1 docs section with agents, and a look at the required manual interventions to get something accurate. | July 20, 2025 |
 | [ABA-Vidstr-1: External Packages Example](aba-vidster-1.md) | Using a realtively necent pypi package in your repo presents challenges to agent workflow; learn how to deal with it. | July 23, 2025 |
 | [ABA-Vidstr-2: External Packages + Agentic Commands](aba-vidstr-2.md) | Using an external package and checking results based on video processing outputs. | August 5, 2025 |
+| [ABA-7: Two different solutions from same spec](aba-7.md) | Looking at the scenario where the same spec will generate a simple and complex solution. | August 8, 2025 |
 
 ## Navigation
 
