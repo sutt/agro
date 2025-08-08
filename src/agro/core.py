@@ -1010,7 +1010,9 @@ def muster_command(
         if isinstance(common_cmd_config, dict):
             final_command_str = common_cmd_config.get("cmd")
             if "timeout" in common_cmd_config:
-                cmd_timeout = common_cmd_config["timeout"]
+                cmd_timeout = common_cmd_config.get("timeout")
+                if cmd_timeout is None:
+                    cmd_timeout = 0
         else:  # Support old string-only format
             final_command_str = common_cmd_config
 
@@ -1022,8 +1024,8 @@ def muster_command(
     # Determine timeout: CLI > common_cmd config > global config > default
     if timeout is not None:
         effective_timeout = timeout if timeout > 0 else None
-    elif cmd_timeout is not None and cmd_timeout > 0:
-        effective_timeout = cmd_timeout
+    elif cmd_timeout is not None:
+        effective_timeout = cmd_timeout if cmd_timeout > 0 else None
     else:
         effective_timeout = (
             config.MUSTER_DEFAULT_TIMEOUT if config.MUSTER_DEFAULT_TIMEOUT > 0 else None
