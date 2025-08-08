@@ -476,6 +476,7 @@ def test_dispatch_muster(mock_muster_command):
         branch_patterns=["p1"],
         common_cmd_key=None,
         verbose=0,
+        timeout=None,
     )
     _dispatch_muster(args)
     mock_muster_command.assert_called_once_with(
@@ -483,6 +484,7 @@ def test_dispatch_muster(mock_muster_command):
         branch_patterns=["p1"],
         common_cmd_key=None,
         show_cmd_output=False,
+        timeout=None,
     )
     mock_muster_command.reset_mock()
 
@@ -492,6 +494,7 @@ def test_dispatch_muster(mock_muster_command):
         branch_patterns=[],
         common_cmd_key="testq",
         verbose=0,
+        timeout=10,
     )
     _dispatch_muster(args)
     mock_muster_command.assert_called_once_with(
@@ -499,6 +502,7 @@ def test_dispatch_muster(mock_muster_command):
         branch_patterns=["p1"],
         common_cmd_key="testq",
         show_cmd_output=False,
+        timeout=10,
     )
     mock_muster_command.reset_mock()
 
@@ -508,6 +512,7 @@ def test_dispatch_muster(mock_muster_command):
         branch_patterns=[],
         common_cmd_key="testq",
         verbose=0,
+        timeout=None,
     )
     _dispatch_muster(args)
     mock_muster_command.assert_called_once_with(
@@ -515,6 +520,7 @@ def test_dispatch_muster(mock_muster_command):
         branch_patterns=[],
         common_cmd_key="testq",
         show_cmd_output=False,
+        timeout=None,
     )
     mock_muster_command.reset_mock()
 
@@ -524,6 +530,7 @@ def test_dispatch_muster(mock_muster_command):
         branch_patterns=[],
         common_cmd_key=None,
         verbose=0,
+        timeout=None,
     )
     with pytest.raises(ValueError):
         _dispatch_muster(args)

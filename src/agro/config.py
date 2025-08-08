@@ -45,10 +45,14 @@ DEFAULTS = {
         'claude': 600,
         'gemini': 600,  # 10 minutes timeout for gemini calls
     },
+    'MUSTER_DEFAULT_TIMEOUT': 20,
     'MUSTER_COMMON_CMDS': {
-        'testq': 'uv run pytest --tb=no -q',
-        'server-start': 'uv run python app/main.py > server.log 2>&1 & echo $! > server.pid',
-        'server-kill': 'kill $(cat server.pid) && rm -f server.pid server.log',
+        'testq': {'cmd': 'uv run pytest --tb=no -q'},
+        'server-start': {
+            'cmd': 'uv run python app/main.py > server.log 2>&1 & echo $! > server.pid',
+            'timeout': None,
+        },
+        'server-kill': {'cmd': 'kill $(cat server.pid) && rm -f server.pid server.log'},
     },
     'AGRO_EDITOR_CMD': 'code',
     'ENV_SETUP_CMDS': [
@@ -82,7 +86,16 @@ def _load_config():
                                 config['AGENT_CONFIG'][agent_name] = agent_data
 
                     if 'MUSTER_COMMON_CMDS' in user_config and isinstance(user_config['MUSTER_COMMON_CMDS'], dict):
-                        config['MUSTER_COMMON_CMDS'].update(user_config.pop('MUSTER_COMMON_CMDS'))
+                        user_muster_cmds = user_config.pop('MUSTER_COMMON_CMDS')
+                        for key, value in user_muster_cmds.items():
+                            if (
+                                key in config['MUSTER_COMMON_CMDS']
+                                and isinstance(config['MUSTER_COMMON_CMDS'][key], dict)
+                                and isinstance(value, dict)
+                            ):
+                                config['MUSTER_COMMON_CMDS'][key].update(value)
+                            else:
+                                config['MUSTER_COMMON_CMDS'][key] = value
 
                     config.update(user_config)
             except yaml.YAMLError as e:
@@ -111,6 +124,7 @@ EXEC_CMD_DEFAULT = _config['EXEC_CMD_DEFAULT']
 AGENT_TYPE = _config['AGENT_TYPE']
 AGENT_CONFIG = _config['AGENT_CONFIG']
 AGENT_TIMEOUTS = _config['AGENT_TIMEOUTS']
+MUSTER_DEFAULT_TIMEOUT = _config['MUSTER_DEFAULT_TIMEOUT']
 MUSTER_COMMON_CMDS = _config['MUSTER_COMMON_CMDS']
 AGRO_EDITOR_CMD = _config['AGRO_EDITOR_CMD']
 ENV_SETUP_CMDS = _config['ENV_SETUP_CMDS']
