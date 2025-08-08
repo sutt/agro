@@ -162,8 +162,15 @@ def _get_config_template():
 
     # Format MUSTER_COMMON_CMDS
     muster_common_cmds_lines = ["# MUSTER_COMMON_CMDS:"]
-    for key, cmd in config.DEFAULTS.get("MUSTER_COMMON_CMDS", {}).items():
-        muster_common_cmds_lines.append(f"#   {key}: {json.dumps(cmd)}")
+    for key, data in config.DEFAULTS.get("MUSTER_COMMON_CMDS", {}).items():
+        if isinstance(data, dict):
+            muster_common_cmds_lines.append(f"#   {key}:")
+            muster_common_cmds_lines.append(f'#     cmd: {json.dumps(data.get("cmd"))}')
+            if "timeout" in data:
+                timeout_val = "null" if data["timeout"] is None else data["timeout"]
+                muster_common_cmds_lines.append(f"#     timeout: {timeout_val}")
+        else: # old format for robustness
+            muster_common_cmds_lines.append(f"#   {key}: {json.dumps(data)}")
     muster_common_cmds_str = "\n".join(muster_common_cmds_lines)
 
     return f"""# Agro Configuration File
@@ -225,6 +232,10 @@ def _get_config_template():
 
 
 # --- Muster ---
+
+# Default timeout in seconds for commands run with 'agro muster'.
+# A value of 0 or null means no timeout.
+# MUSTER_DEFAULT_TIMEOUT: {config.DEFAULTS['MUSTER_DEFAULT_TIMEOUT']}
 
 # Pre-defined commands for 'agro muster -c'.
 {muster_common_cmds_str}
@@ -357,6 +368,7 @@ def _run_command(
     shell=False,
     show_cmd_output=False,
     suppress_error_logging=False,
+    timeout=None,
 ):
     """Helper to run a shell command."""
     cmd_str = command if isinstance(command, str) else shlex.join(command)
@@ -373,8 +385,19 @@ def _run_command(
             text=True,
             capture_output=do_capture,
             shell=shell,
+            timeout=timeout,
         )
         return result
+    except subprocess.TimeoutExpired as e:
+        if not suppress_error_logging:
+            cmd_str = command if isinstance(command, str) else shlex.join(command)
+            logger.error(f"Timeout of {timeout}s expired for command: {cmd_str}")
+            # If output was captured, it's in the exception.
+            if e.stdout:
+                logger.error(f"STDOUT:\n{e.stdout.strip()}")
+            if e.stderr:
+                logger.error(f"STDERR:\n{e.stderr.strip()}")
+        raise
     except subprocess.CalledProcessError as e:
         if not suppress_error_logging:
             cmd_str = command if isinstance(command, str) else shlex.join(command)
@@ -963,11 +986,15 @@ def muster_command(
     branch_patterns,
     show_cmd_output=False,
     common_cmd_key=None,
+    timeout=None,
 ):
     """Runs a command in multiple worktrees."""
+    final_command_str = None
+    cmd_timeout = None
+
     if common_cmd_key:
-        final_command_str = config.MUSTER_COMMON_CMDS.get(common_cmd_key)
-        if not final_command_str:
+        common_cmd_config = config.MUSTER_COMMON_CMDS.get(common_cmd_key)
+        if not common_cmd_config:
             config_path = Path(config.AGDOCS_DIR) / "conf" / "agro.conf.yml"
             msg = f"Common command '{common_cmd_key}' not found in 'MUSTER_COMMON_CMDS'."
             if config_path.is_file():
@@ -978,10 +1005,29 @@ def muster_command(
             available_cmds = ", ".join(sorted(config.MUSTER_COMMON_CMDS.keys()))
             if available_cmds:
                 msg += f" Available commands are: {available_cmds}."
-
             raise ValueError(msg)
+
+        if isinstance(common_cmd_config, dict):
+            final_command_str = common_cmd_config.get("cmd")
+            if "timeout" in common_cmd_config:
+                cmd_timeout = common_cmd_config["timeout"]
+        else:  # Support old string-only format
+            final_command_str = common_cmd_config
+
+        if not final_command_str:
+            raise ValueError(f"Command not found for common command key '{common_cmd_key}'")
     else:
         final_command_str = command_str
+
+    # Determine timeout: CLI > common_cmd config > global config > default
+    if timeout is not None:
+        effective_timeout = timeout if timeout > 0 else None
+    elif cmd_timeout is not None:
+        effective_timeout = cmd_timeout if cmd_timeout > 0 else None
+    else:
+        effective_timeout = (
+            config.MUSTER_DEFAULT_TIMEOUT if config.MUSTER_DEFAULT_TIMEOUT > 0 else None
+        )
 
     if not branch_patterns:
         patterns_to_use = [config.WORKTREE_OUTPUT_BRANCH_PREFIX]
@@ -1031,8 +1077,9 @@ def muster_command(
                 cwd=str(worktree_path),
                 shell=use_shell,
                 show_cmd_output=True,
+                timeout=effective_timeout,
             )
-        except (subprocess.CalledProcessError, FileNotFoundError):
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
             # _run_command already prints details.
             logger.error(f"--- Command failed in t{index}. Continuing... ---")
             continue

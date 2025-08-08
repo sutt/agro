@@ -535,10 +535,14 @@ def test_muster_command(
     mock_get_worktree_state.return_value = {"t1": "output/branch.1"}
     mock_path.return_value.is_dir.return_value = True
     mock_config.MUSTER_COMMON_CMDS = {
-        "testq": "uv run pytest -q",
-        "server-start": "my-app --daemon > server.log 2>&1 &",
-        "server-kill": "kill $(cat server.pid)",
+        "testq": {"cmd": "uv run pytest -q"},
+        "server-start": {
+            "cmd": "my-app --daemon > server.log 2>&1 &",
+            "timeout": None,
+        },
+        "server-kill": {"cmd": "kill $(cat server.pid)"},
     }
+    mock_config.MUSTER_DEFAULT_TIMEOUT = 20
     mock_config.WORKTREE_OUTPUT_BRANCH_PREFIX = "output/"
     mock_config.AGDOCS_DIR = ".agdocs"
 
@@ -554,6 +558,7 @@ def test_muster_command(
         cwd=str(mock_path.return_value / "t1"),
         shell=False,
         show_cmd_output=True,
+        timeout=20,
     )
     mock_run_command.reset_mock()
 
@@ -568,10 +573,11 @@ def test_muster_command(
         cwd=str(mock_path.return_value / "t1"),
         shell=False,
         show_cmd_output=True,
+        timeout=20,
     )
     mock_run_command.reset_mock()
 
-    # Test with server-start common command (needs shell)
+    # Test with server-start common command (needs shell, no timeout)
     core.muster_command(
         command_str=None,
         branch_patterns=["output/branch.1"],
@@ -583,10 +589,11 @@ def test_muster_command(
         cwd=str(mock_path.return_value / "t1"),
         shell=True,
         show_cmd_output=True,
+        timeout=None,
     )
     mock_run_command.reset_mock()
 
-    # Test with server-kill common command (needs shell)
+    # Test with server-kill common command (needs shell, default timeout)
     core.muster_command(
         command_str=None,
         branch_patterns=["output/branch.1"],
@@ -598,6 +605,7 @@ def test_muster_command(
         cwd=str(mock_path.return_value / "t1"),
         shell=True,
         show_cmd_output=True,
+        timeout=20,
     )
     mock_run_command.reset_mock()
 
@@ -611,3 +619,73 @@ def test_muster_command(
     # Test common command not found
     with pytest.raises(ValueError, match="Common command 'nonexistent' not found"):
         core.muster_command(command_str=None, branch_patterns=[], common_cmd_key="nonexistent")
+
+
+@patch("agro.core.Path")
+@patch("agro.core.config")
+@patch("agro.core._get_indices_from_branch_patterns", return_value=[1])
+@patch("agro.core.get_worktree_state", return_value={"t1": "b1"})
+@patch("agro.core._run_command")
+def test_muster_command_timeout_overrides(
+    mock_run_command,
+    mock_get_worktree_state,
+    mock_get_indices,
+    mock_config,
+    mock_path,
+):
+    mock_path.return_value.is_dir.return_value = True
+    mock_config.MUSTER_DEFAULT_TIMEOUT = 20
+    mock_config.MUSTER_COMMON_CMDS = {
+        "default_timeout": {"cmd": "cmd1"},
+        "custom_timeout": {"cmd": "cmd2", "timeout": 10},
+        "no_timeout": {"cmd": "cmd3", "timeout": 0},
+        "null_timeout": {"cmd": "cmd4", "timeout": None},
+    }
+
+    # 1. Default timeout from config
+    core.muster_command(command_str="some-cmd", branch_patterns=["b1"])
+    mock_run_command.assert_called_with(
+        ["some-cmd"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=20
+    )
+
+    # 2. Common command with default timeout
+    core.muster_command(common_cmd_key="default_timeout", branch_patterns=["b1"])
+    mock_run_command.assert_called_with(
+        ["cmd1"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=20
+    )
+
+    # 3. Common command with custom timeout
+    core.muster_command(common_cmd_key="custom_timeout", branch_patterns=["b1"])
+    mock_run_command.assert_called_with(
+        ["cmd2"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=10
+    )
+
+    # 4. Common command with timeout: 0
+    core.muster_command(common_cmd_key="no_timeout", branch_patterns=["b1"])
+    mock_run_command.assert_called_with(
+        ["cmd3"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=None
+    )
+
+    # 5. Common command with timeout: null
+    core.muster_command(common_cmd_key="null_timeout", branch_patterns=["b1"])
+    mock_run_command.assert_called_with(
+        ["cmd4"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=None
+    )
+
+    # 6. CLI flag overrides common command timeout
+    core.muster_command(common_cmd_key="custom_timeout", branch_patterns=["b1"], timeout=30)
+    mock_run_command.assert_called_with(
+        ["cmd2"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=30
+    )
+
+    # 7. CLI flag overrides default timeout
+    core.muster_command(command_str="some-cmd", branch_patterns=["b1"], timeout=30)
+    mock_run_command.assert_called_with(
+        ["some-cmd"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=30
+    )
+
+    # 8. CLI flag of 0 means no timeout
+    core.muster_command(command_str="some-cmd", branch_patterns=["b1"], timeout=0)
+    mock_run_command.assert_called_with(
+        ["some-cmd"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=None
+    )

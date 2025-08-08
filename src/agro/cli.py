@@ -127,6 +127,7 @@ def _dispatch_muster(args):
         branch_patterns=branch_patterns,
         common_cmd_key=common_cmd_key,
         show_cmd_output=(args.verbose >= 2),
+        timeout=args.timeout,
     )
 
 
@@ -178,6 +179,7 @@ Common options for 'make' and 'exec':
 
 Options for 'muster':
   -c, --common-cmd <key> Run a pre-defined command from config.
+  --timeout <seconds>   Override command timeout. 0 for no timeout.
 
 Options for 'clean':
   --soft              Only delete worktrees, not branches.
@@ -335,6 +337,12 @@ Options for 'init':
         "--common-cmd",
         dest="common_cmd_key",
         help="Run a pre-defined command from config.",
+    )
+    parser_muster.add_argument(
+        "--timeout",
+        type=int,
+        default=None,
+        help="Timeout in seconds for the command. Use 0 for no timeout.",
     )
     parser_muster.add_argument(
         "command_str",
