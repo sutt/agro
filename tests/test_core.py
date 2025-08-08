@@ -589,7 +589,7 @@ def test_muster_command(
         cwd=str(mock_path.return_value / "t1"),
         shell=True,
         show_cmd_output=True,
-        timeout=None,
+        timeout=20,
     )
     mock_run_command.reset_mock()
 
@@ -649,31 +649,31 @@ def test_muster_command_timeout_overrides(
     )
 
     # 2. Common command with default timeout
-    core.muster_command(common_cmd_key="default_timeout", branch_patterns=["b1"])
+    core.muster_command(command_str=None, common_cmd_key="default_timeout", branch_patterns=["b1"])
     mock_run_command.assert_called_with(
         ["cmd1"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=20
     )
 
     # 3. Common command with custom timeout
-    core.muster_command(common_cmd_key="custom_timeout", branch_patterns=["b1"])
+    core.muster_command(command_str=None, common_cmd_key="custom_timeout", branch_patterns=["b1"])
     mock_run_command.assert_called_with(
         ["cmd2"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=10
     )
 
     # 4. Common command with timeout: 0
-    core.muster_command(common_cmd_key="no_timeout", branch_patterns=["b1"])
+    core.muster_command(command_str=None, common_cmd_key="no_timeout", branch_patterns=["b1"])
     mock_run_command.assert_called_with(
-        ["cmd3"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=None
+        ["cmd3"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=20
     )
 
     # 5. Common command with timeout: null
-    core.muster_command(common_cmd_key="null_timeout", branch_patterns=["b1"])
+    core.muster_command(command_str=None, common_cmd_key="null_timeout", branch_patterns=["b1"])
     mock_run_command.assert_called_with(
-        ["cmd4"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=None
+        ["cmd4"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=20
     )
 
     # 6. CLI flag overrides common command timeout
-    core.muster_command(common_cmd_key="custom_timeout", branch_patterns=["b1"], timeout=30)
+    core.muster_command(command_str=None, common_cmd_key="custom_timeout", branch_patterns=["b1"], timeout=30)
     mock_run_command.assert_called_with(
         ["cmd2"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=30
     )
