@@ -589,7 +589,7 @@ def test_muster_command(
         cwd=str(mock_path.return_value / "t1"),
         shell=True,
         show_cmd_output=True,
-        timeout=20,
+        timeout=None,
     )
     mock_run_command.reset_mock()
 
@@ -663,13 +663,13 @@ def test_muster_command_timeout_overrides(
     # 4. Common command with timeout: 0
     core.muster_command(command_str=None, common_cmd_key="no_timeout", branch_patterns=["b1"])
     mock_run_command.assert_called_with(
-        ["cmd3"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=20
+        ["cmd3"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=None
     )
 
     # 5. Common command with timeout: null
     core.muster_command(command_str=None, common_cmd_key="null_timeout", branch_patterns=["b1"])
     mock_run_command.assert_called_with(
-        ["cmd4"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=20
+        ["cmd4"], cwd=str(mock_path.return_value / "t1"), shell=False, show_cmd_output=True, timeout=None
     )
 
     # 6. CLI flag overrides common command timeout
