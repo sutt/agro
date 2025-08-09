@@ -339,6 +339,44 @@ def test_diff_worktrees(
     mock_run_command.assert_has_calls(expected_calls_multiple)
     assert mock_run_command.call_count == 2
 
+    # test with pathspec
+    mock_run_command.reset_mock()
+    core.diff_worktrees([], diff_opts=["--", "my/path"], show_cmd_output=False)
+    expected_calls_pathspec = [
+        call(
+            ["git", "diff", "tree/t1", "HEAD", "--", "my/path"],
+            cwd=str(mock_path.return_value / "t1"),
+            show_cmd_output=True,
+        ),
+        call(
+            ["git", "diff", "tree/t2", "HEAD", "--", "my/path"],
+            cwd=str(mock_path.return_value / "t2"),
+            show_cmd_output=True,
+        ),
+    ]
+    mock_run_command.assert_has_calls(expected_calls_pathspec)
+    assert mock_run_command.call_count == 2
+
+    # test with options and pathspec
+    mock_run_command.reset_mock()
+    core.diff_worktrees(
+        [], diff_opts=["--stat", "--", "my/path"], show_cmd_output=False
+    )
+    expected_calls_opts_pathspec = [
+        call(
+            ["git", "diff", "--stat", "tree/t1", "HEAD", "--", "my/path"],
+            cwd=str(mock_path.return_value / "t1"),
+            show_cmd_output=True,
+        ),
+        call(
+            ["git", "diff", "--stat", "tree/t2", "HEAD", "--", "my/path"],
+            cwd=str(mock_path.return_value / "t2"),
+            show_cmd_output=True,
+        ),
+    ]
+    mock_run_command.assert_has_calls(expected_calls_opts_pathspec)
+    assert mock_run_command.call_count == 2
+
     # test no indices
     mock_run_command.reset_mock()
     mock_get_indices.return_value = []

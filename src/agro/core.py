@@ -983,15 +983,15 @@ def diff_worktrees(branch_patterns, diff_opts=None, show_cmd_output=False):
                 pre_opts = diff_opts
 
         if pathspec:
-            # When a pathspec is provided, keep options before commits then add '--' and paths
+            # When a pathspec is provided, add options, then commits, then '--' and paths
             command.extend(pre_opts)
             command.extend([original_branch, "HEAD"])
             command.append("--")
             command.extend(pathspec)
         else:
-            # No pathspec: place options after the commits (matches expected examples)
-            command.extend([original_branch, "HEAD"])
+            # No pathspec: place options before the commits
             command.extend(pre_opts)
+            command.extend([original_branch, "HEAD"])
 
         cmd_str = shlex.join(command)
         logger.info(f"$ {cmd_str}")
