@@ -480,7 +480,39 @@ Options for 'init':
         args, unknown_args = parser.parse_known_args()
 
         if args.command == "diff":
-            args.diff_opts = unknown_args
+            # Reconstruct raw args after 'diff' to support '--' pathspec passthrough
+            try:
+                diff_idx = sys.argv.index("diff") + 1
+                tail = sys.argv[diff_idx:]
+            except ValueError:
+                tail = []
+
+            # Split on '--' to separate pathspec (after) from patterns/options (before)
+            if "--" in tail:
+                dd_i = tail.index("--")
+                before_dd = tail[:dd_i]
+                after_dd = tail[dd_i + 1 :]
+            else:
+                before_dd = tail
+                after_dd = []
+
+            # Extract branch patterns from the start until the first option
+            branch_patterns = []
+            diff_opts = []
+            reached_opts = False
+            for tok in before_dd:
+                if not reached_opts and not tok.startswith("-"):
+                    branch_patterns.append(tok)
+                else:
+                    reached_opts = True
+                    diff_opts.append(tok)
+
+            if after_dd:
+                diff_opts.extend(["--"] + after_dd)
+
+            # Override parsed values
+            args.branch_patterns = branch_patterns
+            args.diff_opts = diff_opts
         elif unknown_args:
             parser.error(f"unrecognized arguments: {' '.join(unknown_args)}")
 
