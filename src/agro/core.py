@@ -940,7 +940,16 @@ def _get_indices_from_branch_patterns(branch_patterns=None, show_cmd_output=Fals
 
 def diff_worktrees(branch_patterns, diff_opts=None, show_cmd_output=False):
     """Runs 'git diff' in multiple worktrees."""
-    indices = _get_indices_from_branch_patterns(branch_patterns, show_cmd_output)
+    # Default to output branches if no pattern is provided
+    if not branch_patterns:
+        patterns_to_use = [config.WORKTREE_OUTPUT_BRANCH_PREFIX]
+        logger.info(
+            f"No branch pattern specified. Using default pattern for output branches: '{config.WORKTREE_OUTPUT_BRANCH_PREFIX}*'"
+        )
+    else:
+        patterns_to_use = branch_patterns
+
+    indices = _get_indices_from_branch_patterns(patterns_to_use, show_cmd_output)
     if not indices:
         logger.warning("No worktrees found matching the provided patterns.")
         return
@@ -962,9 +971,27 @@ def diff_worktrees(branch_patterns, diff_opts=None, show_cmd_output=False):
 
         original_branch = f"{config.WORKTREE_BRANCH_PREFIX}{index}"
         command = ["git", "diff"]
+
+        pre_opts = []
+        pathspec = []
         if diff_opts:
-            command.extend(diff_opts)
-        command.extend([original_branch, "HEAD"])
+            if "--" in diff_opts:
+                dd_idx = diff_opts.index("--")
+                pre_opts = diff_opts[:dd_idx]
+                pathspec = diff_opts[dd_idx + 1 :]
+            else:
+                pre_opts = diff_opts
+
+        if pathspec:
+            # When a pathspec is provided, keep options before commits then add '--' and paths
+            command.extend(pre_opts)
+            command.extend([original_branch, "HEAD"])
+            command.append("--")
+            command.extend(pathspec)
+        else:
+            # No pathspec: place options after the commits (matches expected examples)
+            command.extend([original_branch, "HEAD"])
+            command.extend(pre_opts)
 
         cmd_str = shlex.join(command)
         logger.info(f"$ {cmd_str}")
