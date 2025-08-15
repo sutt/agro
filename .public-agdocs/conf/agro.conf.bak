@@ -79,16 +79,9 @@ AGENT_CONFIG:
 
 # --- Muster ---
 
-# Default timeout in seconds for commands run with 'agro muster'.
-# A value of 0 or null means no timeout.
-# MUSTER_DEFAULT_TIMEOUT: 20
-
 # Pre-defined commands for 'agro muster -c'.
-# MUSTER_COMMON_CMDS:
-#   testq:
-#     cmd: "uv run pytest --tb=no -q"
-#   server-start:
-#     cmd: "uv run python app/main.py > server.log 2>&1 & echo $! > server.pid"
-#     timeout: null
-#   server-kill:
-#     cmd: "kill $(cat server.pid) && rm -f server.pid server.log"
+MUSTER_COMMON_CMDS:
+  testq: "uv run pytest --tb=no -q"
+  server-start: "uv run python app/main.py > server.log 2>&1 & echo $! > server.pid"
+  server-kill: "kill $(cat server.pid) && rm -f server.pid server.log"
+  gitone: "git log -n 1 --oneline"

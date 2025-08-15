@@ -1,0 +1,1 @@
+add a command template to the muster common commands called "safetest" which similiar to testq calls pytest with uv runner. But this command is launched with a 20 second timeout, so that if a test function "gets stuck" the background process does not jam up the computer indefinetly.
