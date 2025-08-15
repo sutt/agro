@@ -172,6 +172,7 @@ uvicorn main:app --reload --port 8000
 agro exec api-with-auth 2
 
 # Test the APIs
+# TODO: Update to use common command format - would need custom server-start config
 agro muster --server 'uvicorn main:app --reload' 'output/api-with-auth'
 
 # Test endpoints
@@ -182,6 +183,7 @@ curl -X POST http://localhost:8001/login -H "Content-Type: application/json" -d 
 agro muster 'python -m pytest test_api.py -v' 'output/api-with-auth'
 
 # Clean up
+# TODO: Update to use common command format - agro muster -c server-kill 'output/api-with-auth'
 agro muster --kill-server '' 'output/api-with-auth'
 ```
 
@@ -342,6 +344,7 @@ agro muster 'python train.py' 'output/ml-pipeline'
 agro muster 'python -m pytest test_pipeline.py' 'output/ml-pipeline'
 
 # Start Jupyter notebooks
+# TODO: Update to use common command format
 agro muster --server 'jupyter lab --no-browser' 'output/ml-pipeline'
 ```
 
@@ -410,6 +413,7 @@ agro exec data-dashboard streamlit
 agro exec data-dashboard claude
 
 # Test dashboards
+# TODO: Update to use common command format
 agro muster --server 'streamlit run dashboard.py' 'output/data-dashboard'
 
 # Access dashboards
@@ -774,6 +778,7 @@ agro exec ecommerce-platform claude
 agro exec ecommerce-platform aider
 
 # Start development servers
+# TODO: Update to use common command format
 agro muster --server 'npm run dev' 'output/ecommerce-platform'
 agro muster --server 'python manage.py runserver' 'output/ecommerce-platform'
 
@@ -860,6 +865,7 @@ agro muster 'python simulate_sensors.py' 'output/iot-data-processing'
 agro muster 'python -m pytest tests/test_pipeline.py' 'output/iot-data-processing'
 
 # Start dashboard
+# TODO: Update to use common command format
 agro muster --server 'streamlit run dashboard.py' 'output/iot-data-processing'
 ```
 

@@ -203,6 +203,7 @@ agro muster 'npm run test:api' 'output/user-profile-api'
 agro muster 'npm run test:integration' 'output/user-profile-integration'
 
 # 5. Start development servers
+# TODO: Update to use common command format
 agro muster --server 'npm run dev' 'output/user-profile'
 
 # 6. Manual testing
@@ -237,6 +238,7 @@ agro muster 'python -m pytest tests/test_model.py' 'output/sales'
 agro muster 'python analysis.py' 'output/sales'
 
 # 5. Start jupyter servers
+# TODO: Update to use common command format
 agro muster --server 'jupyter lab --port=8888' 'output/sales'
 ```
 
@@ -330,6 +332,7 @@ agro task add-user-settings
 agro exec add-user-settings --fresh-env
 
 # 3. Start development servers
+# TODO: Update to use common command format
 agro muster --server 'npm run dev' 'output/add-user-settings'
 
 # 4. Live testing

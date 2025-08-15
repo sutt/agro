@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+- **BREAKING**: Changed `MUSTER_COMMON_CMDS` configuration format from simple string values to structured objects with `cmd` and optional `timeout` properties
+- Added `argcomplete` dependency for shell completion support
+- Added `--completions` option to `agro init` command for setting up bash tab completion (current session or permanent)
+- Added `MUSTER_DEFAULT_TIMEOUT` configuration option for default command timeouts in muster operations
+- Added `--timeout` option to `agro muster` command to override timeout settings per execution
+- Enhanced `agro diff` command with support for git diff options and pathspec arguments (e.g., `agro diff output/ --stat -- src/`)
+- Added timeout handling with proper error reporting for subprocess operations
+- Added shell completion for branch name arguments across all relevant commands  
+- Updated configuration template to include new timeout settings and structured command format
+- Enhanced documentation with timeout configuration details and new command usage examples
+
 ## [0.1.7]
 
 - Added `diff` command to show git diffs across worktrees with optional `--stat` flag

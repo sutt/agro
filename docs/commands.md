@@ -54,6 +54,7 @@ agro init [options]
 | Option | Description |
 |--------|-------------|
 | `--conf` | Only create configuration file, skip other initialization |
+| `--completions [mode]` | Setup shell completions. Use 'perm' for permanent setup via .bashrc |
 
 ### Behavior
 
@@ -74,11 +75,17 @@ Also updates `.gitignore` to exclude `trees/` and `.agdocs/swap/`.
 ### Examples
 
 ```bash
-# Full initialization
+# Full initialization (includes current session completion setup)
 agro init
 
 # Only create configuration file
 agro init --conf
+
+# Setup shell completions for current session only
+agro init --completions
+
+# Setup permanent shell completions
+agro init --completions perm
 ```
 
 ---
@@ -236,6 +243,7 @@ agro muster [options] [command] [branch-patterns...]
 | Option | Description |
 |--------|-------------|
 | `-c, --common-cmd <key>` | Run a pre-defined command from configuration |
+| `--timeout <seconds>` | Override command timeout. Use 0 for no timeout |
 
 ### Parameters
 
@@ -275,6 +283,12 @@ agro muster 'pytest tests/test_auth.py' output/auth.{1,2}
 
 # Run command in all output branches (default pattern)
 agro muster 'git status'
+
+# Override timeout for long-running command
+agro muster --timeout 300 'npm run build' output/
+
+# Disable timeout completely
+agro muster --timeout 0 'npm run dev' output/
 ```
 
 ### Common Commands
@@ -298,20 +312,16 @@ Show git diff for specified worktrees.
 ### Usage
 
 ```bash
-agro diff [options] [branch-patterns...]
+agro diff [branch-patterns] [diff-opts] [-- pathspec]
 ```
-
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `--stat` | Show diffstat instead of full diff |
 
 ### Parameters
 
 | Parameter | Description |
 |-----------|-------------|
-| `branch-patterns` | Optional patterns to filter worktrees (defaults to all) |
+| `branch-patterns` | Optional patterns to filter worktrees (defaults to output branches) |
+| `diff-opts` | Git diff options (e.g., --stat, --name-only, --cached) |
+| `pathspec` | File paths to limit diff to (after --) |
 
 ### Behavior
 
@@ -320,17 +330,26 @@ Shows the git diff between the original worktree branch (tree/tN) and the curren
 ### Examples
 
 ```bash
-# Show diff for all worktrees
+# Show diff for all output worktrees (default)
 agro diff
 
 # Show diffstat for specific pattern
-agro diff --stat output/add-feature
+agro diff output/add-feature --stat
 
 # Show diff for multiple patterns
 agro diff output/feature output/bugfix
 
 # Show diff for specific worktrees
 agro diff output/add-feature.{1,3}
+
+# Show only changed file names
+agro diff output/ --name-only
+
+# Show diff for specific files only
+agro diff output/add-feature -- src/auth.py tests/test_auth.py
+
+# Combine options with pathspec
+agro diff output/ --stat -- src/
 ```
 
 ---

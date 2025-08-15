@@ -456,7 +456,8 @@ kill $(lsof -t -i:8001)
 edit .agdocs/conf/agro.conf.yml
 # Change port_start: 9000
 
-# Kill all servers
+# Kill all servers  
+# TODO: Update to use common command format - agro muster -c server-kill
 agro muster --kill-server '' 'output/*'
 ```
 
@@ -556,6 +557,7 @@ pkill -f claude-code
 pkill -f gemini
 
 # Clean up background servers
+# TODO: Update to use common command format - agro muster -c server-kill  
 agro muster --kill-server '' 'output/*'
 ```
 

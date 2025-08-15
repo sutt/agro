@@ -59,12 +59,23 @@ AGENT_TIMEOUTS:
 Define reusable commands for the `agro muster -c` functionality:
 
 ```yaml
+# Default timeout in seconds for commands run with 'agro muster'.
+# A value of 0 or null means no timeout.
+MUSTER_DEFAULT_TIMEOUT: 20
+
 MUSTER_COMMON_CMDS:
-  testq: 'uv run pytest --tb=no -q'
-  server-start: 'uv run python app/main.py > server.log 2>&1 & echo $! > server.pid'
-  server-kill: 'kill $(cat server.pid) && rm -f server.pid server.log'
-  build: 'npm run build'
-  lint: 'npm run lint'
+  testq:
+    cmd: 'uv run pytest --tb=no -q'
+  server-start:
+    cmd: 'uv run python app/main.py > server.log 2>&1 & echo $! > server.pid'
+    timeout: null  # No timeout for this command
+  server-kill:
+    cmd: 'kill $(cat server.pid) && rm -f server.pid server.log'
+  build:
+    cmd: 'npm run build'
+    timeout: 300  # 5 minute timeout
+  lint:
+    cmd: 'npm run lint'
 ```
 
 These commands can then be executed across worktrees using:
@@ -73,12 +84,25 @@ These commands can then be executed across worktrees using:
 # Run quick tests in all output branches
 agro muster -c testq
 
-# Start servers in specific branches
+# Start servers in specific branches  
 agro muster -c server-start output/api
 
 # Custom build command
 agro muster -c build output/frontend.{1,2}
+
+# Override timeout for a specific run
+agro muster -c testq --timeout 60 output/
 ```
+
+#### Timeout Configuration
+
+Commands can have timeouts configured at three levels (in order of precedence):
+
+1. **CLI flag**: `--timeout <seconds>` overrides all other settings
+2. **Common command config**: Individual `timeout` setting per command
+3. **Global default**: `MUSTER_DEFAULT_TIMEOUT` applies to all commands without specific timeouts
+
+Set timeout to `0` or `null` to disable timeouts entirely.
 
 > **Tip**: Common commands support shell features like pipes, redirects, and background processes. Agro automatically detects when shell execution is needed.
 
