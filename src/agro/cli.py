@@ -10,6 +10,21 @@ from . import core, __version__
 logger = logging.getLogger("agro")
 
 
+def branch_completer(prefix, parsed_args, **kwargs):
+    """A completer for git branch names."""
+    try:
+        all_branches = core._get_all_branches()
+    except Exception:
+        return []
+
+    if not prefix:
+        # Default to output branches if no prefix
+        default_prefix = core.config.WORKTREE_OUTPUT_BRANCH_PREFIX
+        return [b for b in all_branches if b.startswith(default_prefix)]
+
+    return [b for b in all_branches if b.startswith(prefix)]
+
+
 def _is_indices_list(s):
     """Check if a string is a comma-separated list of digits."""
     if not s:
@@ -356,7 +371,7 @@ Options for 'init':
         nargs="*",
         default=[],
         help="One or more branch patterns. Defaults to output branches.",
-    )
+    ).completer = branch_completer
     parser_muster.set_defaults(func=_dispatch_muster)
 
     # --- diff command ---
@@ -368,14 +383,14 @@ Options for 'init':
         nargs="*",
         default=[],
         help="Optional branch pattern(s).",
-    )
+    ).completer = branch_completer
     parser_diff.set_defaults(func=_dispatch_diff)
 
     # --- grab command ---
     parser_grab = subparsers.add_parser(
         "grab", help="Checkout a branch, creating a copy if it's in use by another worktree."
     )
-    parser_grab.add_argument("branch_name", help="The branch to grab.")
+    parser_grab.add_argument("branch_name", help="The branch to grab.").completer = branch_completer
     parser_grab.set_defaults(
         func=lambda args: core.grab_branch(
             args.branch_name, show_cmd_output=(args.verbose >= 2)
@@ -388,7 +403,7 @@ Options for 'init':
     )
     parser_fade.add_argument(
         "patterns", nargs="+", help="One or more patterns to match branch names against."
-    )
+    ).completer = branch_completer
     parser_fade.set_defaults(
         func=lambda args: core.fade_branches(
             args.patterns, show_cmd_output=(args.verbose >= 2)
@@ -405,7 +420,7 @@ Options for 'init':
         nargs="*",
         default=[],
         help="Optional branch pattern(s) to select what to clean. Defaults to all output branches.",
-    )
+    ).completer = branch_completer
     clean_group = parser_clean.add_mutually_exclusive_group()
     clean_group.add_argument(
         "--soft",
@@ -434,7 +449,7 @@ Options for 'init':
         nargs="*",
         default=[],
         help="Optional branch pattern(s) to select worktrees. Defaults to all.",
-    )
+    ).completer = branch_completer
     parser_surrender.set_defaults(
         func=lambda args: core.surrender(
             args.branch_patterns, show_cmd_output=(args.verbose >= 2)
@@ -450,7 +465,7 @@ Options for 'init':
         nargs="*",
         default=[],
         help="Optional glob-style pattern(s) to filter branches by name.",
-    )
+    ).completer = branch_completer
     parser_state.set_defaults(
         func=lambda args: core.state(
             branch_patterns=args.branch_pattern, show_cmd_output=(args.verbose >= 2)
