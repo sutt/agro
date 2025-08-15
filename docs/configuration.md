@@ -2,6 +2,14 @@
 
 Configure Agro to match your development workflow and preferences.
 
+## CLI completions
+
+Agro comes with CLI completions. These are particularly useful for completing branch names for commands like `agro diff output/my-longwinded-task`. 
+
+CLI completions can be setup by running `agro init`  or `agro init --completions` and then following the printed instructions. Currently, completions are only tested for bash terminal.
+
+To setup the CLI completions permanently run `agro init --completions perm` to register completions in the bash profile. This currently requires `uv` to be installed and bash terminal.
+
 ## Configuration File
 
 ### Location
