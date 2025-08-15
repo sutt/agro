@@ -1,3 +1,4 @@
+import argcomplete
 import argparse
 import logging
 import os
@@ -475,6 +476,8 @@ Options for 'init':
     # --- help command ---
     parser_help = subparsers.add_parser("help", help="Show this help message.")
     parser_help.set_defaults(func=lambda args: parser.print_help())
+
+    argcomplete.autocomplete(parser)
 
     try:
         args, unknown_args = parser.parse_known_args()
