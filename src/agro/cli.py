@@ -122,6 +122,22 @@ def _dispatch_exec(args):
     )
 
 
+def _dispatch_init(args):
+    """Helper to dispatch init command."""
+    show_output = args.verbose >= 2
+    # If --completions is used, only do that.
+    if args.completions:
+        core.setup_completions(mode=args.completions, show_cmd_output=show_output)
+        return
+
+    # Otherwise, do the normal init...
+    core.init_project(conf_only=args.conf)
+
+    # ...and if it's a full init (not --conf), also set up completions.
+    if not args.conf:
+        core.setup_completions(mode="current", show_cmd_output=show_output)
+
+
 def _dispatch_muster(args):
     """Helper to dispatch muster command with complex argument parsing."""
     command_str = args.command_str
@@ -202,7 +218,8 @@ Options for 'clean':
   --hard              Delete both worktrees and branches (default).
     
 Options for 'init':
-  --conf              Only add a template agro.conf.yml to .agdocs/conf"""
+  --conf              Only add a template agro.conf.yml to .agdocs/conf
+  --completions [perm]  Setup shell completions ('perm' for permanent)."""
     parser = argparse.ArgumentParser(
         description="A script to manage git branches & worktrees for agent-based development.",
         prog="agro",
@@ -236,12 +253,21 @@ Options for 'init':
         "init",
         help="Initialize the .agdocs directory structure for the project.",
     )
-    parser_init.add_argument(
+    init_group = parser_init.add_mutually_exclusive_group()
+    init_group.add_argument(
         "--conf",
         action="store_true",
         help="Only generate a blank config file. Fails if the file already exists.",
     )
-    parser_init.set_defaults(func=lambda args: core.init_project(conf_only=args.conf))
+    init_group.add_argument(
+        "--completions",
+        nargs="?",
+        const="current",
+        default=None,
+        choices=["current", "perm"],
+        help="Setup shell completions. With no argument, sets up for current session. Use 'perm' for permanent setup via .bashrc.",
+    )
+    parser_init.set_defaults(func=_dispatch_init)
 
     # --- mirror command ---
     parser_mirror = subparsers.add_parser(

@@ -307,6 +307,55 @@ def init_project(conf_only=False):
     logger.debug(f"Created: {agdocs_dir}/.gitignore")
 
 
+def setup_completions(mode, show_cmd_output=False):
+    """Sets up shell completions for agro."""
+    shell = os.environ.get("SHELL", "")
+    if "bash" not in shell:
+        logger.error("Shell is not bash. Completions are only supported for bash.")
+        logger.error("For more information, see the documentation.")
+        raise RuntimeError("Completions only supported for bash.")
+
+    if mode == "perm":
+        if not shutil.which("uv"):
+            logger.error(
+                "'uv' command not found, which is required for permanent completion setup."
+            )
+            logger.error("Please install uv: https://github.com/astral-sh/uv")
+            logger.error("For more information, see the documentation.")
+            raise RuntimeError("'uv' command not found.")
+
+        bashrc_path = Path.home() / ".bashrc"
+        if not bashrc_path.is_file():
+            logger.warning(f"~/.bashrc not found. Cannot set up permanent completions.")
+            return
+
+        completion_line = '# agro cli completions\neval "$(uvx --from argcomplete register-python-argcomplete agro)"\n'
+
+        content = bashrc_path.read_text()
+        if completion_line.strip() in content:
+            logger.info("Agro completions already configured in ~/.bashrc.")
+            return
+
+        logger.info("Adding completions to ~/.bashrc...")
+        with bashrc_path.open("a") as f:
+            f.write("\n" + completion_line)
+        logger.info(
+            "✅ Permanent completions set up. Please restart your shell or run 'source ~/.bashrc'."
+        )
+
+    elif mode == "current":
+        logger.info("To enable tab completion for the current session, run:")
+        cmd = 'eval "$(register-python-argcomplete agro)"'
+        logger.info(f"  {cmd}")
+        if not shutil.which("register-python-argcomplete"):
+            logger.warning(
+                "\nWarning: 'register-python-argcomplete' not found in PATH."
+            )
+            logger.warning(
+                "You may need to run: 'eval \"$(uvx --from argcomplete register-python-argcomplete agro)\"' instead."
+            )
+
+
 def create_task_file(task_name=None, show_cmd_output=False):
     """Creates a new task spec file and opens it in the editor."""
     if not task_name:
