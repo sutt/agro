@@ -3,23 +3,23 @@ Looks at tasks and associated commit solutions generated each release.
 
 ## v0.1.8
 
-| Task File | Contents (truncated) | Accepted SHA |
-|------|-------------|---------|
-| [update-docs-1.8.md](../.public-agdocs/specs/update-docs-1.8.md) | Update existing documentation to account for changes to expected behavior of agro cli tool, including new CLI completions and diff command features | [2998e8](https://github.com/sutt/agro/commit/2998e8) |
-| [complete-init.md](../.public-agdocs/specs/complete-init.md) | Add shell completion setup to init command for better user experience with CLI argument completion | [d565d8](https://github.com/sutt/agro/commit/d565d8) |
-| [complete-v2.md](../.public-agdocs/specs/complete-v2.md) | Add CLI completion for branch arguments to improve command line usability | [726b1e](https://github.com/sutt/agro/commit/726b1e) |
-| [complete-v1.md](../.public-agdocs/specs/complete-v1.md) | Implement CLI completion via argcomplete for better command line experience | [32f998](https://github.com/sutt/agro/commit/32f998) |
-| [diff-cli-tests.md](../.public-agdocs/specs/diff-cli-tests.md) | Add comprehensive test suite for diff command functionality including options and pathspecs handling | [778efe](https://github.com/sutt/agro/commit/778efe) |
-| [diff-cli.md](../.public-agdocs/specs/diff-cli.md) | Enhance diff command to allow 'agro diff [opts] -- <path>' syntax and implement default output pattern behavior | [5b9808](https://github.com/sutt/agro/commit/5b9808) |
-| [diff-glob-passthru-v3.md](../.public-agdocs/specs/diff-glob-passthru-v3.md) | Advanced refinement of diff command to properly handle git diff options and pathspecs with -- separator | [778efe](https://github.com/sutt/agro/commit/778efe) |
-| [diff-glob-passthru-v2.md](../.public-agdocs/specs/diff-glob-passthru-v2.md) | Second iteration of diff command improvements for better git diff options handling | [5b9808](https://github.com/sutt/agro/commit/5b9808) |
-| [diff-glob-passthru.md](../.public-agdocs/specs/diff-glob-passthru.md) | Initial implementation of passthrough functionality for diff command git options | [2861018](https://github.com/sutt/agro/commit/2861018) |
-| [fix-tests.md](../.public-agdocs/specs/fix-tests.md) | Fix failing tests related to muster command timeout logic and signature changes | [95f731](https://github.com/sutt/agro/commit/95f731) |
-| [fix-test.md](../.public-agdocs/specs/fix-test.md) | Manual fixes for muster timeout logic and associated test cases | [4c065b](https://github.com/sutt/agro/commit/4c065b) |
-| [muster-timeout.md](../.public-agdocs/specs/muster-timeout.md) | Add configurable timeout functionality to muster command for better process control | [7bfa83](https://github.com/sutt/agro/commit/7bfa83) |
-| [safetest-cmd.md](../.public-agdocs/specs/safetest-cmd.md) | Implement safe testing command functionality (minimal implementation) | n/a |
-| [diff-args-2.md](../.public-agdocs/specs/diff-args-2.md) | Refactor diff command to accept git diff options without requiring branch pattern | [2861018](https://github.com/sutt/agro/commit/2861018) |
-| [diff-args.md](../.public-agdocs/specs/diff-args.md) | Generalize diff command to accept git diff options and improve flexibility | [4f4764](https://github.com/sutt/agro/commit/4f4764) |
+| Task File | Contents (truncated) | Accepted SHA | Non-test Diffs | Test Diffs |
+|------|-------------|---------|-------------|------------|
+| [update-docs-1.8.md](../.public-agdocs/specs/update-docs-1.8.md) | Update existing documentation to account for changes to expected behavior of agro cli tool, including new CLI completions and diff command features | [2998e8](https://github.com/sutt/agro/commit/2998e8) | +85/-18 | +0/-0 |
+| [complete-init.md](../.public-agdocs/specs/complete-init.md) | Add shell completion setup to init command for better user experience with CLI argument completion | [d565d8](https://github.com/sutt/agro/commit/d565d8) | +81/-3 | +46/-1 |
+| [complete-v2.md](../.public-agdocs/specs/complete-v2.md) | Add CLI completion for branch arguments to improve command line usability | [726b1e](https://github.com/sutt/agro/commit/726b1e) | +22/-7 | +0/-0 |
+| [complete-v1.md](../.public-agdocs/specs/complete-v1.md) | Implement CLI completion via argcomplete for better command line experience | [32f998](https://github.com/sutt/agro/commit/32f998) | +16/-1 | +0/-0 |
+| [diff-cli-tests.md](../.public-agdocs/specs/diff-cli-tests.md) | Add comprehensive test suite for diff command functionality including options and pathspecs handling | [778efe](https://github.com/sutt/agro/commit/778efe) | +6/-3 | +38/-0 |
+| [diff-cli.md](../.public-agdocs/specs/diff-cli.md) | Enhance diff command to allow 'agro diff [opts] -- <path>' syntax and implement default output pattern behavior | [5b9808](https://github.com/sutt/agro/commit/5b9808) | +63/-4 | +0/-0 |
+| [diff-glob-passthru-v3.md](../.public-agdocs/specs/diff-glob-passthru-v3.md) | Advanced refinement of diff command to properly handle git diff options and pathspecs with -- separator | [778efe](https://github.com/sutt/agro/commit/778efe) | +6/-3 | +38/-0 |
+| [diff-glob-passthru-v2.md](../.public-agdocs/specs/diff-glob-passthru-v2.md) | Second iteration of diff command improvements for better git diff options handling | [5b9808](https://github.com/sutt/agro/commit/5b9808) | +63/-4 | +0/-0 |
+| [diff-glob-passthru.md](../.public-agdocs/specs/diff-glob-passthru.md) | Initial implementation of passthrough functionality for diff command git options | [2861018](https://github.com/sutt/agro/commit/2861018) | +28/-16 | +26/-1 |
+| [fix-tests.md](../.public-agdocs/specs/fix-tests.md) | Fix failing tests related to muster command timeout logic and signature changes | [95f731](https://github.com/sutt/agro/commit/95f731) | +8/-3 | +6/-3 |
+| [fix-test.md](../.public-agdocs/specs/fix-test.md) | Manual fixes for muster timeout logic and associated test cases | [4c065b](https://github.com/sutt/agro/commit/4c065b) | +2/-2 | +0/-0 |
+| [muster-timeout.md](../.public-agdocs/specs/muster-timeout.md) | Add configurable timeout functionality to muster command for better process control | [7bfa83](https://github.com/sutt/agro/commit/7bfa83) | +106/-7 | +95/-11 |
+| [safetest-cmd.md](../.public-agdocs/specs/safetest-cmd.md) | Implement safe testing command functionality (minimal implementation) | n/a | n/a | n/a |
+| [diff-args-2.md](../.public-agdocs/specs/diff-args-2.md) | Refactor diff command to accept git diff options without requiring branch pattern | [2861018](https://github.com/sutt/agro/commit/2861018) | +28/-16 | +26/-1 |
+| [diff-args.md](../.public-agdocs/specs/diff-args.md) | Generalize diff command to accept git diff options and improve flexibility | [4f4764](https://github.com/sutt/agro/commit/4f4764) | +50/-26 | +30/-6 |
 
 ```
 7634b07 release: v0.1.8
